@@ -4,85 +4,49 @@
     <title>{{ 'Đánh giá' if role == 'danh_gia' else 'Thẩm tra' }}: {{ sheet_name }}</title>
     <meta charset="utf-8">
     <style>
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-bottom: 20px;
-            table-layout: fixed;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            vertical-align: top;
-            word-wrap: break-word;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .header-row {
-            background-color: #e6f7ff;
-        }
-        .header-row td {
-            white-space: nowrap;
-        }
-        textarea {
-            width: 100%;
-            min-height: 60px;
-            box-sizing: border-box;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-        }
-        .flash {
-            padding: 10px;
-            background: #d4edda;
-            color: #155724;
-            border-radius: 4px;
-            margin-bottom: 15px;
-        }
-        /* Bảng header */
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; table-layout: fixed; }
+        th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; word-wrap: break-word; }
+        th { background-color: #f2f2f2; }
+        .header-row { background-color: #e6f7ff; }
+        .header-row td { white-space: nowrap; }
+        textarea { width: 100%; min-height: 60px; box-sizing: border-box; }
+        select { padding: 5px; font-size: 14px; font-weight: bold; border-radius: 4px; border: 1px solid #ccc; background-color: white; cursor: pointer; display: inline-block; width: auto; min-width: 90px; }
+        select.da { background-color: #28a745; color: white; border-color: #28a745; }
+        select.khong { background-color: #dc3545; color: white; border-color: #dc3545; }
+        select.default { background-color: #f8f9fa; color: #333; }
+        select.pxvh { background-color: #007bff; color: white; border-color: #007bff; }
+        select.pxsc { background-color: #28a745; color: white; border-color: #28a745; }
+        select.pktat { background-color: #17a2b8; color: white; border-color: #17a2b8; }
+        select.unit-default { background-color: #f8f9fa; color: #333; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px; }
+        .flash { padding: 10px; background: #d4edda; color: #155724; border-radius: 4px; margin-bottom: 15px; }
+        .content-table td:nth-child(2), .content-table td:nth-child(6) { text-align: center; vertical-align: middle; }
+        .content-table td:nth-child(7), .content-table td:nth-child(9) { text-align: center; vertical-align: middle; }
+
         .header-table th:nth-child(1), .header-table td:nth-child(1) { width: 18%; }
         .header-table th:nth-child(2), .header-table td:nth-child(2) { width: 14%; }
         .header-table th:nth-child(3), .header-table td:nth-child(3) { width: 5%; }
         .header-table th:nth-child(4), .header-table td:nth-child(4) { width: 15%; }
         .header-table th:nth-child(5), .header-table td:nth-child(5) { width: 15%; }
         .header-table th:nth-child(6), .header-table td:nth-child(6) { width: 10%; }
-        .header-table th:nth-child(7), .header-table td:nth-child(7) { width: 32%; }
-        /* Bảng nội dung */
+        .header-table th:nth-child(7), .header-table td:nth-child(7) { width: 23%; }
+
         .content-table th:nth-child(1), .content-table td:nth-child(1) { width: 3%; }
         .content-table th:nth-child(2), .content-table td:nth-child(2) { width: 1%; }
         .content-table th:nth-child(3), .content-table td:nth-child(3) { width: 6%; }
         .content-table th:nth-child(4), .content-table td:nth-child(4) { width: 8%; }
         .content-table th:nth-child(5), .content-table td:nth-child(5) { width: 6%; }
         .content-table th:nth-child(6), .content-table td:nth-child(6) { width: 1.5%; }
-        .content-table th:nth-child(7), .content-table td:nth-child(7) { width: 1.5%; }
+        .content-table th:nth-child(7), .content-table td:nth-child(7) { width: 2%; }
         .content-table th:nth-child(8), .content-table td:nth-child(8) { width: 12%; }
         .content-table th:nth-child(9), .content-table td:nth-child(9) { width: 4%; }
         .content-table th:nth-child(10), .content-table td:nth-child(10) { width: 5%; }
         .content-table th:nth-child(11), .content-table td:nth-child(11) { width: 7%; }
         .content-table th:nth-child(12), .content-table td:nth-child(12) { width: 10%; }
-        /* Bảng extra - 2 cột đơn giản */
-        .extra-table {
-            width: 100%;
-            margin-bottom: 20px;
-            border-collapse: collapse;
-        }
-        .extra-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            vertical-align: top;
-        }
-        .extra-table td:first-child {
-            width: 150px;
-            background-color: #f9f9f9;
-            font-weight: bold;
-        }
+
+        .extra-table { width: 100%; margin-bottom: 20px; border-collapse: collapse; }
+        .extra-table td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
+        .extra-table td:first-child { width: 150px; background-color: #f9f9f9; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -103,7 +67,7 @@
         <input type="hidden" name="sheet_name" value="{{ sheet_name }}">
         <input type="hidden" name="role" value="{{ role }}">
 
-        {# Bảng header #}
+        <!-- Bảng header -->
         <table class="header-table">
             {% for row_idx, row in enumerate(headers, start=1) %}
             <tr class="header-row">
@@ -143,16 +107,39 @@
                 {% for idx, row in enumerate(rows, start=10) %}
                 <tr>
                     {% for col in ['A','B','C','D','E','F'] %}
-                        <td>{{ row[col] }}</td>
+                    <td>{{ row[col] }}</td>
                     {% endfor %}
                     {% if role == 'danh_gia' %}
-                        <td><textarea name="eval_{{ idx }}_G" rows="2">{{ saved.get((idx, 'G'), '') if saved is defined else '' }}</textarea></td>
+                        <!-- Cột G -->
+                        {% set saved_val_G = saved.get((idx, 'G'), '') %}
+                        <td style="text-align: center; vertical-align: middle;">
+                            <select name="eval_{{ idx }}_G" class="result-select">
+                                <option value="" {% if not saved_val_G %}selected{% endif %}>-- Chọn --</option>
+                                <option value="Đ" {% if saved_val_G == 'Đ' %}selected{% endif %}>Đ</option>
+                                <option value="K" {% if saved_val_G == 'K' %}selected{% endif %}>K</option>
+                            </select>
+                        </td>
+                        <!-- Cột H -->
                         <td><textarea name="eval_{{ idx }}_H" rows="2">{{ saved.get((idx, 'H'), '') if saved is defined else '' }}</textarea></td>
-                        <td><textarea name="eval_{{ idx }}_I" rows="2">{{ saved.get((idx, 'I'), '') if saved is defined else '' }}</textarea></td>
+                        <!-- Cột I -->
+                        {% set saved_val_I = saved.get((idx, 'I'), '') %}
+                        <td style="text-align: center; vertical-align: middle;">
+                            <select name="eval_{{ idx }}_I" class="unit-select">
+                                <option value="" {% if not saved_val_I %}selected{% endif %}>-- Chọn --</option>
+                                <option value="PXVH" {% if saved_val_I == 'PXVH' %}selected{% endif %}>PXVH</option>
+                                <option value="PXSC" {% if saved_val_I == 'PXSC' %}selected{% endif %}>PXSC</option>
+                                <option value="P.KTAT" {% if saved_val_I == 'P.KTAT' %}selected{% endif %}>P.KTAT</option>
+                            </select>
+                        </td>
+                        <!-- Cột J -->
                         <td><textarea name="eval_{{ idx }}_J" rows="2">{{ saved.get((idx, 'J'), '') if saved is defined else '' }}</textarea></td>
+                        <!-- Cột K -->
                         <td><textarea name="eval_{{ idx }}_K" rows="2">{{ saved.get((idx, 'K'), '') if saved is defined else '' }}</textarea></td>
                     {% else %}
-                        <td>{{ saved.get((idx, 'G'), '') if saved is defined else '' }}</td>
+                        <!-- Người thẩm tra -->
+                        <td style="text-align: center; font-weight: bold; background-color: {{ '#d4edda' if saved.get((idx, 'G'), '') == 'Đ' else '#f8d7da' if saved.get((idx, 'G'), '') == 'K' else '#fff' }}">
+                            {{ saved.get((idx, 'G'), '') }}
+                        </td>
                         <td>{{ saved.get((idx, 'H'), '') if saved is defined else '' }}</td>
                         <td>{{ saved.get((idx, 'I'), '') if saved is defined else '' }}</td>
                         <td>{{ saved.get((idx, 'J'), '') if saved is defined else '' }}</td>
@@ -164,10 +151,9 @@
             </tbody>
         </table>
 
-        {# Bảng extra: 2 cột, hiển thị dòng Kiến nghị, Người đánh giá, Người thẩm tra #}
+        <!-- Bảng extra -->
         <h3>Kiến nghị và ký xác nhận</h3>
         <table class="extra-table">
-            {# Dòng Kiến nghị (chỉ hiển thị, không nhập) #}
             <tr>
                 <td>Kiến nghị (nếu có):</td>
                 <td>
@@ -178,19 +164,13 @@
                     {% endfor %}
                 </td>
             </tr>
-            {# Dòng Người đánh giá #}
             <tr>
                 <td>Người đánh giá:</td>
-                <td>
-                    <textarea name="reviewer_signature" rows="4" style="width:100%;">{{ reviewer_signature if reviewer_signature is defined else '' }}</textarea>
-                </td>
+                <td><textarea name="reviewer_signature" rows="4" style="width:100%;">{{ reviewer_signature if reviewer_signature is defined else '' }}</textarea></td>
             </tr>
-            {# Dòng Người thẩm tra #}
             <tr>
                 <td>Người thẩm tra:</td>
-                <td>
-                    <textarea name="checker_signature" rows="4" style="width:100%;">{{ checker_signature if checker_signature is defined else '' }}</textarea>
-                </td>
+                <td><textarea name="checker_signature" rows="4" style="width:100%;">{{ checker_signature if checker_signature is defined else '' }}</textarea></td>
             </tr>
         </table>
 
@@ -198,5 +178,31 @@
             <button type="submit">Lưu dữ liệu</button>
         </div>
     </form>
+
+    <script>
+        function updateSelectColor(selectEl) {
+            var value = selectEl.value;
+            selectEl.classList.remove('da', 'khong', 'default');
+            if (value === 'Đ') selectEl.classList.add('da');
+            else if (value === 'K') selectEl.classList.add('khong');
+            else selectEl.classList.add('default');
+        }
+        function updateUnitSelectColor(selectEl) {
+            var value = selectEl.value;
+            selectEl.classList.remove('pxvh', 'pxsc', 'pktat', 'unit-default');
+            if (value === 'PXVH') selectEl.classList.add('pxvh');
+            else if (value === 'PXSC') selectEl.classList.add('pxsc');
+            else if (value === 'P.KTAT') selectEl.classList.add('pktat');
+            else selectEl.classList.add('unit-default');
+        }
+        document.querySelectorAll('.result-select').forEach(function(sel) {
+            updateSelectColor(sel);
+            sel.addEventListener('change', function() { updateSelectColor(this); });
+        });
+        document.querySelectorAll('.unit-select').forEach(function(sel) {
+            updateUnitSelectColor(sel);
+            sel.addEventListener('change', function() { updateUnitSelectColor(this); });
+        });
+    </script>
 </body>
 </html>

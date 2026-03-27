@@ -93,8 +93,8 @@ def init_db():
         wb = load_workbook(PHAN_GIAO_FILE, data_only=True)
         ws = wb.active
 
-        # Dữ liệu bắt đầu từ dòng 9
-        for row in range(9, ws.max_row + 1):
+        # Dữ liệu bắt đầu từ dòng 7 (theo cấu trúc file phân công bạn gửi)
+        for row in range(7, ws.max_row + 1):
             ma_bieu_mau = str(ws[f'C{row}'].value or '').strip()
             name_eval = str(ws[f'E{row}'].value or '').strip()
             name_check = str(ws[f'F{row}'].value or '').strip()
