@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <meta charset="utf-8">
+</head>
+<body>
+    <h2>Xin chào {{ session.fullname }}</h2>
+    <p><a href="{{ url_for('logout') }}">Đăng xuất</a></p>
+    <h3>Các biểu mẫu được phân công:</h3>
+    {% if assignments %}
+        <ul>
+        {% for ass in assignments %}
+            <li>
+                <a href="{{ url_for('evaluation_form', sheet_name=ass.sheet_name) }}">
+                    {{ ass.sheet_name }} ({{ 'Đánh giá' if ass.role == 'danh_gia' else 'Thẩm tra' }})
+                </a>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>Bạn chưa được phân công biểu mẫu nào.</p>
+    {% endif %}
+</body>
+</html>

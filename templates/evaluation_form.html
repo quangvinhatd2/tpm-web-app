@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ 'Đánh giá' if role == 'danh_gia' else 'Thẩm tra' }}: {{ sheet_name }}</title>
+    <meta charset="utf-8">
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 20px;
+            table-layout: fixed;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            vertical-align: top;
+            word-wrap: break-word;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .header-row {
+            background-color: #e6f7ff;
+        }
+        .header-row td {
+            white-space: nowrap;
+        }
+        textarea {
+            width: 100%;
+            min-height: 60px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        .flash {
+            padding: 10px;
+            background: #d4edda;
+            color: #155724;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        /* Bảng header */
+        .header-table th:nth-child(1), .header-table td:nth-child(1) { width: 18%; }
+        .header-table th:nth-child(2), .header-table td:nth-child(2) { width: 14%; }
+        .header-table th:nth-child(3), .header-table td:nth-child(3) { width: 5%; }
+        .header-table th:nth-child(4), .header-table td:nth-child(4) { width: 15%; }
+        .header-table th:nth-child(5), .header-table td:nth-child(5) { width: 15%; }
+        .header-table th:nth-child(6), .header-table td:nth-child(6) { width: 10%; }
+        .header-table th:nth-child(7), .header-table td:nth-child(7) { width: 32%; }
+        /* Bảng nội dung */
+        .content-table th:nth-child(1), .content-table td:nth-child(1) { width: 3%; }
+        .content-table th:nth-child(2), .content-table td:nth-child(2) { width: 1%; }
+        .content-table th:nth-child(3), .content-table td:nth-child(3) { width: 6%; }
+        .content-table th:nth-child(4), .content-table td:nth-child(4) { width: 8%; }
+        .content-table th:nth-child(5), .content-table td:nth-child(5) { width: 6%; }
+        .content-table th:nth-child(6), .content-table td:nth-child(6) { width: 1.5%; }
+        .content-table th:nth-child(7), .content-table td:nth-child(7) { width: 1.5%; }
+        .content-table th:nth-child(8), .content-table td:nth-child(8) { width: 12%; }
+        .content-table th:nth-child(9), .content-table td:nth-child(9) { width: 4%; }
+        .content-table th:nth-child(10), .content-table td:nth-child(10) { width: 5%; }
+        .content-table th:nth-child(11), .content-table td:nth-child(11) { width: 7%; }
+        .content-table th:nth-child(12), .content-table td:nth-child(12) { width: 10%; }
+        /* Bảng extra - 2 cột đơn giản */
+        .extra-table {
+            width: 100%;
+            margin-bottom: 20px;
+            border-collapse: collapse;
+        }
+        .extra-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            vertical-align: top;
+        }
+        .extra-table td:first-child {
+            width: 150px;
+            background-color: #f9f9f9;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h2>{{ 'Đánh giá' if role == 'danh_gia' else 'Thẩm tra' }}: {{ sheet_name }}</h2>
+    <p><a href="{{ url_for('dashboard') }}">← Về trang chủ</a> | <a href="{{ url_for('logout') }}">Đăng xuất</a></p>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash">
+          {% for msg in messages %}
+            <div>{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form method="post" action="{{ url_for('save') }}">
+        <input type="hidden" name="sheet_name" value="{{ sheet_name }}">
+        <input type="hidden" name="role" value="{{ role }}">
+
+        {# Bảng header #}
+        <table class="header-table">
+            {% for row_idx, row in enumerate(headers, start=1) %}
+            <tr class="header-row">
+                {% for col in ['A','B','C','D','E','F'] %}
+                    {% set cell_value = row[col] or '' %}
+                    {% set cell_key = (row_idx, col) %}
+                    {% set editable = False %}
+                    {% if role == 'danh_gia' and row_idx == 6 and col == 'E' %}
+                        {% set editable = True %}
+                    {% elif role == 'tham_tra' and row_idx == 6 and col == 'F' %}
+                        {% set editable = True %}
+                    {% endif %}
+                    <td>
+                        {% if editable %}
+                            {% set current_value = saved_header.get(cell_key, cell_value) if saved_header is defined else cell_value %}
+                            <input type="text" name="header_{{ row_idx }}_{{ col }}" value="{{ current_value }}" style="width:100%; box-sizing:border-box;">
+                        {% else %}
+                            {{ cell_value }}
+                        {% endif %}
+                    </td>
+                {% endfor %}
+                <td colspan="5"></td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <h3>Nội dung đánh giá</h3>
+        <table class="content-table">
+            <thead>
+                <tr>
+                    <th>Hạng mục</th><th>STT</th><th>Nội dung đánh giá</th><th>Tiêu chuẩn</th><th>Phương pháp</th><th>Trạng thái TB</th>
+                    <th>Kết quả (Đ/K)</th><th>Mô tả</th><th>Đơn vị thực hiện</th><th>Thời gian</th><th>Giải pháp</th>
+                    {% if role == 'tham_tra' %}<th>Ý kiến thẩm tra</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for idx, row in enumerate(rows, start=10) %}
+                <tr>
+                    {% for col in ['A','B','C','D','E','F'] %}
+                        <td>{{ row[col] }}</td>
+                    {% endfor %}
+                    {% if role == 'danh_gia' %}
+                        <td><textarea name="eval_{{ idx }}_G" rows="2">{{ saved.get((idx, 'G'), '') if saved is defined else '' }}</textarea></td>
+                        <td><textarea name="eval_{{ idx }}_H" rows="2">{{ saved.get((idx, 'H'), '') if saved is defined else '' }}</textarea></td>
+                        <td><textarea name="eval_{{ idx }}_I" rows="2">{{ saved.get((idx, 'I'), '') if saved is defined else '' }}</textarea></td>
+                        <td><textarea name="eval_{{ idx }}_J" rows="2">{{ saved.get((idx, 'J'), '') if saved is defined else '' }}</textarea></td>
+                        <td><textarea name="eval_{{ idx }}_K" rows="2">{{ saved.get((idx, 'K'), '') if saved is defined else '' }}</textarea></td>
+                    {% else %}
+                        <td>{{ saved.get((idx, 'G'), '') if saved is defined else '' }}</td>
+                        <td>{{ saved.get((idx, 'H'), '') if saved is defined else '' }}</td>
+                        <td>{{ saved.get((idx, 'I'), '') if saved is defined else '' }}</td>
+                        <td>{{ saved.get((idx, 'J'), '') if saved is defined else '' }}</td>
+                        <td>{{ saved.get((idx, 'K'), '') if saved is defined else '' }}</td>
+                        <td><textarea name="comment_{{ idx }}" rows="2">{{ saved_comments.get(idx, '') if saved_comments is defined else '' }}</textarea></td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {# Bảng extra: 2 cột, hiển thị dòng Kiến nghị, Người đánh giá, Người thẩm tra #}
+        <h3>Kiến nghị và ký xác nhận</h3>
+        <table class="extra-table">
+            {# Dòng Kiến nghị (chỉ hiển thị, không nhập) #}
+            <tr>
+                <td>Kiến nghị (nếu có):</td>
+                <td>
+                    {% for row in extra %}
+                        {% if 'Kiến nghị' in (row['A']|string|trim) %}
+                            {{ row['B'] or '' }}{{ row['C'] or '' }}{{ row['D'] or '' }}{{ row['E'] or '' }}{{ row['F'] or '' }}{{ row['G'] or '' }}{{ row['H'] or '' }}{{ row['I'] or '' }}{{ row['J'] or '' }}{{ row['K'] or '' }}
+                        {% endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+            {# Dòng Người đánh giá #}
+            <tr>
+                <td>Người đánh giá:</td>
+                <td>
+                    <textarea name="reviewer_signature" rows="4" style="width:100%;">{{ reviewer_signature if reviewer_signature is defined else '' }}</textarea>
+                </td>
+            </tr>
+            {# Dòng Người thẩm tra #}
+            <tr>
+                <td>Người thẩm tra:</td>
+                <td>
+                    <textarea name="checker_signature" rows="4" style="width:100%;">{{ checker_signature if checker_signature is defined else '' }}</textarea>
+                </td>
+            </tr>
+        </table>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button type="submit">Lưu dữ liệu</button>
+        </div>
+    </form>
+</body>
+</html>
