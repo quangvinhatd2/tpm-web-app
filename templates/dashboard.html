@@ -7,6 +7,9 @@
 <body>
     <h2>Xin chào {{ session.fullname }}</h2>
     <p><a href="{{ url_for('logout') }}">Đăng xuất</a></p>
+    {% if session.role == 'admin' %}
+        <p><a href="{{ url_for('export_summary') }}">📊 Xuất báo cáo tổng hợp khiếm khuyết (K)</a></p>
+    {% endif %}
     <h3>Các biểu mẫu được phân công:</h3>
     {% if assignments %}
         <ul>
@@ -23,3 +26,4 @@
     {% endif %}
 </body>
 </html>
+<p>Role: {{ session.role }}</p>

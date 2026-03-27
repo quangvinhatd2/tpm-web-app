@@ -107,7 +107,7 @@
                 {% for idx, row in enumerate(rows, start=10) %}
                 <tr>
                     {% for col in ['A','B','C','D','E','F'] %}
-                    <td>{{ row[col] }}</td>
+                        <td style="vertical-align: middle;">{{ row[col] }}</td>
                     {% endfor %}
                     {% if role == 'danh_gia' %}
                         <!-- Cột G -->
@@ -120,7 +120,7 @@
                             </select>
                         </td>
                         <!-- Cột H -->
-                        <td><textarea name="eval_{{ idx }}_H" rows="2">{{ saved.get((idx, 'H'), '') if saved is defined else '' }}</textarea></td>
+                        <td style="vertical-align: middle;"><textarea name="eval_{{ idx }}_H" rows="2">{{ saved.get((idx, 'H'), '') if saved is defined else '' }}</textarea></td>
                         <!-- Cột I -->
                         {% set saved_val_I = saved.get((idx, 'I'), '') %}
                         <td style="text-align: center; vertical-align: middle;">
@@ -132,19 +132,19 @@
                             </select>
                         </td>
                         <!-- Cột J -->
-                        <td><textarea name="eval_{{ idx }}_J" rows="2">{{ saved.get((idx, 'J'), '') if saved is defined else '' }}</textarea></td>
+                        <td style="vertical-align: middle;"><textarea name="eval_{{ idx }}_J" rows="2">{{ saved.get((idx, 'J'), '') if saved is defined else '' }}</textarea></td>
                         <!-- Cột K -->
-                        <td><textarea name="eval_{{ idx }}_K" rows="2">{{ saved.get((idx, 'K'), '') if saved is defined else '' }}</textarea></td>
+                        <td style="vertical-align: middle;"><textarea name="eval_{{ idx }}_K" rows="2">{{ saved.get((idx, 'K'), '') if saved is defined else '' }}</textarea></td>
                     {% else %}
                         <!-- Người thẩm tra -->
-                        <td style="text-align: center; font-weight: bold; background-color: {{ '#d4edda' if saved.get((idx, 'G'), '') == 'Đ' else '#f8d7da' if saved.get((idx, 'G'), '') == 'K' else '#fff' }}">
+                        <td style="text-align: center; font-weight: bold; background-color: {{ '#d4edda' if saved.get((idx, 'G'), '') == 'Đ' else '#f8d7da' if saved.get((idx, 'G'), '') == 'K' else '#fff' }}; vertical-align: middle;">
                             {{ saved.get((idx, 'G'), '') }}
                         </td>
-                        <td>{{ saved.get((idx, 'H'), '') if saved is defined else '' }}</td>
-                        <td>{{ saved.get((idx, 'I'), '') if saved is defined else '' }}</td>
-                        <td>{{ saved.get((idx, 'J'), '') if saved is defined else '' }}</td>
-                        <td>{{ saved.get((idx, 'K'), '') if saved is defined else '' }}</td>
-                        <td><textarea name="comment_{{ idx }}" rows="2">{{ saved_comments.get(idx, '') if saved_comments is defined else '' }}</textarea></td>
+                        <td style="vertical-align: middle;">{{ saved.get((idx, 'H'), '') if saved is defined else '' }}</td>
+                        <td style="vertical-align: middle;">{{ saved.get((idx, 'I'), '') if saved is defined else '' }}</td>
+                        <td style="vertical-align: middle;">{{ saved.get((idx, 'J'), '') if saved is defined else '' }}</td>
+                        <td style="vertical-align: middle;">{{ saved.get((idx, 'K'), '') if saved is defined else '' }}</td>
+                        <td style="vertical-align: middle;"><textarea name="comment_{{ idx }}" rows="2">{{ saved_comments.get(idx, '') if saved_comments is defined else '' }}</textarea></td>
                     {% endif %}
                 </tr>
                 {% endfor %}
@@ -154,9 +154,10 @@
         <!-- Bảng extra -->
         <h3>Kiến nghị và ký xác nhận</h3>
         <table class="extra-table">
+            {# Dòng Kiến nghị #}
             <tr>
-                <td>Kiến nghị (nếu có):</td>
-                <td>
+                <td style="vertical-align: middle;">Kiến nghị (nếu có):</td>
+                <td style="vertical-align: middle;">
                     {% for row in extra %}
                         {% if 'Kiến nghị' in (row['A']|string|trim) %}
                             {{ row['B'] or '' }}{{ row['C'] or '' }}{{ row['D'] or '' }}{{ row['E'] or '' }}{{ row['F'] or '' }}{{ row['G'] or '' }}{{ row['H'] or '' }}{{ row['I'] or '' }}{{ row['J'] or '' }}{{ row['K'] or '' }}
@@ -164,13 +165,27 @@
                     {% endfor %}
                 </td>
             </tr>
+            {# Dòng Người đánh giá #}
             <tr>
-                <td>Người đánh giá:</td>
-                <td><textarea name="reviewer_signature" rows="4" style="width:100%;">{{ reviewer_signature if reviewer_signature is defined else '' }}</textarea></td>
+                <td style="vertical-align: middle;">Người đánh giá:</td>
+                <td style="vertical-align: middle;">
+                    {% if role == 'danh_gia' %}
+                        <textarea name="reviewer_signature" rows="4" style="width:100%;">{{ reviewer_signature if reviewer_signature is defined else '' }}</textarea>
+                    {% else %}
+                        {{ reviewer_signature if reviewer_signature is defined else '' }}
+                    {% endif %}
+                </td>
             </tr>
+            {# Dòng Người thẩm tra #}
             <tr>
-                <td>Người thẩm tra:</td>
-                <td><textarea name="checker_signature" rows="4" style="width:100%;">{{ checker_signature if checker_signature is defined else '' }}</textarea></td>
+                <td style="vertical-align: middle;">Người thẩm tra:</td>
+                <td style="vertical-align: middle;">
+                    {% if role == 'tham_tra' %}
+                        <textarea name="checker_signature" rows="4" style="width:100%;">{{ checker_signature if checker_signature is defined else '' }}</textarea>
+                    {% else %}
+                        {{ checker_signature if checker_signature is defined else '' }}
+                    {% endif %}
+                </td>
             </tr>
         </table>
 
@@ -180,6 +195,7 @@
     </form>
 
     <script>
+        // Hàm cập nhật màu dropdown Đ/K
         function updateSelectColor(selectEl) {
             var value = selectEl.value;
             selectEl.classList.remove('da', 'khong', 'default');
@@ -187,6 +203,8 @@
             else if (value === 'K') selectEl.classList.add('khong');
             else selectEl.classList.add('default');
         }
+
+        // Hàm cập nhật màu dropdown đơn vị
         function updateUnitSelectColor(selectEl) {
             var value = selectEl.value;
             selectEl.classList.remove('pxvh', 'pxsc', 'pktat', 'unit-default');
@@ -195,6 +213,8 @@
             else if (value === 'P.KTAT') selectEl.classList.add('pktat');
             else selectEl.classList.add('unit-default');
         }
+
+        // Áp dụng màu
         document.querySelectorAll('.result-select').forEach(function(sel) {
             updateSelectColor(sel);
             sel.addEventListener('change', function() { updateSelectColor(this); });
@@ -202,6 +222,88 @@
         document.querySelectorAll('.unit-select').forEach(function(sel) {
             updateUnitSelectColor(sel);
             sel.addEventListener('change', function() { updateUnitSelectColor(this); });
+        });
+
+        // Ánh xạ tên cột thân thiện
+        var colNames = {
+            'G': 'Kết quả (Đ/K)',
+            'H': 'Mô tả',
+            'I': 'Đơn vị thực hiện',
+            'J': 'Thời gian',
+            'K': 'Giải pháp'
+        };
+
+        // Kiểm tra trước khi submit
+        document.querySelector('form').addEventListener('submit', function(e) {
+            var role = '{{ role }}';
+            var errors = [];
+
+            // 1. Header: nhiệt độ môi trường
+            if (role === 'danh_gia') {
+                var cycleInput = document.querySelector('input[name="header_6_E"]');
+                if (cycleInput && !cycleInput.value.trim()) {
+                    errors.push('Chưa nhập "Nhiệt độ môi trường - Kiểm tra" (ô đầu tiên).');
+                }
+            } else if (role === 'tham_tra') {
+                var cycleInput = document.querySelector('input[name="header_6_F"]');
+                if (cycleInput && !cycleInput.value.trim()) {
+                    errors.push('Chưa nhập "Nhiệt độ môi trường - Thẩm tra" (ô thứ hai).');
+                }
+            }
+
+            // 2. Bảng nội dung
+            var rows = document.querySelectorAll('.content-table tbody tr');
+            rows.forEach(function(row, idx) {
+                var selectG = row.querySelector('select[name^="eval_"]');
+                if (selectG) {
+                    var valG = selectG.value;
+                    if (!valG) {
+                        errors.push(`Dòng ${idx+1}: chưa chọn kết quả (cột G).`);
+                    }
+                    if (valG === 'K') {
+                        var textareas = row.querySelectorAll('textarea');
+                        var missing = [];
+                        textareas.forEach(function(ta) {
+                            if (!ta.value.trim()) {
+                                var match = ta.name.match(/eval_\d+_(.)/);
+                                if (match) {
+                                    var colLetter = match[1];
+                                    missing.push(colNames[colLetter] || colLetter);
+                                }
+                            }
+                        });
+                        if (missing.length > 0) {
+                            errors.push(`Dòng ${idx+1} (kết quả K) còn thiếu các ô: ${missing.join(', ')}`);
+                        }
+                    }
+                }
+            });
+
+            // 3. Extra
+            if (role === 'danh_gia') {
+                var reviewerSig = document.querySelector('textarea[name="reviewer_signature"]');
+                if (reviewerSig && !reviewerSig.value.trim()) {
+                    errors.push('Chưa nhập nội dung tại ô "Người đánh giá" (ký xác nhận).');
+                }
+            } else if (role === 'tham_tra') {
+                var comments = document.querySelectorAll('textarea[name^="comment_"]');
+                comments.forEach(function(ta) {
+                    if (!ta.value.trim()) {
+                        var match = ta.name.match(/comment_(\d+)/);
+                        if (match) errors.push(`Dòng ${match[1]}: chưa nhập ý kiến thẩm tra.`);
+                    }
+                });
+                var checkerSig = document.querySelector('textarea[name="checker_signature"]');
+                if (checkerSig && !checkerSig.value.trim()) {
+                    errors.push('Chưa nhập nội dung tại ô "Người thẩm tra" (ký xác nhận).');
+                }
+            }
+
+            if (errors.length > 0) {
+                alert('Vui lòng hoàn thành các thông tin sau:\n' + errors.join('\n'));
+                e.preventDefault();
+                return false;
+            }
         });
     </script>
 </body>
