@@ -242,19 +242,27 @@ def evaluation_form(sheet_name):
         return f"Không tìm thấy sheet {sheet_name} trong file forms.xlsx", 404
 
     with get_db() as conn:
-        evals = {(r['row_index'], r['col_letter']): r['value']
-                 for r in conn.execute(
+        # Lấy dữ liệu đánh giá và header đã lưu
+        db_rows = conn.execute(
                      'SELECT row_index, col_letter, value FROM evaluations WHERE sheet_name = ?',
                      (sheet_name,)
-                 )}
+                 ).fetchall()
+        
+        evals = {(r['row_index'], r['col_letter']): r['value'] for r in db_rows if r['row_index'] >= 10}
+        saved_header = {(r['row_index'], r['col_letter']): r['value'] for r in db_rows if r['row_index'] < 10}
+        
         comms = {r['row_index']: r['comment']
                  for r in conn.execute(
                      'SELECT row_index, comment FROM review_comments WHERE sheet_name = ?',
                      (sheet_name,)
-                 )}
+                 ).fetchall()}
         s = conn.execute('SELECT * FROM suggestions WHERE sheet_name = ?', (sheet_name,)).fetchone()
 
-    saved_header = {}
+    # Xử lý giá trị None từ DB để tránh hiển thị chữ 'None' trên giao diện
+    suggestion = (s['suggestion'] if s else '') or ''
+    reviewer_comment = (s['reviewer_comment'] if s else '') or ''
+    reviewer_signature = (s['reviewer_signature'] if s else '') or ''
+    checker_signature = (s['checker_signature'] if s else '') or ''
 
     return render_template(
         'evaluation_form.html',
@@ -266,10 +274,10 @@ def evaluation_form(sheet_name):
         saved=evals,
         saved_comments=comms,
         saved_header=saved_header,
-        suggestion=s['suggestion'] if s else '',
-        reviewer_comment=s['reviewer_comment'] if s else '',
-        reviewer_signature=s['reviewer_signature'] if s else '',
-        checker_signature=s['checker_signature'] if s else '',
+        suggestion=suggestion,
+        reviewer_comment=reviewer_comment,
+        reviewer_signature=reviewer_signature,
+        checker_signature=checker_signature,
         enumerate=enumerate
     )
 
@@ -281,17 +289,36 @@ def save():
     role = request.form.get('role')
     uid = session['user_id']
 
-    # Kiểm tra chung cho header (chu kỳ đánh giá)
-    if role == 'danh_gia':
-        cycle_val = request.form.get('header_6_E', '').strip()
-        if not cycle_val:
-            flash('Vui lòng nhập "Chu kỳ đánh giá" (ô nhiệt độ môi trường).')
-            return redirect(url_for('evaluation_form', sheet_name=sn))
-    elif role == 'tham_tra':
-        cycle_val = request.form.get('header_6_F', '').strip()
-        if not cycle_val:
-            flash('Vui lòng nhập "nhiệt độ môi trường").')
-            return redirect(url_for('evaluation_form', sheet_name=sn))
+    # Hàm chuyển tên cột sang tên hiển thị
+    def col_name(col):
+        return {
+            'H': 'Mô tả',
+            'I': 'Đơn vị thực hiện',
+            'J': 'Thời gian',
+            'K': 'Giải pháp'
+        }.get(col, col)
+
+    # Kiểm tra và lưu dữ liệu header (nhiệt độ)
+    with get_db() as conn:
+        if role == 'danh_gia':
+            cycle_val = request.form.get('header_6_E', '').strip()
+            if not cycle_val:
+                flash('Vui lòng nhập "Nhiệt độ môi trường - Kiểm tra" (ô đầu tiên).')
+                return redirect(url_for('evaluation_form', sheet_name=sn))
+            conn.execute(
+                'INSERT OR REPLACE INTO evaluations (user_id, sheet_name, row_index, col_letter, value) VALUES (?,?,?,?,?)',
+                (uid, sn, 6, 'E', cycle_val)
+            )
+        elif role == 'tham_tra':
+            cycle_val = request.form.get('header_6_F', '').strip()
+            if not cycle_val:
+                flash('Vui lòng nhập "Nhiệt độ môi trường - Thẩm tra" (ô thứ hai).')
+                return redirect(url_for('evaluation_form', sheet_name=sn))
+            conn.execute(
+                'INSERT OR REPLACE INTO evaluations (user_id, sheet_name, row_index, col_letter, value) VALUES (?,?,?,?,?)',
+                (uid, sn, 6, 'F', cycle_val)
+            )
+        conn.commit()
 
     # Thu thập các ô eval
     eval_items = {}
@@ -309,29 +336,27 @@ def save():
                 eval_items[row][col] = value
 
     if role == 'danh_gia':
-        # Kiểm tra từng dòng
+        # Kiểm tra từng dòng nội dung
         for row, cols in eval_items.items():
-            # Cột G phải có giá trị
             if 'G' not in cols or not cols['G'].strip():
                 flash(f'Dòng {row}: chưa chọn kết quả (cột G).')
                 return redirect(url_for('evaluation_form', sheet_name=sn))
-            # Nếu kết quả là 'K', kiểm tra các cột H,I,J,K
             if cols.get('G') == 'K':
                 missing = []
                 for col in ['H','I','J','K']:
                     if col not in cols or not cols[col].strip():
-                        missing.append(col)
+                        missing.append(col_name(col))
                 if missing:
                     flash(f'Dòng {row} (kết quả K) còn thiếu các cột: {", ".join(missing)}.')
                     return redirect(url_for('evaluation_form', sheet_name=sn))
 
-        # Kiểm tra kiến nghị của người đánh giá (reviewer_signature)
+        # Kiểm tra kiến nghị của người đánh giá
         reviewer_sig = request.form.get('reviewer_signature', '').strip()
         if not reviewer_sig:
             flash('Vui lòng nhập nội dung tại ô "Người đánh giá" (ký xác nhận).')
             return redirect(url_for('evaluation_form', sheet_name=sn))
 
-        # Lưu dữ liệu
+        # Lưu dữ liệu đánh giá chi tiết
         with get_db() as conn:
             for k, v in request.form.items():
                 if k.startswith('eval_'):
@@ -356,7 +381,7 @@ def save():
         flash('Đã lưu đánh giá thành công.')
 
     elif role == 'tham_tra':
-        # Kiểm tra ý kiến thẩm tra từng dòng (comment)
+        # Kiểm tra ý kiến thẩm tra từng dòng
         comment_items = {}
         for key, value in request.form.items():
             if key.startswith('comment_'):
@@ -367,9 +392,10 @@ def save():
                     except:
                         continue
                     comment_items[row] = value
-        # Lấy danh sách các dòng có đánh giá (cột G) để kiểm tra
+        
         with get_db() as conn:
             rows_to_check = conn.execute('SELECT DISTINCT row_index FROM evaluations WHERE sheet_name=? AND col_letter="G"', (sn,)).fetchall()
+        
         for r in rows_to_check:
             row = r['row_index']
             if row not in comment_items or not comment_items[row].strip():
@@ -382,7 +408,7 @@ def save():
             flash('Vui lòng nhập nội dung tại ô "Người thẩm tra" (ký xác nhận).')
             return redirect(url_for('evaluation_form', sheet_name=sn))
 
-        # Lưu dữ liệu
+        # Lưu dữ liệu thẩm tra
         with get_db() as conn:
             for k, v in request.form.items():
                 if k.startswith('comment_'):
@@ -448,20 +474,17 @@ def export_summary():
     ws = wb.active
     ws.title = "Tổng hợp KKTB"
 
-    # Dòng 1: Tiêu đề chính (merge 4 cột)
     ws.merge_cells('A1:D1')
     ws['A1'] = "TỔNG HỢP KHIẾM KHUYẾT THIẾT BỊ TPM"
     ws['A1'].font = Font(bold=True, size=14)
     ws['A1'].alignment = Alignment(horizontal='center')
 
-    # Dòng 2: Tiêu đề cột
     headers = ["STT", "Biểu mẫu", "Nội dung khiếm khuyết (Mô tả của ĐG)", "Mô tả của Thẩm tra"]
     ws.append(headers)
     for cell in ws[2]:
         cell.font = Font(bold=True)
         cell.alignment = Alignment(horizontal='center')
 
-    # Ghi dữ liệu khiếm khuyết
     stt = 1
     for row in rows:
         sheet_code = rev_map.get(row['sheet_name'], row['sheet_name'])
@@ -473,7 +496,6 @@ def export_summary():
         ])
         stt += 1
 
-    # Điều chỉnh độ rộng cột cho bảng khiếm khuyết
     for col in ws.columns:
         max_length = 0
         col_letter = None
@@ -489,25 +511,19 @@ def export_summary():
             adjusted_width = min(max_length + 2, 50)
             ws.column_dimensions[col_letter].width = adjusted_width
 
-    # Thêm phần Kiến nghị nếu có
     if sug_dict:
-        # Dòng trống
         ws.append([])
-        # Tiêu đề phần kiến nghị
         ws.append(["KIẾN NGHỊ VÀ Ý KIẾN THẨM TRA"])
         ws.merge_cells(f'A{ws.max_row}:D{ws.max_row}')
         ws.cell(row=ws.max_row, column=1).font = Font(bold=True)
         ws.cell(row=ws.max_row, column=1).alignment = Alignment(horizontal='center')
 
-        # Ghi từng biểu mẫu
         for sheet_code, (reviewer_sug, checker_comm) in sug_dict.items():
             ws.append([sheet_code, "Kiến nghị của người đánh giá:", reviewer_sug or '', ""])
             ws.append([sheet_code, "Ý kiến của người thẩm tra:", checker_comm or '', ""])
-            # Định dạng wrap text cho hai dòng này
             for row in range(ws.max_row-1, ws.max_row+1):
                 for cell in ws[row]:
                     cell.alignment = Alignment(horizontal='left', wrap_text=True)
-        # Điều chỉnh lại độ rộng cột cho phần kiến nghị
         for col in ws.columns:
             max_length = 0
             col_letter = None
@@ -538,7 +554,5 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    if os.path.exists(DATABASE):
-        os.remove(DATABASE)
-    init_db()
-    app.run(debug=True)
+    # init_db()  # Chỉ mở lại nếu muốn reset database từ file phan_giao.xlsx
+    app.run(debug=True, host='0.0.0.0')
