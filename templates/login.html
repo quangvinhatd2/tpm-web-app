@@ -1,28 +1,111 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-    <title>Đăng nhập</title>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập | Hệ thống Quản lý TPM EVN</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        body { font-family: Arial; margin: 40px; }
-        .flash { color: red; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(rgba(0, 84, 166, 0.85), rgba(0, 40, 80, 0.9)), 
+                        url('https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&q=80&w=2070');
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            align-items: flex-start; 
+            justify-content: center;
+            margin: 0;
+            padding-top: 8vh; 
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .evn-blue { color: #0054A6; }
+        .bg-evn-orange { background-color: #F58220; }
+        .bg-evn-orange:hover { background-color: #E67310; }
+        
+        .input-group input:focus {
+            border-color: #0054A6;
+            box-shadow: 0 0 0 3px rgba(0, 84, 166, 0.2);
+            outline: none;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-slide-in { animation: slideIn 0.4s ease-out; }
     </style>
 </head>
-<body>
-    <h2>Đăng nhập hệ thống đánh giá TPM</h2>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <div class="flash">
-                {% for msg in messages %}
-                    <p>{{ msg }}</p>
-                {% endfor %}
+<body class="bg-gray-100">
+
+    <div class="w-full max-w-2xl px-6 animate-slide-in">
+        
+        <div class="text-center mb-10">
+            <div class="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-blue-50 to-white rounded-[2rem] shadow-xl mb-6 transition-transform hover:scale-110">
+                <i class="fa-solid fa-bolt-lightning text-4xl bg-gradient-to-t from-blue-800 to-blue-500 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(59,130,246,0.5)]"></i>
             </div>
-        {% endif %}
-    {% endwith %}
-    <form method="post">
-        <p>Tên đăng nhập: <input type="text" name="username"></p>
-        <p>Mật khẩu: <input type="password" name="password"></p>
-        <p><input type="submit" value="Đăng nhập"></p>
-    </form>
+            <h1 class="text-white text-3xl font-extrabold tracking-tight uppercase whitespace-nowrap">
+                Hệ thống Đánh giá bảo trì tự quản TPM
+            </h1>
+        </div>
+
+        <div class="glass-card rounded-[3rem] p-16 overflow-hidden relative">
+            <div class="absolute top-0 left-0 w-full h-2 bg-evn-orange"></div>
+
+            <h2 class="text-4xl font-black text-gray-800 mb-10 text-center">Đăng nhập</h2>
+
+            <form method="post" class="space-y-8">
+                <div class="input-group">
+                    <label class="block text-base font-bold text-gray-600 mb-3 ml-1">Tên đăng nhập</label>
+                    <div class="relative group">
+                        <span class="absolute inset-y-0 left-0 pl-5 flex items-center text-gray-400 group-focus-within:text-blue-600">
+                            <i class="fa-solid fa-user text-xl"></i>
+                        </span>
+                        <input type="text" name="username" required
+                               class="w-full pl-14 pr-6 py-5 border border-gray-300 rounded-2xl transition-all duration-200 bg-gray-50 focus:bg-white text-xl"
+                               placeholder="Nhập tài khoản kỹ sư...">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="block text-base font-bold text-gray-600 mb-3 ml-1">Mật khẩu</label>
+                    <div class="relative group">
+                        <span class="absolute inset-y-0 left-0 pl-5 flex items-center text-gray-400 group-focus-within:text-blue-600">
+                            <i class="fa-solid fa-lock text-xl"></i>
+                        </span>
+                        <input type="password" name="password" required
+                               class="w-full pl-14 pr-6 py-5 border border-gray-300 rounded-2xl transition-all duration-200 bg-gray-50 focus:bg-white text-xl"
+                               placeholder="••••••••">
+                    </div>
+                </div>
+
+                <button type="submit" 
+                        class="w-full bg-evn-orange text-white font-black py-6 px-4 rounded-2xl shadow-2xl transform transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] focus:outline-none flex items-center justify-center group text-2xl shadow-orange-500/20">
+                    <span>ĐĂNG NHẬP NGAY</span>
+                    <i class="fa-solid fa-arrow-right-long ml-3 group-hover:translate-x-2 transition-transform"></i>
+                </button>
+            </form>
+
+            <div class="mt-14 pt-10 border-t border-gray-100 text-center">
+                <p class="text-xs text-gray-400 uppercase tracking-widest font-black whitespace-nowrap">
+                    &copy; 2026 EVNGENCO1 - CÔNG TY THUỶ ĐIỆN BẢN VẼ
+                </p>
+            </div>
+        </div>
+        
+        <p class="text-center text-white text-sm mt-10 opacity-60 font-bold uppercase tracking-widest">
+            Hỗ trợ kỹ thuật: <span class="text-white">quangvinhatd2@gmail.com</span> | Version 1.0.0
+        </p>
+    </div>
+
 </body>
 </html>

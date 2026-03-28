@@ -1,28 +1,220 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-    <title>{{ 'Đánh giá' if role == 'danh_gia' else 'Thẩm tra' }}: {{ sheet_name }}</title>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'Đánh giá' if role == 'danh_gia' else 'Thẩm tra' }}: {{ sheet_name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; table-layout: fixed; }
-        th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; word-wrap: break-word; }
-        th { background-color: #f2f2f2; }
-        .header-row { background-color: #e6f7ff; }
-        .header-row td { white-space: nowrap; }
-        textarea { width: 100%; min-height: 60px; box-sizing: border-box; }
-        select { padding: 5px; font-size: 14px; font-weight: bold; border-radius: 4px; border: 1px solid #ccc; background-color: white; cursor: pointer; display: inline-block; width: auto; min-width: 90px; }
-        select.da { background-color: #28a745; color: white; border-color: #28a745; }
-        select.khong { background-color: #dc3545; color: white; border-color: #dc3545; }
-        select.default { background-color: #f8f9fa; color: #333; }
-        select.pxvh { background-color: #007bff; color: white; border-color: #007bff; }
-        select.pxsc { background-color: #28a745; color: white; border-color: #28a745; }
-        select.pktat { background-color: #17a2b8; color: white; border-color: #17a2b8; }
-        select.unit-default { background-color: #f8f9fa; color: #333; }
-        button { padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px; }
-        .flash { padding: 10px; background: #d4edda; color: #155724; border-radius: 4px; margin-bottom: 15px; }
-        .content-table td:nth-child(2), .content-table td:nth-child(6) { text-align: center; vertical-align: middle; }
-        .content-table td:nth-child(7), .content-table td:nth-child(9) { text-align: center; vertical-align: middle; }
+        :root {
+            --evn-blue:      #003087;
+            --evn-blue-mid:  #0055b3;
+            --evn-blue-soft: #e8f0fb;
+            --evn-accent:    #f5a623;
+            --evn-green:     #1a7a4a;
+            --evn-green-bg:  #e6f4ec;
+            --evn-red:       #c0392b;
+            --evn-red-bg:    #fdecea;
+            --evn-cyan:      #0277bd;
+            --evn-cyan-bg:   #e3f2fd;
+            --border:        #c9d4e8;
+            --border-light:  #e4eaf4;
+            --bg-page:       #f0f3fa;
+            --bg-white:      #ffffff;
+            --bg-header-row: #dce8fc;
+            --text-main:     #1a2340;
+            --text-sub:      #4e5f80;
+            --text-muted:    #8796b0;
+            --shadow-card:   0 2px 12px rgba(0,48,135,0.09);
+            --radius:        6px;
+            --radius-lg:     10px;
+        }
 
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background: var(--bg-page);
+            color: var(--text-main);
+            font-size: 13.5px;
+            line-height: 1.6;
+        }
+
+        /* ── TOP NAV ── */
+        .topnav {
+            background: var(--evn-blue);
+            padding: 0 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.25);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .topnav-brand {
+            display: flex; align-items: center; gap: 12px;
+        }
+        .topnav-logo {
+            background: var(--evn-accent);
+            color: var(--evn-blue);
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 17px;
+            letter-spacing: 1px;
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+        .topnav-title {
+            color: #fff;
+            font-size: 13px;
+            font-weight: 500;
+            opacity: .85;
+            letter-spacing: .3px;
+        }
+        .topnav-links { display: flex; gap: 6px; }
+        .topnav-links a {
+            color: rgba(255,255,255,.78);
+            text-decoration: none;
+            font-size: 12.5px;
+            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,.2);
+            transition: all .2s;
+        }
+        .topnav-links a:hover {
+            background: rgba(255,255,255,.15);
+            color: #fff;
+        }
+
+        /* ── PAGE WRAPPER ── */
+        .page { max-width: 98%; margin: 0 auto; padding: 24px 28px 60px; }
+
+        /* ── PAGE HEADER ── */
+        .page-header {
+            background: var(--bg-white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            padding: 20px 28px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--evn-blue);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .page-header-left { display: flex; align-items: center; gap: 16px; }
+        .page-badge {
+            background: var(--evn-blue);
+            color: #fff;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+        .page-badge.tham-tra { background: var(--evn-cyan); }
+        .page-header h1 {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--evn-blue);
+            line-height: 1.3;
+        }
+        .page-header-right { font-size: 12px; color: var(--text-muted); text-align: right; }
+
+        /* ── FLASH ── */
+        .flash {
+            background: var(--evn-green-bg);
+            color: var(--evn-green);
+            border: 1px solid #a7d7bc;
+            border-radius: var(--radius);
+            padding: 12px 18px;
+            margin-bottom: 18px;
+            font-weight: 500;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .flash::before { content: '✓'; font-weight: 700; font-size: 15px; }
+
+        /* ── CARD ── */
+        .card {
+            background: var(--bg-white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .card-header {
+            background: linear-gradient(90deg, var(--evn-blue) 0%, var(--evn-blue-mid) 100%);
+            color: #fff;
+            padding: 11px 20px;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: .8px;
+            text-transform: uppercase;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .card-header .icon {
+            width: 22px; height: 22px;
+            background: rgba(255,255,255,.18);
+            border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px;
+        }
+        .card-body { padding: 0; }
+
+        /* ── TABLES ── */
+        table { border-collapse: collapse; width: 100%; }
+        th, td {
+            border: 1px solid var(--border);
+            padding: 7px 9px;
+            vertical-align: top;
+            word-break: break-word;
+        }
+        th {
+            background: var(--evn-blue);
+            color: #fff;
+            font-weight: 600;
+            font-size: 12px;
+            text-align: center;
+            white-space: nowrap;
+            padding: 9px 8px;
+            letter-spacing: .3px;
+        }
+        tbody tr:nth-child(even) { background: #f8faff; }
+        tbody tr:hover { background: var(--evn-blue-soft); }
+
+        /* ── HEADER TABLE ── */
+        .header-table { table-layout: fixed; }
+        .header-table td {
+            background: #f5f8ff;
+            font-size: 13px;
+            color: var(--text-main);
+            padding: 9px 12px;
+            vertical-align: middle;
+        }
+        .header-table tr:first-child td { font-weight: 600; background: var(--bg-header-row); }
+        .header-table input[type="text"] {
+            width: 100%;
+            border: 1.5px solid var(--evn-blue-mid);
+            border-radius: var(--radius);
+            padding: 6px 10px;
+            font-family: inherit;
+            font-size: 13px;
+            color: var(--text-main);
+            background: #fff;
+            outline: none;
+            transition: box-shadow .2s, border-color .2s;
+        }
+        .header-table input[type="text"]:focus {
+            border-color: var(--evn-accent);
+            box-shadow: 0 0 0 3px rgba(245,166,35,.15);
+        }
+
+        /* Column widths – header */
         .header-table th:nth-child(1), .header-table td:nth-child(1) { width: 18%; }
         .header-table th:nth-child(2), .header-table td:nth-child(2) { width: 14%; }
         .header-table th:nth-child(3), .header-table td:nth-child(3) { width: 5%; }
@@ -31,34 +223,362 @@
         .header-table th:nth-child(6), .header-table td:nth-child(6) { width: 10%; }
         .header-table th:nth-child(7), .header-table td:nth-child(7) { width: 23%; }
 
-        .content-table th:nth-child(1), .content-table td:nth-child(1) { width: 3%; }
-        .content-table th:nth-child(2), .content-table td:nth-child(2) { width: 1%; }
-        .content-table th:nth-child(3), .content-table td:nth-child(3) { width: 6%; }
-        .content-table th:nth-child(4), .content-table td:nth-child(4) { width: 8%; }
-        .content-table th:nth-child(5), .content-table td:nth-child(5) { width: 6%; }
-        .content-table th:nth-child(6), .content-table td:nth-child(6) { width: 1.5%; }
-        .content-table th:nth-child(7), .content-table td:nth-child(7) { width: 2%; }
-        .content-table th:nth-child(8), .content-table td:nth-child(8) { width: 12%; }
-        .content-table th:nth-child(9), .content-table td:nth-child(9) { width: 4%; }
-        .content-table th:nth-child(10), .content-table td:nth-child(10) { width: 5%; }
-        .content-table th:nth-child(11), .content-table td:nth-child(11) { width: 7%; }
+        /* ── CONTENT TABLE ── */
+        .content-table { table-layout: fixed; }
+        .content-table td { font-size: 12.5px; vertical-align: middle; }
+        .content-table td:nth-child(2),
+        .content-table td:nth-child(6),
+        .content-table td:nth-child(7),
+        .content-table td:nth-child(9) { text-align: center; }
+
+        /* Column widths – content */
+        .content-table th:nth-child(1),  .content-table td:nth-child(1)  { width: 3%; }
+        .content-table th:nth-child(2),  .content-table td:nth-child(2)  { width: 3%; }
+        .content-table th:nth-child(3),  .content-table td:nth-child(3)  { width: 6%; }
+        .content-table th:nth-child(4),  .content-table td:nth-child(4)  { width: 8%; }
+        .content-table th:nth-child(5),  .content-table td:nth-child(5)  { width: 6%; }
+        .content-table th:nth-child(6),  .content-table td:nth-child(6)  { width: 3%; }
+        .content-table th:nth-child(7),  .content-table td:nth-child(7)  { width: 4%; }
+        .content-table th:nth-child(8),  .content-table td:nth-child(8)  { width: 13%; }
+        .content-table th:nth-child(9),  .content-table td:nth-child(9)  { width: 5%; }
+        .content-table th:nth-child(10), .content-table td:nth-child(10) { width: 3%; }
+        .content-table th:nth-child(11), .content-table td:nth-child(11) { width: 8%; }
         .content-table th:nth-child(12), .content-table td:nth-child(12) { width: 10%; }
 
-        .extra-table { width: 100%; margin-bottom: 20px; border-collapse: collapse; }
-        .extra-table td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
-        .extra-table td:first-child { width: 150px; background-color: #f9f9f9; font-weight: bold; }
+        /* ── FORM CONTROLS ── */
+        textarea {
+            width: 100%;
+            min-height: 52px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 6px 8px;
+            font-family: inherit;
+            font-size: 12.5px;
+            color: var(--text-main);
+            resize: vertical;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+            background: #fff;
+        }
+        textarea:focus {
+            border-color: var(--evn-blue-mid);
+            box-shadow: 0 0 0 3px rgba(0,85,179,.1);
+        }
+
+        /* ── SELECT ── */
+        select {
+            font-family: inherit;
+            font-size: 12.5px;
+            font-weight: 600;
+            border-radius: 20px;
+            border: 1.5px solid var(--border);
+            padding: 5px 26px 5px 10px;
+            cursor: pointer;
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-color: #fff;
+            color: var(--text-sub);
+            transition: all .2s;
+            min-width: 80px;
+        }
+        select:focus { border-color: var(--evn-blue-mid); box-shadow: 0 0 0 3px rgba(0,85,179,.12); }
+
+        /* Result badge states */
+        select.da {
+            background-color: var(--evn-green);
+            color: #fff;
+            border-color: var(--evn-green);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23fff'/%3E%3C/svg%3E");
+        }
+        select.khong {
+            background-color: var(--evn-red);
+            color: #fff;
+            border-color: var(--evn-red);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23fff'/%3E%3C/svg%3E");
+        }
+        select.default { background-color: #f4f6fb; color: var(--text-sub); }
+        select.pxvh {
+            background-color: var(--evn-blue-mid);
+            color: #fff;
+            border-color: var(--evn-blue-mid);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23fff'/%3E%3C/svg%3E");
+        }
+        select.pxsc {
+            background-color: var(--evn-green);
+            color: #fff;
+            border-color: var(--evn-green);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23fff'/%3E%3C/svg%3E");
+        }
+        select.pktat {
+            background-color: var(--evn-cyan);
+            color: #fff;
+            border-color: var(--evn-cyan);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23fff'/%3E%3C/svg%3E");
+        }
+        select.unit-default { background-color: #f4f6fb; color: var(--text-sub); }
+
+        /* ── RESULT BADGE (tham_tra read-only) ── */
+        .result-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 13px;
+        }
+        .result-badge.dat  { background: var(--evn-green-bg); color: var(--evn-green); border: 2px solid var(--evn-green); }
+        .result-badge.kdat { background: var(--evn-red-bg);   color: var(--evn-red);   border: 2px solid var(--evn-red); }
+
+        /* ── EXTRA TABLE (kiến nghị / ký xác nhận) ── */
+        .extra-table { width: 100%; border-collapse: collapse; }
+        .extra-table td { border: 1px solid var(--border); padding: 10px 14px; vertical-align: top; }
+        .extra-table .label-cell {
+            width: 180px;
+            background: #f5f8ff;
+            font-weight: 600;
+            color: var(--evn-blue);
+            font-size: 13px;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+        .extra-table .label-cell .cell-icon { margin-right: 6px; }
+
+        /* ── SUBMIT BUTTON ── */
+        .submit-bar {
+            text-align: center;
+            padding: 28px 0 4px;
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, var(--evn-blue) 0%, var(--evn-blue-mid) 100%);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 13px 48px;
+            font-family: 'Be Vietnam Pro', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: .5px;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,48,135,.35);
+            transition: transform .15s, box-shadow .15s;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,48,135,.45);
+        }
+        .btn-submit:active { transform: translateY(0); }
+
+        /* ── UNIT CHIP (read-only) ── */
+        .unit-chip {
+            display: inline-block;
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 12px;
+        }
+        .unit-chip.pxvh-chip  { background: var(--evn-cyan-bg);  color: var(--evn-cyan); }
+        .unit-chip.pxsc-chip  { background: var(--evn-green-bg); color: var(--evn-green); }
+        .unit-chip.pktat-chip { background: #e3f4fb; color: #0277bd; }
+
+        /* ── Scrollable table wrapper ── */
+        .table-scroll { overflow-x: auto; }
+
+        /* ── Section label ── */
+        .section-label {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin: 6px 0 10px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .section-label::after { content:''; flex: 1; height: 1px; background: var(--border-light); }
+
+        /* ════════════════════════════════════════
+           MOBILE RESPONSIVE  (max-width: 768px)
+        ════════════════════════════════════════ */
+        @media (max-width: 768px) {
+
+            /* Trang tổng thể */
+            body { font-size: 14px; }
+            .page { padding: 12px 10px 100px; max-width: 100%; }
+
+            /* Nav */
+            .topnav { padding: 0 14px; height: 52px; }
+            .topnav-title { display: none; }
+            .topnav-links a { padding: 6px 10px; font-size: 12px; }
+
+            /* Page header */
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 14px 16px;
+                gap: 8px;
+            }
+            .page-header-right { display: none; }
+            .page-header h1 { font-size: 15px; }
+
+            /* Card */
+            .card { border-radius: 8px; margin-bottom: 14px; }
+            .card-header { font-size: 13px; padding: 10px 14px; }
+
+            /* ── BẢNG THÔNG TIN CHUNG → dạng stack ── */
+            .header-table,
+            .header-table tbody,
+            .header-table tr,
+            .header-table td { display: block; width: 100% !important; }
+            .header-table tr {
+                border-bottom: 2px solid var(--border-light);
+                padding: 2px 0;
+            }
+            .header-table td {
+                border: none;
+                padding: 6px 14px;
+                font-size: 13.5px;
+            }
+            .header-table td:empty { display: none; }
+
+            /* ── BẢNG NỘI DUNG → mỗi hàng thành 1 card ── */
+            .content-table thead { display: none; }
+            .content-table,
+            .content-table tbody { display: block; width: 100%; }
+            .content-table tr {
+                display: block;
+                background: #fff;
+                border: 1.5px solid var(--border);
+                border-radius: 8px;
+                margin-bottom: 12px;
+                padding: 12px;
+                box-shadow: 0 1px 6px rgba(0,48,135,.07);
+            }
+            .content-table tr:nth-child(even) { background: #fff; }
+            .content-table tr:hover { background: #fff; }
+            .content-table td {
+                display: flex;
+                align-items: flex-start;
+                gap: 8px;
+                padding: 6px 0;
+                border: none;
+                border-bottom: 1px solid var(--border-light);
+                font-size: 13.5px;
+                text-align: left !important;
+                width: 100% !important;
+            }
+            .content-table td:last-child { border-bottom: none; }
+            .content-table td[data-label=""]:empty,
+            .content-table td:empty { display: none; }
+
+            /* Label nhãn trước mỗi ô */
+            .content-table td::before {
+                content: attr(data-label);
+                min-width: 115px;
+                font-weight: 600;
+                color: var(--evn-blue);
+                font-size: 12px;
+                flex-shrink: 0;
+                padding-top: 3px;
+            }
+
+            /* Select & Textarea dễ bấm tay */
+            select {
+                width: 100%;
+                min-height: 44px;
+                border-radius: 8px;
+                font-size: 14px;
+                padding: 8px 32px 8px 12px;
+            }
+            textarea {
+                min-height: 68px;
+                font-size: 14px;
+                padding: 8px 10px;
+            }
+            .header-table input[type="text"] {
+                min-height: 44px;
+                font-size: 14px;
+                padding: 8px 12px;
+            }
+
+            /* Extra table (Kiến nghị / ký xác nhận) */
+            .extra-table,
+            .extra-table tbody,
+            .extra-table tr,
+            .extra-table td { display: block; width: 100% !important; }
+            .extra-table .label-cell {
+                width: 100% !important;
+                border-bottom: none;
+                padding: 10px 14px 4px;
+                white-space: normal;
+                font-size: 13px;
+            }
+            .extra-table td:not(.label-cell) { padding: 6px 14px 14px; }
+
+            /* Nút Lưu cố định dưới màn hình */
+            .submit-bar {
+                position: fixed;
+                bottom: 0; left: 0; right: 0;
+                background: rgba(255,255,255,.97);
+                backdrop-filter: blur(8px);
+                border-top: 1px solid var(--border);
+                padding: 12px 16px;
+                z-index: 200;
+                box-shadow: 0 -4px 16px rgba(0,48,135,.12);
+            }
+            .btn-submit {
+                width: 100%;
+                padding: 14px;
+                font-size: 15px;
+                border-radius: 8px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .content-table td::before { min-width: 90px; font-size: 11.5px; }
+            .topnav-links a { padding: 5px 8px; font-size: 11px; }
+        }
     </style>
 </head>
 <body>
-    <h2>{{ 'Đánh giá' if role == 'danh_gia' else 'Thẩm tra' }}: {{ sheet_name }}</h2>
-    <p><a href="{{ url_for('dashboard') }}">← Về trang chủ</a> | <a href="{{ url_for('logout') }}">Đăng xuất</a></p>
 
+<!-- TOP NAV -->
+<nav class="topnav">
+    <div class="topnav-brand">
+        <span class="topnav-logo">EVN</span>
+        <span class="topnav-title">Hệ thống Đánh giá & Thẩm tra biểu mẫu TPM</span>
+    </div>
+    <div class="topnav-links">
+        <a href="{{ url_for('dashboard') }}">⌂ Trang chủ</a>
+        <a href="{{ url_for('logout') }}">⏻ Đăng xuất</a>
+    </div>
+</nav>
+
+<div class="page">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+        <div class="page-header-left">
+            <span class="page-badge {{ 'tham-tra' if role == 'tham_tra' else '' }}">
+                {{ 'ĐÁNH GIÁ' if role == 'danh_gia' else 'THẨM TRA' }}
+            </span>
+            <h1>{{ sheet_name }}</h1>
+        </div>
+        <div class="page-header-right">
+            EVNGENCO1<br>
+            <strong style="color: var(--evn-blue);">BANVEHPC</strong>
+        </div>
+    </div>
+
+    <!-- FLASH MESSAGES -->
     {% with messages = get_flashed_messages() %}
       {% if messages %}
         <div class="flash">
-          {% for msg in messages %}
-            <div>{{ msg }}</div>
-          {% endfor %}
+          {% for msg in messages %}<span>{{ msg }}</span>{% endfor %}
         </div>
       {% endif %}
     {% endwith %}
@@ -67,208 +587,258 @@
         <input type="hidden" name="sheet_name" value="{{ sheet_name }}">
         <input type="hidden" name="role" value="{{ role }}">
 
-        <table class="header-table">
-            {% for row_idx, row in enumerate(headers, start=1) %}
-            <tr class="header-row">
-                {% for col in ['A','B','C','D','E','F'] %}
-                    {% set cell_value = row[col] or '' %}
-                    {% set cell_key = (row_idx, col) %}
-                    {% set editable = False %}
-                    {% if role == 'danh_gia' and row_idx == 6 and col == 'E' %}
-                        {% set editable = True %}
-                    {% elif role == 'tham_tra' and row_idx == 6 and col == 'F' %}
-                        {% set editable = True %}
-                    {% endif %}
-                    <td>
-                        {% if editable %}
-                            {% set current_value = saved_header.get(cell_key, cell_value) if saved_header is defined else cell_value %}
-                            <input type="text" name="header_{{ row_idx }}_{{ col }}" value="{{ current_value if current_value != None else '' }}" style="width:100%; box-sizing:border-box;">
-                        {% else %}
-                            {% set other_val = saved_header.get(cell_key) if saved_header is defined else None %}
-                            {{ other_val if (other_val != None and other_val != '') else cell_value }}
-                        {% endif %}
-                    </td>
-                {% endfor %}
-                <td colspan="5"></td>
-            </tr>
-            {% endfor %}
-        </table>
-
-        <h3>Nội dung đánh giá</h3>
-        <table class="content-table">
-            <thead>
-                <tr>
-                    <th>Hạng mục</th><th>STT</th><th>Nội dung đánh giá</th><th>Tiêu chuẩn</th><th>Phương pháp</th><th>Trạng thái TB</th>
-                    <th>Kết quả (Đ/K)</th><th>Mô tả</th><th>Đơn vị thực hiện</th><th>Thời gian</th><th>Giải pháp</th>
-                    {% if role == 'tham_tra' %}<th>Ý kiến thẩm tra</th>{% endif %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for idx, row in enumerate(rows, start=10) %}
-                <tr>
-                    {% for col in ['A','B','C','D','E','F'] %}
-                        <td style="vertical-align: middle;">{{ row[col] }}</td>
+        <!-- THÔNG TIN CHUNG -->
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">📋</span> Thông tin chung
+            </div>
+            <div class="card-body">
+                <div class="table-scroll">
+                <table class="header-table">
+                    {% for row_idx, row in enumerate(headers, start=1) %}
+                    <tr>
+                        {% for col in ['A','B','C','D','E','F'] %}
+                            {% set cell_value = row[col] or '' %}
+                            {% set cell_key = (row_idx, col) %}
+                            {% set editable = False %}
+                            {% if role == 'danh_gia' and row_idx == 6 and col == 'E' %}
+                                {% set editable = True %}
+                            {% elif role == 'tham_tra' and row_idx == 6 and col == 'F' %}
+                                {% set editable = True %}
+                            {% endif %}
+                            <td>
+                                {% if editable %}
+                                    {% set current_value = saved_header.get(cell_key, cell_value) if saved_header is defined else cell_value %}
+                                    <input type="text" name="header_{{ row_idx }}_{{ col }}"
+                                           value="{{ current_value if current_value != None else '' }}"
+                                           placeholder="Nhập giá trị…">
+                                {% else %}
+                                    {% set other_val = saved_header.get(cell_key) if saved_header is defined else None %}
+                                    {{ other_val if (other_val != None and other_val != '') else cell_value }}
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                        <td colspan="5"></td>
+                    </tr>
                     {% endfor %}
-                    {% if role == 'danh_gia' %}
-                        {% set saved_val_G = saved.get((idx, 'G'), '') %}
-                        <td style="text-align: center; vertical-align: middle;">
-                            <select name="eval_{{ idx }}_G" class="result-select">
-                                <option value="" {% if not saved_val_G or saved_val_G == None %}selected{% endif %}>-- Chọn --</option>
-                                <option value="Đ" {% if saved_val_G == 'Đ' %}selected{% endif %}>Đ</option>
-                                <option value="K" {% if saved_val_G == 'K' %}selected{% endif %}>K</option>
-                            </select>
-                        </td>
-                        <td style="vertical-align: middle;"><textarea name="eval_{{ idx }}_H" rows="2">{{ saved.get((idx, 'H'), '') if (saved.get((idx, 'H')) != None) else '' }}</textarea></td>
-                        {% set saved_val_I = saved.get((idx, 'I'), '') %}
-                        <td style="text-align: center; vertical-align: middle;">
-                            <select name="eval_{{ idx }}_I" class="unit-select">
-                                <option value="" {% if not saved_val_I or saved_val_I == None %}selected{% endif %}>-- Chọn --</option>
-                                <option value="PXVH" {% if saved_val_I == 'PXVH' %}selected{% endif %}>PXVH</option>
-                                <option value="PXSC" {% if saved_val_I == 'PXSC' %}selected{% endif %}>PXSC</option>
-                                <option value="P.KTAT" {% if saved_val_I == 'P.KTAT' %}selected{% endif %}>P.KTAT</option>
-                            </select>
-                        </td>
-                        <td style="vertical-align: middle;"><textarea name="eval_{{ idx }}_J" rows="2">{{ saved.get((idx, 'J'), '') if (saved.get((idx, 'J')) != None) else '' }}</textarea></td>
-                        <td style="vertical-align: middle;"><textarea name="eval_{{ idx }}_K" rows="2">{{ saved.get((idx, 'K'), '') if (saved.get((idx, 'K')) != None) else '' }}</textarea></td>
-                    {% else %}
-                        <td style="text-align: center; font-weight: bold; background-color: {{ '#d4edda' if saved.get((idx, 'G'), '') == 'Đ' else '#f8d7da' if saved.get((idx, 'G'), '') == 'K' else '#fff' }}; vertical-align: middle;">
-                            {{ saved.get((idx, 'G'), '') if saved.get((idx, 'G')) != None else '' }}
-                        </td>
-                        <td style="vertical-align: middle;">{{ saved.get((idx, 'H'), '') if saved.get((idx, 'H')) != None else '' }}</td>
-                        <td style="vertical-align: middle;">{{ saved.get((idx, 'I'), '') if saved.get((idx, 'I')) != None else '' }}</td>
-                        <td style="vertical-align: middle;">{{ saved.get((idx, 'J'), '') if saved.get((idx, 'J')) != None else '' }}</td>
-                        <td style="vertical-align: middle;">{{ saved.get((idx, 'K'), '') if saved.get((idx, 'K')) != None else '' }}</td>
-                        <td style="vertical-align: middle;"><textarea name="comment_{{ idx }}" data-stt="{{ row['B'] }}" rows="2">{{ saved_comments.get(idx, '') if saved_comments.get(idx) != None else '' }}</textarea></td>
-                    {% endif %}
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </table>
+                </div>
+            </div>
+        </div>
 
-        <h3>Kiến nghị và ký xác nhận</h3>
-        <table class="extra-table">
-            <tr>
-                <td style="vertical-align: middle;">Kiến nghị (nếu có):</td>
-                <td style="vertical-align: middle;">
-                    {% for row in extra %}
-                        {% if 'Kiến nghị' in (row['A']|string|trim) %}
-                            {{ row['B'] or '' }}{{ row['C'] or '' }}{{ row['D'] or '' }}{{ row['E'] or '' }}{{ row['F'] or '' }}{{ row['G'] or '' }}{{ row['H'] or '' }}{{ row['I'] or '' }}{{ row['J'] or '' }}{{ row['K'] or '' }}
-                        {% endif %}
-                    {% endfor %}
-                </td>
-            </tr>
-            <tr>
-                <td style="vertical-align: middle;">Người đánh giá:</td>
-                <td style="vertical-align: middle;">
-                    {% if role == 'danh_gia' %}
-                        <textarea name="reviewer_signature" rows="4" style="width:100%;">{{ reviewer_signature if (reviewer_signature != None and reviewer_signature != 'None') else '' }}</textarea>
-                    {% else %}
-                        {{ reviewer_signature if (reviewer_signature != None and reviewer_signature != 'None') else '' }}
-                    {% endif %}
-                </td>
-            </tr>
-            <tr>
-                <td style="vertical-align: middle;">Người thẩm tra:</td>
-                <td style="vertical-align: middle;">
-                    {% if role == 'tham_tra' %}
-                        <textarea name="checker_signature" rows="4" style="width:100%;">{{ checker_signature if (checker_signature != None and checker_signature != 'None') else '' }}</textarea>
-                    {% else %}
-                        {{ checker_signature if (checker_signature != None and checker_signature != 'None') else '' }}
-                    {% endif %}
-                </td>
-            </tr>
-        </table>
+        <!-- NỘI DUNG ĐÁNH GIÁ -->
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">📊</span> Nội dung đánh giá
+            </div>
+            <div class="card-body">
+                <div class="table-scroll">
+                <table class="content-table">
+                    <thead>
+                        <tr>
+                            <th>Hạng mục</th>
+                            <th>STT</th>
+                            <th>Nội dung đánh giá</th>
+                            <th>Tiêu chuẩn</th>
+                            <th>Phương pháp</th>
+                            <th>Trạng thái TB</th>
+                            <th>Kết quả<br>(Đ/K)</th>
+                            <th>Mô tả</th>
+                            <th>Đơn vị<br>thực hiện</th>
+                            <th>Thời gian</th>
+                            <th>Giải pháp</th>
+                            {% if role == 'tham_tra' %}<th>Ý kiến thẩm tra</th>{% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for idx, row in enumerate(rows, start=10) %}
+                        <tr>
+                            <td data-label="Hạng mục">{{ row['A'] }}</td>
+                            <td data-label="STT">{{ row['B'] }}</td>
+                            <td data-label="Nội dung">{{ row['C'] }}</td>
+                            <td data-label="Tiêu chuẩn">{{ row['D'] }}</td>
+                            <td data-label="Phương pháp">{{ row['E'] }}</td>
+                            <td data-label="Trạng thái TB">{{ row['F'] }}</td>
 
-        <div style="text-align: center; margin-top: 20px;">
-            <button type="submit">Lưu dữ liệu</button>
+                            {% if role == 'danh_gia' %}
+                                {# Kết quả G #}
+                                {% set saved_val_G = saved.get((idx, 'G'), '') %}
+                                <td data-label="Kết quả (Đ/K)">
+                                    <select name="eval_{{ idx }}_G" class="result-select">
+                                        <option value="" {% if not saved_val_G %}selected{% endif %}>-- Chọn --</option>
+                                        <option value="Đ" {% if saved_val_G == 'Đ' %}selected{% endif %}>Đ</option>
+                                        <option value="K" {% if saved_val_G == 'K' %}selected{% endif %}>K</option>
+                                    </select>
+                                </td>
+                                <td data-label="Mô tả"><textarea name="eval_{{ idx }}_H" rows="2">{{ saved.get((idx, 'H'), '') if saved.get((idx, 'H')) != None else '' }}</textarea></td>
+                                {# Đơn vị I #}
+                                {% set saved_val_I = saved.get((idx, 'I'), '') %}
+                                <td data-label="Đơn vị thực hiện">
+                                    <select name="eval_{{ idx }}_I" class="unit-select">
+                                        <option value="" {% if not saved_val_I %}selected{% endif %}>-- Chọn --</option>
+                                        <option value="PXVH"  {% if saved_val_I == 'PXVH' %}selected{% endif %}>PXVH</option>
+                                        <option value="PXSC"  {% if saved_val_I == 'PXSC' %}selected{% endif %}>PXSC</option>
+                                        <option value="P.KTAT"{% if saved_val_I == 'P.KTAT' %}selected{% endif %}>P.KTAT</option>
+                                    </select>
+                                </td>
+                                <td data-label="Thời gian"><textarea name="eval_{{ idx }}_J" rows="2">{{ saved.get((idx, 'J'), '') if saved.get((idx, 'J')) != None else '' }}</textarea></td>
+                                <td data-label="Giải pháp"><textarea name="eval_{{ idx }}_K" rows="2">{{ saved.get((idx, 'K'), '') if saved.get((idx, 'K')) != None else '' }}</textarea></td>
+
+                            {% else %}
+                                {# Read-only Kết quả G #}
+                                {% set g_val = saved.get((idx, 'G'), '') if saved.get((idx, 'G')) != None else '' %}
+                                <td data-label="Kết quả (Đ/K)">
+                                    {% if g_val == 'Đ' %}
+                                        <span class="result-badge dat">Đ</span>
+                                    {% elif g_val == 'K' %}
+                                        <span class="result-badge kdat">K</span>
+                                    {% else %}—{% endif %}
+                                </td>
+                                <td data-label="Mô tả">{{ saved.get((idx, 'H'), '') if saved.get((idx, 'H')) != None else '' }}</td>
+                                {# Đơn vị chip #}
+                                {% set i_val = saved.get((idx, 'I'), '') if saved.get((idx, 'I')) != None else '' %}
+                                <td data-label="Đơn vị">
+                                    {% if i_val == 'PXVH' %}<span class="unit-chip pxvh-chip">PXVH</span>
+                                    {% elif i_val == 'PXSC' %}<span class="unit-chip pxsc-chip">PXSC</span>
+                                    {% elif i_val == 'P.KTAT' %}<span class="unit-chip pktat-chip">P.KTAT</span>
+                                    {% else %}{{ i_val }}{% endif %}
+                                </td>
+                                <td data-label="Thời gian">{{ saved.get((idx, 'J'), '') if saved.get((idx, 'J')) != None else '' }}</td>
+                                <td data-label="Giải pháp">{{ saved.get((idx, 'K'), '') if saved.get((idx, 'K')) != None else '' }}</td>
+                                <td data-label="Ý kiến thẩm tra"><textarea name="comment_{{ idx }}" data-stt="{{ row['B'] }}" rows="2" placeholder="Nhập ý kiến thẩm tra…">{{ saved_comments.get(idx, '') if saved_comments.get(idx) != None else '' }}</textarea></td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- KIẾN NGHỊ & KÝ XÁC NHẬN -->
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">✍️</span> Kiến nghị &amp; Ký xác nhận
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <table class="extra-table">
+                    <tr>
+                        <td class="label-cell"><span class="cell-icon">📌</span>Kiến nghị (nếu có)</td>
+                        <td>
+                            {% for row in extra %}
+                                {% if 'Kiến nghị' in (row['A']|string|trim) %}
+                                    {{ row['B'] or '' }}{{ row['C'] or '' }}{{ row['D'] or '' }}{{ row['E'] or '' }}{{ row['F'] or '' }}{{ row['G'] or '' }}{{ row['H'] or '' }}{{ row['I'] or '' }}{{ row['J'] or '' }}{{ row['K'] or '' }}
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell"><span class="cell-icon">👤</span>Người đánh giá</td>
+                        <td>
+                            {% if role == 'danh_gia' %}
+                                <textarea name="reviewer_signature" rows="4" placeholder="Nhập kiến nghị (nếu có)">{{ reviewer_signature if (reviewer_signature != None and reviewer_signature != 'None') else '' }}</textarea>
+                            {% else %}
+                                <span style="white-space:pre-line;">{{ reviewer_signature if (reviewer_signature != None and reviewer_signature != 'None') else '—' }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell"><span class="cell-icon">🔍</span>Người thẩm tra</td>
+                        <td>
+                            {% if role == 'tham_tra' %}
+                                <textarea name="checker_signature" rows="4" placeholder="Nhập kiến nghị (nếu có)">{{ checker_signature if (checker_signature != None and checker_signature != 'None') else '' }}</textarea>
+                            {% else %}
+                                <span style="white-space:pre-line;">{{ checker_signature if (checker_signature != None and checker_signature != 'None') else '—' }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- SUBMIT -->
+        <div class="submit-bar">
+            <button type="submit" class="btn-submit">💾 &nbsp;Lưu dữ liệu</button>
         </div>
     </form>
+</div><!-- /page -->
 
-    <script>
-        function updateSelectColor(selectEl) {
-            var value = selectEl.value;
-            selectEl.classList.remove('da', 'khong', 'default');
-            if (value === 'Đ') selectEl.classList.add('da');
-            else if (value === 'K') selectEl.classList.add('khong');
-            else selectEl.classList.add('default');
+<script>
+    /* ── Select color updaters ── */
+    function updateSelectColor(el) {
+        el.classList.remove('da','khong','default');
+        const v = el.value;
+        if (v === 'Đ')      el.classList.add('da');
+        else if (v === 'K') el.classList.add('khong');
+        else                el.classList.add('default');
+    }
+    function updateUnitSelectColor(el) {
+        el.classList.remove('pxvh','pxsc','pktat','unit-default');
+        const v = el.value;
+        if (v === 'PXVH')        el.classList.add('pxvh');
+        else if (v === 'PXSC')   el.classList.add('pxsc');
+        else if (v === 'P.KTAT') el.classList.add('pktat');
+        else                     el.classList.add('unit-default');
+    }
+    document.querySelectorAll('.result-select').forEach(s => {
+        updateSelectColor(s);
+        s.addEventListener('change', () => updateSelectColor(s));
+    });
+    document.querySelectorAll('.unit-select').forEach(s => {
+        updateUnitSelectColor(s);
+        s.addEventListener('change', () => updateUnitSelectColor(s));
+    });
+
+    /* ── Validation ── */
+    const colNames = { G:'Kết quả (Đ/K)', H:'Mô tả', I:'Đơn vị thực hiện', J:'Thời gian', K:'Giải pháp' };
+    const role = '{{ role }}';
+
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const errors = [];
+
+        if (role === 'danh_gia') {
+            const ci = document.querySelector('input[name="header_6_E"]');
+            if (ci && !ci.value.trim()) errors.push('Chưa nhập "Nhiệt độ môi trường - Kiểm tra".');
+        } else {
+            const ci = document.querySelector('input[name="header_6_F"]');
+            if (ci && !ci.value.trim()) errors.push('Chưa nhập "Nhiệt độ môi trường - Thẩm tra".');
         }
 
-        function updateUnitSelectColor(selectEl) {
-            var value = selectEl.value;
-            selectEl.classList.remove('pxvh', 'pxsc', 'pktat', 'unit-default');
-            if (value === 'PXVH') selectEl.classList.add('pxvh');
-            else if (value === 'PXSC') selectEl.classList.add('pxsc');
-            else if (value === 'P.KTAT') selectEl.classList.add('pktat');
-            else selectEl.classList.add('unit-default');
-        }
-
-        document.querySelectorAll('.result-select').forEach(function(sel) {
-            updateSelectColor(sel);
-            sel.addEventListener('change', function() { updateSelectColor(this); });
-        });
-        document.querySelectorAll('.unit-select').forEach(function(sel) {
-            updateUnitSelectColor(sel);
-            sel.addEventListener('change', function() { updateUnitSelectColor(this); });
-        });
-
-        var colNames = { 'G': 'Kết quả (Đ/K)', 'H': 'Mô tả', 'I': 'Đơn vị thực hiện', 'J': 'Thời gian', 'K': 'Giải pháp' };
-
-        document.querySelector('form').addEventListener('submit', function(e) {
-            var role = '{{ role }}';
-            var errors = [];
-
+        document.querySelectorAll('.content-table tbody tr').forEach(row => {
+            const stt = row.cells[1].innerText.trim();
             if (role === 'danh_gia') {
-                var cycleInput = document.querySelector('input[name="header_6_E"]');
-                if (cycleInput && !cycleInput.value.trim()) errors.push('Chưa nhập "Nhiệt độ môi trường - Kiểm tra" (ô đầu tiên).');
-            } else if (role === 'tham_tra') {
-                var cycleInput = document.querySelector('input[name="header_6_F"]');
-                if (cycleInput && !cycleInput.value.trim()) errors.push('Chưa nhập "Nhiệt độ môi trường - Thẩm tra" (ô thứ hai).');
-            }
-
-            var rows = document.querySelectorAll('.content-table tbody tr');
-            rows.forEach(function(row, idx) {
-                var stt = row.cells[1].innerText.trim(); // Lấy STT từ cột thứ 2
-                if (role === 'danh_gia') {
-                    var selectG = row.querySelector('select[name^="eval_"]');
-                    if (selectG) {
-                        var valG = selectG.value;
-                        if (!valG) errors.push(`STT ${stt}: chưa chọn kết quả (cột G).`);
-                        if (valG === 'K') {
-                            var textareas = row.querySelectorAll('textarea');
-                            var missing = [];
-                            textareas.forEach(function(ta) {
-                                if (!ta.value.trim()) {
-                                    var match = ta.name.match(/eval_\d+_(.)/);
-                                    if (match) missing.push(colNames[match[1]] || match[1]);
-                                }
-                            });
-                            if (missing.length > 0) errors.push(`STT ${stt} (kết quả K) còn thiếu các ô: ${missing.join(', ')}`);
-                        }
+                const sg = row.querySelector('select[name^="eval_"]');
+                if (sg) {
+                    const vg = sg.value;
+                    if (!vg) errors.push(`STT ${stt}: chưa chọn kết quả.`);
+                    if (vg === 'K') {
+                        row.querySelectorAll('textarea').forEach(ta => {
+                            if (!ta.value.trim()) {
+                                const m = ta.name.match(/eval_\d+_(.)/);
+                                if (m) errors.push(`STT ${stt} (K): thiếu ${colNames[m[1]] || m[1]}.`);
+                            }
+                        });
                     }
                 }
-            });
-
-            if (role === 'danh_gia') {
-                var reviewerSig = document.querySelector('textarea[name="reviewer_signature"]');
-                if (reviewerSig && !reviewerSig.value.trim()) errors.push('Chưa nhập nội dung tại ô "Người đánh giá" (ký xác nhận).');
-            } else if (role === 'tham_tra') {
-                var comments = document.querySelectorAll('textarea[name^="comment_"]');
-                comments.forEach(function(ta) {
-                    if (!ta.value.trim()) {
-                        var sttVal = ta.getAttribute('data-stt');
-                        errors.push(`STT ${sttVal}: chưa nhập ý kiến thẩm tra.`);
-                    }
-                });
-                var checkerSig = document.querySelector('textarea[name="checker_signature"]');
-                if (checkerSig && !checkerSig.value.trim()) errors.push('Chưa nhập nội dung tại ô "Người thẩm tra" (ký xác nhận).');
-            }
-
-            if (errors.length > 0) {
-                alert('Vui lòng hoàn thành các thông tin sau:\n' + errors.join('\n'));
-                e.preventDefault();
-                return false;
             }
         });
-    </script>
+
+        if (role === 'danh_gia') {
+            const rs = document.querySelector('textarea[name="reviewer_signature"]');
+            if (rs && !rs.value.trim()) errors.push('Chưa nhập ô "Người đánh giá".');
+        } else {
+            document.querySelectorAll('textarea[name^="comment_"]').forEach(ta => {
+                if (!ta.value.trim()) errors.push(`STT ${ta.dataset.stt}: chưa nhập ý kiến thẩm tra.`);
+            });
+            const cs = document.querySelector('textarea[name="checker_signature"]');
+            if (cs && !cs.value.trim()) errors.push('Chưa nhập ô "Người thẩm tra".');
+        }
+
+        if (errors.length) {
+            alert('⚠️ Vui lòng hoàn thành các thông tin sau:\n\n' + errors.join('\n'));
+            e.preventDefault();
+        }
+    });
+</script>
 </body>
 </html>

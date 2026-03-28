@@ -1,29 +1,600 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-    <title>Dashboard</title>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TPM | BANVEHPC Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --blue:      #003087;
+            --blue-mid:  #0055b3;
+            --blue-bg:   #e8f0fb;
+            --blue-line: #b8d0f5;
+            --green:     #1a7a4a;
+            --green-bg:  #e6f4ec;
+            --green-line:#9fd4b8;
+            --gold:      #f5a623;
+            --border:    #d0d9ec;
+            --surface:   #f3f5fb;
+            --white:     #ffffff;
+            --text-1:    #1a2340;
+            --text-2:    #4e5f80;
+            --text-3:    #8796b0;
+            --sidebar-w: 280px;
+        }
+
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            font-size: 16px;
+            background: var(--surface);
+            color: var(--text-1);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ── SIDEBAR ─────────────────────────────── */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: linear-gradient(145deg, #00246b 0%, #003087 100%);
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.05);
+        }
+        .sidebar-brand {
+            padding: 28px 24px 24px;
+            border-bottom: 1px solid rgba(255,255,255,.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .brand-logo {
+            background: var(--gold);
+            color: var(--blue);
+            font-weight: 700;
+            font-size: 18px;
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .brand-name { color: #fff; font-size: 18px; font-weight: 700; line-height: 1.2; }
+        .brand-sub  { color: rgba(255,255,255,.45); font-size: 12px; }
+
+        .sidebar-user {
+            margin: 20px 16px 0;
+            padding: 14px 16px;
+            background: rgba(255,255,255,.07);
+            backdrop-filter: blur(4px);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: background 0.2s;
+        }
+        .sidebar-user:hover {
+            background: rgba(255,255,255,.12);
+        }
+        .user-av {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, var(--gold), #ffbe5e);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--blue);
+            flex-shrink: 0;
+        }
+        .user-name {
+            font-size: 15px; font-weight: 600; color: #fff;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .user-role { font-size: 11px; color: rgba(255,255,255,.5); text-transform: uppercase; letter-spacing: .8px; }
+
+        .sidebar-nav { flex: 1; padding: 24px 12px; overflow-y: auto; }
+        .nav-label {
+            font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+            text-transform: uppercase; color: rgba(255,255,255,.3);
+            padding: 0 12px; margin: 20px 0 10px;
+        }
+        .nav-item {
+            display: flex; align-items: center; gap: 14px;
+            padding: 12px 14px; border-radius: 12px;
+            color: rgba(255,255,255,.7); text-decoration: none;
+            font-size: 15px; font-weight: 500;
+            transition: all 0.2s ease; margin-bottom: 4px;
+        }
+        .nav-item i { width: 20px; text-align: center; font-size: 15px; }
+        .nav-item:hover { background: rgba(255,255,255,.12); color: #fff; transform: translateX(4px); }
+        .nav-item.active {
+            background: rgba(255,255,255,.2); color: #fff; font-weight: 600;
+            border-left: 3px solid var(--gold); padding-left: 11px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .nav-item.admin { color: var(--gold); background: rgba(245,166,35,.1); }
+        .nav-item.admin:hover { background: rgba(245,166,35,.2); }
+
+        .sidebar-footer { padding: 18px 12px; border-top: 1px solid rgba(255,255,255,.1); }
+        .btn-logout {
+            display: flex; align-items: center; gap: 12px;
+            width: 100%; padding: 12px 14px; border-radius: 12px;
+            background: rgba(255,255,255,.05);
+            border: 1px solid rgba(255,255,255,.1);
+            color: rgba(255,255,255,.6); font-size: 15px; font-weight: 500;
+            font-family: inherit; cursor: pointer; text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-logout:hover { background: rgba(200,30,30,.2); border-color: rgba(200,30,30,.3); color: #f87171; transform: translateY(-2px); }
+
+        /* ── MAIN ────────────────────────────────── */
+        .main { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--surface); }
+
+        .topbar {
+            height: 68px;
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 36px;
+            position: sticky; top: 0; z-index: 30;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+        }
+        .topbar-title { font-size: 18px; font-weight: 700; background: linear-gradient(135deg, var(--blue), var(--blue-mid)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .topbar-right { display: flex; align-items: center; gap: 14px; }
+
+        .search-wrap { position: relative; }
+        .search-wrap i {
+            position: absolute; left: 12px; top: 50%;
+            transform: translateY(-50%); color: var(--text-3); font-size: 14px; pointer-events: none;
+        }
+        .search-input {
+            padding: 10px 12px 10px 38px; width: 260px;
+            border: 1.5px solid var(--border); border-radius: 40px;
+            font-family: inherit; font-size: 14px; color: var(--text-1);
+            outline: none; background: var(--surface);
+            transition: all 0.2s;
+        }
+        .search-input:focus { border-color: var(--blue-mid); background: #fff; width: 320px; box-shadow: 0 0 0 3px rgba(0,48,135,0.1); }
+
+        /* ── PAGE BODY ── 2 CỘT ──────────────────── */
+        .page-body {
+            padding: 36px 40px 60px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 36px;
+        }
+
+        .section-block {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 18px 24px;
+            border-radius: 20px;
+            background: var(--white);
+            border-left: 5px solid;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .section-header.danh-gia {
+            border-left-color: var(--blue);
+            background: linear-gradient(120deg, var(--white), var(--blue-bg));
+        }
+        .section-header.tham-tra {
+            border-left-color: var(--green);
+            background: linear-gradient(120deg, var(--white), var(--green-bg));
+        }
+        .section-header:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        }
+
+        .section-header-icon {
+            width: 48px; height: 48px;
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        .section-header.danh-gia .section-header-icon { background: var(--blue); color: #fff; box-shadow: 0 4px 12px rgba(0,48,135,0.2); }
+        .section-header.tham-tra .section-header-icon { background: var(--green); color: #fff; box-shadow: 0 4px 12px rgba(26,122,74,0.2); }
+
+        .section-header-text { flex: 1; }
+        .section-header-title {
+            font-size: 18px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+        .section-header.danh-gia .section-header-title { color: var(--blue); }
+        .section-header.tham-tra .section-header-title { color: var(--green); }
+
+        .section-header-desc { font-size: 14px; color: var(--text-3); margin-top: 4px; }
+
+        .section-count-badge {
+            font-size: 14px;
+            font-weight: 700;
+            padding: 5px 16px;
+            border-radius: 40px;
+            flex-shrink: 0;
+        }
+        .section-header.danh-gia .section-count-badge { background: var(--blue); color: #fff; box-shadow: 0 2px 6px rgba(0,48,135,0.2); }
+        .section-header.tham-tra .section-count-badge { background: var(--green); color: #fff; box-shadow: 0 2px 6px rgba(26,122,74,0.2); }
+
+        /* ── FORM CARDS - NÂNG CẤP TRỰC QUAN ─────── */
+        .forms-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .form-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 20px 24px;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            position: relative;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .form-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            padding: 1px;
+            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .form-card.danh-gia:hover::before { opacity: 1; }
+        .form-card.tham-tra:hover::before { opacity: 1; }
+
+        .form-card.danh-gia {
+            border-left: 4px solid var(--blue);
+        }
+        .form-card.tham-tra {
+            border-left: 4px solid var(--green);
+        }
+
+        .form-card.danh-gia:hover {
+            transform: translateY(-6px) translateX(4px);
+            box-shadow: 0 20px 30px -12px rgba(0,48,135,0.2);
+            border-color: var(--blue-line);
+        }
+        .form-card.tham-tra:hover {
+            transform: translateY(-6px) translateX(4px);
+            box-shadow: 0 20px 30px -12px rgba(26,122,74,0.2);
+            border-color: var(--green-line);
+        }
+
+        .form-card-number {
+            font-size: 14px;
+            font-weight: 700;
+            background: var(--surface);
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 40px;
+            color: var(--text-3);
+            margin-right: 14px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02), 0 1px 1px rgba(0,0,0,0.02);
+        }
+        .form-card.danh-gia:hover .form-card-number {
+            background: var(--blue);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0,48,135,0.3);
+        }
+        .form-card.tham-tra:hover .form-card-number {
+            background: var(--green);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(26,122,74,0.3);
+        }
+
+        .form-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-1);
+            line-height: 1.45;
+            flex: 1;
+            letter-spacing: -0.2px;
+        }
+        .form-card.danh-gia:hover .form-card-title { color: var(--blue-mid); }
+        .form-card.tham-tra:hover .form-card-title { color: var(--green); }
+
+        .form-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+            font-size: 14px;
+            color: var(--text-3);
+            padding-left: 46px;
+        }
+
+        .form-cta {
+            font-size: 14px; font-weight: 600;
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 12px;
+            border-radius: 40px;
+            transition: all 0.2s;
+        }
+        .form-card.danh-gia .form-cta { color: var(--blue); background: rgba(0,48,135,0.04); }
+        .form-card.tham-tra .form-cta { color: var(--green); background: rgba(26,122,74,0.04); }
+        .form-cta i { font-size: 12px; transition: transform 0.2s; }
+        .form-card:hover .form-cta i { transform: translateX(4px); }
+        .form-card:hover .form-cta { background: rgba(0,0,0,0.02); }
+
+        .badge-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--blue-bg), var(--white));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: var(--blue-mid);
+        }
+
+        /* ── EMPTY ───────────────────────────────── */
+        .empty-section {
+            padding: 36px 28px;
+            background: var(--white);
+            border: 2px dashed var(--border);
+            border-radius: 20px;
+            text-align: center;
+            color: var(--text-3);
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+        .empty-section i { margin-right: 8px; font-size: 18px; color: var(--text-2); }
+        .empty-section:hover { border-color: var(--blue-line); background: var(--blue-bg); }
+
+        /* ── MOBILE ──────────────────────────────── */
+        @media (max-width: 860px) {
+            .sidebar   { display: none; }
+            .topbar    { padding: 0 20px; height: 60px; }
+            .page-body {
+                padding: 20px 20px 48px;
+                grid-template-columns: 1fr;
+                gap: 28px;
+            }
+            .search-input { width: 180px; padding: 8px 12px 8px 34px; }
+            .search-input:focus { width: 220px; }
+            .section-header { padding: 12px 16px; gap: 12px; }
+            .section-header-icon { width: 38px; height: 38px; font-size: 16px; }
+            .form-card { padding: 14px 16px; }
+            .form-card-number { width: 28px; height: 28px; font-size: 13px; margin-right: 10px; }
+            .form-card-footer { padding-left: 38px; }
+            .form-card-title { font-size: 14px; }
+        }
+        @media (max-width: 500px) {
+            .section-header { padding: 10px 14px; gap: 10px; }
+            .section-header-icon { width: 32px; height: 32px; font-size: 14px; }
+            .section-header-title { font-size: 15px; }
+            .section-header-desc { font-size: 12px; }
+        }
+    </style>
 </head>
 <body>
-    <h2>Xin chào {{ session.fullname }}</h2>
-    <p><a href="{{ url_for('logout') }}">Đăng xuất</a></p>
-    {% if session.role == 'admin' %}
-        <p><a href="{{ url_for('export_summary') }}">📊 Xuất báo cáo tổng hợp khiếm khuyết (K)</a></p>
-    {% endif %}
-    <h3>Các biểu mẫu được phân công:</h3>
-    {% if assignments %}
-        <ul>
-        {% for ass in assignments %}
-            <li>
-                <a href="{{ url_for('evaluation_form', sheet_name=ass.sheet_name) }}">
-                    {{ ass.sheet_name }} ({{ 'Đánh giá' if ass.role == 'danh_gia' else 'Thẩm tra' }})
-                </a>
-            </li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>Bạn chưa được phân công biểu mẫu nào.</p>
-    {% endif %}
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-logo">E</div>
+        <div>
+            <div class="brand-name">BANVEHPC TPM</div>
+            <div class="brand-sub">Control Center</div>
+        </div>
+    </div>
+
+    <div class="sidebar-user">
+        <div class="user-av">{{ session.fullname[0] }}</div>
+        <div>
+            <div class="user-name">{{ session.fullname }}</div>
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-label">Điều hướng</div>
+        <a href="#" class="nav-item active"><i class="fa-solid fa-house"></i> Tổng quan</a>
+        <a href="#" class="nav-item"><i class="fa-solid fa-file-lines"></i> Danh sách biểu mẫu</a>
+        <a href="#" class="nav-item"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử đánh giá</a>
+        <a href="#" class="nav-item"><i class="fa-solid fa-chart-bar"></i> Báo cáo</a>
+
+        {% if session.role == 'admin' %}
+        <div class="nav-label">Quản trị</div>
+        <a href="{{ url_for('export_summary') }}" class="nav-item admin">
+            <i class="fa-solid fa-file-export"></i> Xuất báo cáo tổng
+        </a>
+        {% endif %}
+    </nav>
+
+    <div class="sidebar-footer">
+        <a href="{{ url_for('logout') }}" class="btn-logout">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+        </a>
+    </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+    <header class="topbar">
+        <span class="topbar-title">Hệ thống biểu mẫu TPM</span>
+        <div class="topbar-right">
+            <div class="search-wrap">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="sheetSearch" class="search-input" placeholder="Tìm biểu mẫu…">
+            </div>
+        </div>
+    </header>
+
+    <div class="page-body">
+        <!-- CỘT TRÁI: BIỂU MẪU ĐÁNH GIÁ -->
+        <div class="section-block" id="block-danh-gia">
+            <div class="section-header danh-gia">
+                <div class="section-header-icon">
+                    <i class="fa-solid fa-pen-nib"></i>
+                </div>
+                <div class="section-header-text">
+                    <div class="section-header-title">Biểu mẫu Đánh giá</div>
+                    <div class="section-header-desc">Các biểu mẫu bạn phụ trách thực hiện đánh giá</div>
+                </div>
+                <span class="section-count-badge" id="count-danh-gia">0</span>
+            </div>
+
+            <div class="forms-grid" id="grid-danh-gia">
+                {% set ns_dg = namespace(cnt=1) %}
+                {% for ass in assignments %}
+                    {% if ass.role == 'danh_gia' %}
+                        <a href="{{ url_for('evaluation_form', sheet_name=ass.sheet_name) }}"
+                           class="form-card danh-gia" data-section="danh-gia">
+                            <div class="form-card-header">
+                                <span class="form-card-number">{{ ns_dg.cnt }}</span>
+                                <div class="form-card-title">{{ ass.sheet_name }}</div>
+                            </div>
+                            <div class="form-card-footer">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="badge-icon">
+                                        <i class="fa-solid fa-tower-observation"></i>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-[11px] font-black text-gray-800 uppercase tracking-tight leading-none">
+                                            {{ ass.unit if ass.unit else 'Banvehpc' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <span class="form-cta">
+                                    Vào biểu mẫu <i class="fa-solid fa-arrow-right"></i>
+                                </span>
+                            </div>
+                        </a>
+                        {% set ns_dg.cnt = ns_dg.cnt + 1 %}
+                    {% endif %}
+                {% endfor %}
+                {% if ns_dg.cnt == 1 %}
+                    <div class="empty-section">
+                        <i class="fa-solid fa-inbox"></i> Không có biểu mẫu đánh giá nào được phân công.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- CỘT PHẢI: BIỂU MẪU THẨM TRA -->
+        <div class="section-block" id="block-tham-tra">
+            <div class="section-header tham-tra">
+                <div class="section-header-icon">
+                    <i class="fa-solid fa-magnifying-glass-chart"></i>
+                </div>
+                <div class="section-header-text">
+                    <div class="section-header-title">Biểu mẫu Thẩm tra</div>
+                    <div class="section-header-desc">Các biểu mẫu bạn phụ trách kiểm tra, thẩm định</div>
+                </div>
+                <span class="section-count-badge" id="count-tham-tra">0</span>
+            </div>
+
+            <div class="forms-grid" id="grid-tham-tra">
+                {% set ns_tt = namespace(cnt=1) %}
+                {% for ass in assignments %}
+                    {% if ass.role == 'tham_tra' %}
+                        <a href="{{ url_for('evaluation_form', sheet_name=ass.sheet_name) }}"
+                           class="form-card tham-tra" data-section="tham-tra">
+                            <div class="form-card-header">
+                                <span class="form-card-number">{{ ns_tt.cnt }}</span>
+                                <div class="form-card-title">{{ ass.sheet_name }}</div>
+                            </div>
+                            <div class="form-card-footer">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="badge-icon">
+                                        <i class="fa-solid fa-chart-line"></i>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-[11px] font-black text-gray-800 uppercase tracking-tight leading-none">
+                                            {{ ass.unit if ass.unit else 'Banvehpc' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <span class="form-cta">
+                                    Vào biểu mẫu <i class="fa-solid fa-arrow-right"></i>
+                                </span>
+                            </div>
+                        </a>
+                        {% set ns_tt.cnt = ns_tt.cnt + 1 %}
+                    {% endif %}
+                {% endfor %}
+                {% if ns_tt.cnt == 1 %}
+                    <div class="empty-section">
+                        <i class="fa-solid fa-inbox"></i> Không có biểu mẫu thẩm tra nào được phân công.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateCounts() {
+        const danhGiaCards = document.querySelectorAll('#grid-danh-gia .form-card');
+        const thamTraCards = document.querySelectorAll('#grid-tham-tra .form-card');
+        document.getElementById('count-danh-gia').textContent = danhGiaCards.length;
+        document.getElementById('count-tham-tra').textContent = thamTraCards.length;
+    }
+    updateCounts();
+
+    document.getElementById('sheetSearch').addEventListener('input', function () {
+        const q = this.value.toLowerCase().trim();
+        ['danh-gia', 'tham-tra'].forEach(function(section) {
+            const grid = document.getElementById('grid-' + section);
+            const cards = grid.querySelectorAll('.form-card');
+            let shown = 0;
+            cards.forEach(function(card) {
+                const match = card.innerText.toLowerCase().includes(q);
+                card.style.display = match ? '' : 'none';
+                if (match) shown++;
+            });
+            document.getElementById('count-' + section).textContent = shown;
+        });
+    });
+</script>
 </body>
 </html>
-<p>Role: {{ session.role }}</p>
