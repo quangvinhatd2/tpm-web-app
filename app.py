@@ -1,7 +1,9 @@
 import os
 import sqlite3
 import re
+import json
 from io import BytesIO
+from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
 from openpyxl import load_workbook, Workbook
 from openpyxl.styles import Font, Alignment
@@ -108,6 +110,12 @@ def init_db():
                 locked_danh_gia INTEGER DEFAULT 0,
                 locked_tham_tra INTEGER DEFAULT 0
             );
+            CREATE TABLE IF NOT EXISTS archives (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                archive_date TEXT NOT NULL,
+                table_name TEXT NOT NULL,
+                row_data TEXT NOT NULL
+            );
         ''')
 
         wb = load_workbook(PHAN_GIAO_FILE, data_only=True)
@@ -211,6 +219,56 @@ def is_evaluation_complete(sheet_name):
     sig_ok = (has_signature is not None and has_signature['reviewer_signature'] and
               has_signature['reviewer_signature'].strip() != '')
     return has_results > 0 and sig_ok
+
+def ensure_archive_table():
+    with get_db() as conn:
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS archives (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                archive_date TEXT NOT NULL,
+                table_name TEXT NOT NULL,
+                row_data TEXT NOT NULL
+            )
+        ''')
+        conn.commit()
+
+def archive_current_data():
+    ensure_archive_table()
+    archive_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    with get_db() as conn:
+        # Lưu evaluations
+        evals = conn.execute('SELECT * FROM evaluations').fetchall()
+        for row in evals:
+            row_dict = {key: row[key] for key in row.keys()}
+            conn.execute(
+                'INSERT INTO archives (archive_date, table_name, row_data) VALUES (?, ?, ?)',
+                (archive_date, 'evaluations', json.dumps(row_dict, ensure_ascii=False))
+            )
+        # Lưu review_comments
+        comments = conn.execute('SELECT * FROM review_comments').fetchall()
+        for row in comments:
+            row_dict = {key: row[key] for key in row.keys()}
+            conn.execute(
+                'INSERT INTO archives (archive_date, table_name, row_data) VALUES (?, ?, ?)',
+                (archive_date, 'review_comments', json.dumps(row_dict, ensure_ascii=False))
+            )
+        # Lưu suggestions
+        suggs = conn.execute('SELECT * FROM suggestions').fetchall()
+        for row in suggs:
+            row_dict = {key: row[key] for key in row.keys()}
+            conn.execute(
+                'INSERT INTO archives (archive_date, table_name, row_data) VALUES (?, ?, ?)',
+                (archive_date, 'suggestions', json.dumps(row_dict, ensure_ascii=False))
+            )
+        conn.commit()
+    print(f"Đã sao lưu dữ liệu vào archive ngày {archive_date}")
+
+def reset_current_data():
+    with get_db() as conn:
+        conn.execute('DELETE FROM evaluations')
+        conn.execute('DELETE FROM review_comments')
+        conn.execute('DELETE FROM suggestions')
+        conn.commit()
 
 # -------------------- ROUTES --------------------
 @app.route('/')
@@ -400,6 +458,12 @@ def save():
                             'INSERT OR REPLACE INTO evaluations (user_id, sheet_name, row_index, col_letter, value) VALUES (?,?,?,?,?)',
                             (uid, sn, row, col, v)
                         )
+            # Lưu thời gian hoàn thành cho đánh giá (hàng 4, cột F)
+            now = datetime.now().strftime('%Hh%M ngày %d/%m/%y')
+            conn.execute(
+                'INSERT OR REPLACE INTO evaluations (user_id, sheet_name, row_index, col_letter, value) VALUES (?,?,?,?,?)',
+                (uid, sn, 4, 'F', now)
+            )
             conn.execute(
                 '''INSERT INTO suggestions (sheet_name, suggestion, reviewer_signature, locked_danh_gia)
                    VALUES (?,?,?,1) ON CONFLICT(sheet_name) DO UPDATE SET
@@ -447,6 +511,12 @@ def save():
                             'INSERT OR REPLACE INTO review_comments (reviewer_id, sheet_name, row_index, comment) VALUES (?,?,?,?)',
                             (uid, sn, row, v)
                         )
+            # Lưu thời gian hoàn thành cho thẩm tra (hàng 5, cột F)
+            now = datetime.now().strftime('%Hh%M ngày %d/%m/%y')
+            conn.execute(
+                'INSERT OR REPLACE INTO evaluations (user_id, sheet_name, row_index, col_letter, value) VALUES (?,?,?,?,?)',
+                (uid, sn, 5, 'F', now)
+            )
             conn.execute(
                 '''INSERT INTO suggestions (sheet_name, reviewer_comment, checker_signature, locked_tham_tra)
                    VALUES (?,?,?,1) ON CONFLICT(sheet_name) DO UPDATE SET
@@ -457,6 +527,129 @@ def save():
         flash('Đã lưu ý kiến thẩm tra thành công.')
 
     return redirect(url_for('evaluation_form', sheet_name=sn))
+
+@app.route('/export_all_forms')
+def export_all_forms():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        flash('Bạn không có quyền truy cập chức năng này.')
+        return redirect(url_for('dashboard'))
+
+    # Lấy danh sách các sheet đã được thẩm tra (locked_tham_tra = 1)
+    with get_db() as conn:
+        sheets = conn.execute('''
+            SELECT DISTINCT sheet_name FROM suggestions WHERE locked_tham_tra = 1
+        ''').fetchall()
+    if not sheets:
+        flash('Chưa có biểu mẫu nào được thẩm tra hoàn thành.')
+        return redirect(url_for('dashboard'))
+
+    wb = Workbook()
+    # Xóa sheet mặc định
+    wb.remove(wb.active)
+
+    rev_map = build_reverse_mapping()
+    for sheet in sheets:
+        sheet_name = sheet['sheet_name']
+        # Lấy dữ liệu của sheet này
+        headers, rows, extra = get_sheet_data(sheet_name)
+        if not headers:
+            continue
+        # Tạo sheet mới với tên sheet (ánh xạ ngược lại mã biểu mẫu nếu cần)
+        display_name = rev_map.get(sheet_name, sheet_name)
+        ws = wb.create_sheet(title=display_name[:31])  # Excel giới hạn 31 ký tự
+
+        # Ghi header (7 dòng đầu)
+        for i, row in enumerate(headers, start=1):
+            ws.append([row.get(col, '') for col in 'ABCDEF'])
+        # Thêm dòng trống
+        ws.append([])
+        # Ghi nội dung đánh giá (từ rows)
+        # Thêm tiêu đề cột cho phần đánh giá
+        ws.append(["Hạng mục", "STT", "Nội dung đánh giá", "Tiêu chuẩn", "Phương pháp", "Trạng thái TB",
+                   "Kết quả", "Mô tả", "Đơn vị thực hiện", "Thời gian", "Giải pháp"])
+        # Lấy dữ liệu đã lưu
+        with get_db() as conn:
+            evals = {(r['row_index'], r['col_letter']): r['value']
+                     for r in conn.execute(
+                         'SELECT row_index, col_letter, value FROM evaluations WHERE sheet_name = ?',
+                         (sheet_name,)
+                     )}
+            comments = {r['row_index']: r['comment']
+                        for r in conn.execute(
+                            'SELECT row_index, comment FROM review_comments WHERE sheet_name = ?',
+                            (sheet_name,)
+                        )}
+            sugg = conn.execute('SELECT * FROM suggestions WHERE sheet_name = ?', (sheet_name,)).fetchone()
+        # Ghi từng dòng
+        for idx, row in enumerate(rows, start=10):
+            ws.append([
+                row['A'], row['B'], row['C'], row['D'], row['E'], row['F'],
+                evals.get((idx, 'G'), ''),
+                evals.get((idx, 'H'), ''),
+                evals.get((idx, 'I'), ''),
+                evals.get((idx, 'J'), ''),
+                evals.get((idx, 'K'), '')
+            ])
+            # Nếu có ý kiến thẩm tra, thêm vào cột thứ 12 (vị trí sau giải pháp)
+            if comments.get(idx):
+                ws.cell(row=ws.max_row, column=12, value=comments[idx])
+        # Ghi phần extra (kiến nghị, ký xác nhận)
+        ws.append([])
+        ws.append(["Kiến nghị và ký xác nhận"])
+        ws.append(["Kiến nghị (nếu có):", extra[0].get('B', '') if extra else ''])
+        ws.append(["Người đánh giá:", sugg['reviewer_signature'] if sugg else ''])
+        ws.append(["Người thẩm tra:", sugg['checker_signature'] if sugg else ''])
+
+        # Tự động điều chỉnh độ rộng cột
+        for col in ws.columns:
+            max_length = 0
+            col_letter = col[0].column_letter
+            for cell in col:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            ws.column_dimensions[col_letter].width = adjusted_width
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return send_file(output,
+                     download_name=f'All_Forms_{datetime.now().strftime("%Y%m")}.xlsx',
+                     as_attachment=True,
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+@app.route('/reset_cycle')
+def reset_cycle():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        flash('Bạn không có quyền truy cập chức năng này.')
+        return redirect(url_for('dashboard'))
+    return '''
+    <!DOCTYPE html>
+    <html>
+    <head><title>Xác nhận reset chu kỳ</title></head>
+    <body>
+        <h2>Bạn có chắc chắn muốn reset dữ liệu cho chu kỳ mới?</h2>
+        <p>Dữ liệu hiện tại sẽ được sao lưu và xóa để bắt đầu chu kỳ đánh giá mới.</p>
+        <form method="post" action="/confirm_reset">
+            <button type="submit">Xác nhận reset</button>
+            <a href="/dashboard">Hủy</a>
+        </form>
+    </body>
+    </html>
+    '''
+
+@app.route('/confirm_reset', methods=['POST'])
+def confirm_reset():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        flash('Bạn không có quyền truy cập chức năng này.')
+        return redirect(url_for('dashboard'))
+    archive_current_data()
+    reset_current_data()
+    flash('Đã sao lưu và reset dữ liệu cho chu kỳ mới.')
+    return redirect(url_for('dashboard'))
 
 @app.route('/export_summary')
 def export_summary():

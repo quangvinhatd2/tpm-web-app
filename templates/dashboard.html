@@ -482,6 +482,12 @@
         <a href="{{ url_for('export_summary') }}" class="nav-item admin">
             <i class="fa-solid fa-file-export"></i> Xuất báo cáo tổng
         </a>
+        <a href="{{ url_for('export_all_forms') }}" class="nav-item admin">
+            <i class="fa-solid fa-download"></i> Xuất tất cả biểu mẫu
+        </a>
+        <a href="{{ url_for('reset_cycle') }}" class="nav-item admin">
+            <i class="fa-solid fa-arrows-rotate"></i> Bắt đầu tháng mới
+        </a>
         {% endif %}
     </nav>
 
