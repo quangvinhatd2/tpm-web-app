@@ -6,6 +6,7 @@
     <title>{{ 'Đánh giá' if role == 'danh_gia' else 'Thẩm tra' }}: {{ sheet_name }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* (toàn bộ CSS giữ nguyên) */
         :root {
             --evn-blue:      #003087;
             --evn-blue-mid:  #0055b3;
@@ -287,7 +288,6 @@
         }
         select:focus { border-color: var(--evn-blue-mid); box-shadow: 0 0 0 3px rgba(0,85,179,.12); }
 
-        /* Result badge states */
         select.da {
             background-color: var(--evn-green);
             color: #fff;
@@ -334,7 +334,7 @@
         .result-badge.dat  { background: var(--evn-green-bg); color: var(--evn-green); border: 2px solid var(--evn-green); }
         .result-badge.kdat { background: var(--evn-red-bg);   color: var(--evn-red);   border: 2px solid var(--evn-red); }
 
-        /* ── EXTRA TABLE (kiến nghị / ký xác nhận) ── */
+        /* ── EXTRA TABLE ── */
         .extra-table { width: 100%; border-collapse: collapse; }
         .extra-table td { border: 1px solid var(--border); padding: 10px 14px; vertical-align: top; }
         .extra-table .label-cell {
@@ -373,7 +373,7 @@
         }
         .btn-submit:active { transform: translateY(0); }
 
-        /* ── UNIT CHIP (read-only) ── */
+        /* ── UNIT CHIP ── */
         .unit-chip {
             display: inline-block;
             font-size: 11.5px;
@@ -385,10 +385,8 @@
         .unit-chip.pxsc-chip  { background: var(--evn-green-bg); color: var(--evn-green); }
         .unit-chip.pktat-chip { background: #e3f4fb; color: #0277bd; }
 
-        /* ── Scrollable table wrapper ── */
         .table-scroll { overflow-x: auto; }
 
-        /* ── Section label ── */
         .section-label {
             font-family: 'Barlow Condensed', sans-serif;
             font-size: 13px;
@@ -405,47 +403,23 @@
            MOBILE RESPONSIVE  (max-width: 768px)
         ════════════════════════════════════════ */
         @media (max-width: 768px) {
-
-            /* Trang tổng thể */
             body { font-size: 14px; }
             .page { padding: 12px 10px 100px; max-width: 100%; }
-
-            /* Nav */
             .topnav { padding: 0 14px; height: 52px; }
             .topnav-title { display: none; }
             .topnav-links a { padding: 6px 10px; font-size: 12px; }
-
-            /* Page header */
-            .page-header {
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 14px 16px;
-                gap: 8px;
-            }
+            .page-header { flex-direction: column; align-items: flex-start; padding: 14px 16px; gap: 8px; }
             .page-header-right { display: none; }
             .page-header h1 { font-size: 15px; }
-
-            /* Card */
             .card { border-radius: 8px; margin-bottom: 14px; }
             .card-header { font-size: 13px; padding: 10px 14px; }
-
-            /* ── BẢNG THÔNG TIN CHUNG → dạng stack ── */
             .header-table,
             .header-table tbody,
             .header-table tr,
             .header-table td { display: block; width: 100% !important; }
-            .header-table tr {
-                border-bottom: 2px solid var(--border-light);
-                padding: 2px 0;
-            }
-            .header-table td {
-                border: none;
-                padding: 6px 14px;
-                font-size: 13.5px;
-            }
+            .header-table tr { border-bottom: 2px solid var(--border-light); padding: 2px 0; }
+            .header-table td { border: none; padding: 6px 14px; font-size: 13.5px; }
             .header-table td:empty { display: none; }
-
-            /* ── BẢNG NỘI DUNG → mỗi hàng thành 1 card ── */
             .content-table thead { display: none; }
             .content-table,
             .content-table tbody { display: block; width: 100%; }
@@ -474,8 +448,6 @@
             .content-table td:last-child { border-bottom: none; }
             .content-table td[data-label=""]:empty,
             .content-table td:empty { display: none; }
-
-            /* Label nhãn trước mỗi ô */
             .content-table td::before {
                 content: attr(data-label);
                 min-width: 115px;
@@ -485,41 +457,15 @@
                 flex-shrink: 0;
                 padding-top: 3px;
             }
-
-            /* Select & Textarea dễ bấm tay */
-            select {
-                width: 100%;
-                min-height: 44px;
-                border-radius: 8px;
-                font-size: 14px;
-                padding: 8px 32px 8px 12px;
-            }
-            textarea {
-                min-height: 68px;
-                font-size: 14px;
-                padding: 8px 10px;
-            }
-            .header-table input[type="text"] {
-                min-height: 44px;
-                font-size: 14px;
-                padding: 8px 12px;
-            }
-
-            /* Extra table (Kiến nghị / ký xác nhận) */
+            select { width: 100%; min-height: 44px; border-radius: 8px; font-size: 14px; padding: 8px 32px 8px 12px; }
+            textarea { min-height: 68px; font-size: 14px; padding: 8px 10px; }
+            .header-table input[type="text"] { min-height: 44px; font-size: 14px; padding: 8px 12px; }
             .extra-table,
             .extra-table tbody,
             .extra-table tr,
             .extra-table td { display: block; width: 100% !important; }
-            .extra-table .label-cell {
-                width: 100% !important;
-                border-bottom: none;
-                padding: 10px 14px 4px;
-                white-space: normal;
-                font-size: 13px;
-            }
+            .extra-table .label-cell { width: 100% !important; border-bottom: none; padding: 10px 14px 4px; white-space: normal; font-size: 13px; }
             .extra-table td:not(.label-cell) { padding: 6px 14px 14px; }
-
-            /* Nút Lưu cố định dưới màn hình */
             .submit-bar {
                 position: fixed;
                 bottom: 0; left: 0; right: 0;
@@ -530,12 +476,7 @@
                 z-index: 200;
                 box-shadow: 0 -4px 16px rgba(0,48,135,.12);
             }
-            .btn-submit {
-                width: 100%;
-                padding: 14px;
-                font-size: 15px;
-                border-radius: 8px;
-            }
+            .btn-submit { width: 100%; padding: 14px; font-size: 15px; border-radius: 8px; }
         }
 
         @media (max-width: 400px) {
@@ -596,7 +537,7 @@
                 <div class="table-scroll">
                 <table class="header-table">
                     {% for row_idx, row in enumerate(headers, start=1) %}
-                    <tr>
+                     <tr>
                         {% for col in ['A','B','C','D','E','F'] %}
                             {% set cell_value = row[col] or '' %}
                             {% set cell_key = (row_idx, col) %}
@@ -606,7 +547,7 @@
                             {% elif role == 'tham_tra' and row_idx == 6 and col == 'F' %}
                                 {% set editable = True %}
                             {% endif %}
-                            <td>
+                             <td>
                                 {% if editable %}
                                     {% set current_value = saved_header.get(cell_key, cell_value) if saved_header is defined else cell_value %}
                                     <input type="text" name="header_{{ row_idx }}_{{ col }}"
@@ -616,10 +557,10 @@
                                     {% set other_val = saved_header.get(cell_key) if saved_header is defined else None %}
                                     {{ other_val if (other_val != None and other_val != '') else cell_value }}
                                 {% endif %}
-                            </td>
+                             </td>
                         {% endfor %}
                         <td colspan="5"></td>
-                    </tr>
+                     </tr>
                     {% endfor %}
                 </table>
                 </div>
@@ -635,7 +576,7 @@
                 <div class="table-scroll">
                 <table class="content-table">
                     <thead>
-                        <tr>
+                         <tr>
                             <th>Hạng mục</th>
                             <th>STT</th>
                             <th>Nội dung đánh giá</th>
@@ -648,11 +589,11 @@
                             <th>Thời gian</th>
                             <th>Giải pháp</th>
                             {% if role == 'tham_tra' %}<th>Ý kiến thẩm tra</th>{% endif %}
-                        </tr>
+                         </tr>
                     </thead>
                     <tbody>
                         {% for idx, row in enumerate(rows, start=10) %}
-                        <tr>
+                         <tr>
                             <td data-label="Hạng mục">{{ row['A'] }}</td>
                             <td data-label="STT">{{ row['B'] }}</td>
                             <td data-label="Nội dung">{{ row['C'] }}</td>
@@ -661,7 +602,6 @@
                             <td data-label="Trạng thái TB">{{ row['F'] }}</td>
 
                             {% if role == 'danh_gia' %}
-                                {# Kết quả G #}
                                 {% set saved_val_G = saved.get((idx, 'G'), '') %}
                                 <td data-label="Kết quả (Đ/K)">
                                     <select name="eval_{{ idx }}_G" class="result-select">
@@ -671,7 +611,6 @@
                                     </select>
                                 </td>
                                 <td data-label="Mô tả"><textarea name="eval_{{ idx }}_H" rows="2">{{ saved.get((idx, 'H'), '') if saved.get((idx, 'H')) != None else '' }}</textarea></td>
-                                {# Đơn vị I #}
                                 {% set saved_val_I = saved.get((idx, 'I'), '') %}
                                 <td data-label="Đơn vị thực hiện">
                                     <select name="eval_{{ idx }}_I" class="unit-select">
@@ -685,7 +624,6 @@
                                 <td data-label="Giải pháp"><textarea name="eval_{{ idx }}_K" rows="2">{{ saved.get((idx, 'K'), '') if saved.get((idx, 'K')) != None else '' }}</textarea></td>
 
                             {% else %}
-                                {# Read-only Kết quả G #}
                                 {% set g_val = saved.get((idx, 'G'), '') if saved.get((idx, 'G')) != None else '' %}
                                 <td data-label="Kết quả (Đ/K)">
                                     {% if g_val == 'Đ' %}
@@ -695,7 +633,6 @@
                                     {% else %}—{% endif %}
                                 </td>
                                 <td data-label="Mô tả">{{ saved.get((idx, 'H'), '') if saved.get((idx, 'H')) != None else '' }}</td>
-                                {# Đơn vị chip #}
                                 {% set i_val = saved.get((idx, 'I'), '') if saved.get((idx, 'I')) != None else '' %}
                                 <td data-label="Đơn vị">
                                     {% if i_val == 'PXVH' %}<span class="unit-chip pxvh-chip">PXVH</span>
@@ -707,7 +644,7 @@
                                 <td data-label="Giải pháp">{{ saved.get((idx, 'K'), '') if saved.get((idx, 'K')) != None else '' }}</td>
                                 <td data-label="Ý kiến thẩm tra"><textarea name="comment_{{ idx }}" data-stt="{{ row['B'] }}" rows="2" placeholder="Nhập ý kiến thẩm tra…">{{ saved_comments.get(idx, '') if saved_comments.get(idx) != None else '' }}</textarea></td>
                             {% endif %}
-                        </tr>
+                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -722,7 +659,7 @@
             </div>
             <div class="card-body" style="padding: 0;">
                 <table class="extra-table">
-                    <tr>
+                     <tr>
                         <td class="label-cell"><span class="cell-icon">📌</span>Kiến nghị (nếu có)</td>
                         <td>
                             {% for row in extra %}
@@ -731,8 +668,8 @@
                                 {% endif %}
                             {% endfor %}
                         </td>
-                    </tr>
-                    <tr>
+                     </tr>
+                     <tr>
                         <td class="label-cell"><span class="cell-icon">👤</span>Người đánh giá</td>
                         <td>
                             {% if role == 'danh_gia' %}
@@ -741,8 +678,8 @@
                                 <span style="white-space:pre-line;">{{ reviewer_signature if (reviewer_signature != None and reviewer_signature != 'None') else '—' }}</span>
                             {% endif %}
                         </td>
-                    </tr>
-                    <tr>
+                     </tr>
+                     <tr>
                         <td class="label-cell"><span class="cell-icon">🔍</span>Người thẩm tra</td>
                         <td>
                             {% if role == 'tham_tra' %}
@@ -751,7 +688,7 @@
                                 <span style="white-space:pre-line;">{{ checker_signature if (checker_signature != None and checker_signature != 'None') else '—' }}</span>
                             {% endif %}
                         </td>
-                    </tr>
+                     </tr>
                 </table>
             </div>
         </div>
@@ -764,6 +701,43 @@
 </div><!-- /page -->
 
 <script>
+    /* ── Lấy trạng thái khoá từ server ── */
+    var locked_danh_gia = {{ locked_danh_gia }};
+    var locked_tham_tra = {{ locked_tham_tra }};
+    var role = '{{ role }}';
+
+    /* ── Nếu phiếu đã bị khoá thì vô hiệu hoá các trường tương ứng ── */
+    if (role === 'danh_gia' && locked_danh_gia) {
+        // Vô hiệu hoá tất cả các ô nhập của đánh giá
+        document.querySelectorAll('.content-table select[name^="eval_"], .content-table textarea, textarea[name="reviewer_signature"], textarea[name="suggestion"]')
+            .forEach(el => el.disabled = true);
+        // Ẩn nút lưu
+        let btn = document.querySelector('button[type="submit"]');
+        if (btn) btn.style.display = 'none';
+        // Thêm thông báo
+        const msg = document.createElement('div');
+        msg.className = 'flash';
+        msg.innerHTML = '<span>🔒 Phiếu đánh giá đã được lưu, không thể chỉnh sửa.</span>';
+        msg.style.background = '#fdecea';
+        msg.style.color = '#c0392b';
+        document.querySelector('.page').insertBefore(msg, document.querySelector('form'));
+    }
+    if (role === 'tham_tra' && locked_tham_tra) {
+        // Vô hiệu hoá các ô nhập của thẩm tra (comment và checker_signature)
+        document.querySelectorAll('textarea[name^="comment_"], textarea[name="checker_signature"]')
+            .forEach(el => el.disabled = true);
+        // Ẩn nút lưu
+        let btn = document.querySelector('button[type="submit"]');
+        if (btn) btn.style.display = 'none';
+        // Thêm thông báo
+        const msg = document.createElement('div');
+        msg.className = 'flash';
+        msg.innerHTML = '<span>🔒 Phiếu thẩm tra đã được lưu, không thể chỉnh sửa.</span>';
+        msg.style.background = '#fdecea';
+        msg.style.color = '#c0392b';
+        document.querySelector('.page').insertBefore(msg, document.querySelector('form'));
+    }
+
     /* ── Select color updaters ── */
     function updateSelectColor(el) {
         el.classList.remove('da','khong','default');
@@ -789,56 +763,64 @@
         s.addEventListener('change', () => updateUnitSelectColor(s));
     });
 
-    /* ── Validation ── */
+    /* ── Validation + Confirm (chỉ thực hiện nếu chưa bị khoá) ── */
     const colNames = { G:'Kết quả (Đ/K)', H:'Mô tả', I:'Đơn vị thực hiện', J:'Thời gian', K:'Giải pháp' };
-    const role = '{{ role }}';
 
-    document.querySelector('form').addEventListener('submit', function(e) {
-        const errors = [];
+    if ((role === 'danh_gia' && !locked_danh_gia) || (role === 'tham_tra' && !locked_tham_tra)) {
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
 
-        if (role === 'danh_gia') {
-            const ci = document.querySelector('input[name="header_6_E"]');
-            if (ci && !ci.value.trim()) errors.push('Chưa nhập "Nhiệt độ môi trường - Kiểm tra".');
-        } else {
-            const ci = document.querySelector('input[name="header_6_F"]');
-            if (ci && !ci.value.trim()) errors.push('Chưa nhập "Nhiệt độ môi trường - Thẩm tra".');
-        }
+            const errors = [];
 
-        document.querySelectorAll('.content-table tbody tr').forEach(row => {
-            const stt = row.cells[1].innerText.trim();
             if (role === 'danh_gia') {
-                const sg = row.querySelector('select[name^="eval_"]');
-                if (sg) {
-                    const vg = sg.value;
-                    if (!vg) errors.push(`STT ${stt}: chưa chọn kết quả.`);
-                    if (vg === 'K') {
-                        row.querySelectorAll('textarea').forEach(ta => {
-                            if (!ta.value.trim()) {
-                                const m = ta.name.match(/eval_\d+_(.)/);
-                                if (m) errors.push(`STT ${stt} (K): thiếu ${colNames[m[1]] || m[1]}.`);
-                            }
-                        });
+                const ci = document.querySelector('input[name="header_6_E"]');
+                if (ci && !ci.value.trim()) errors.push('Chưa nhập "Nhiệt độ môi trường - Kiểm tra".');
+            } else {
+                const ci = document.querySelector('input[name="header_6_F"]');
+                if (ci && !ci.value.trim()) errors.push('Chưa nhập "Nhiệt độ môi trường - Thẩm tra".');
+            }
+
+            document.querySelectorAll('.content-table tbody tr').forEach(row => {
+                const stt = row.cells[1].innerText.trim();
+                if (role === 'danh_gia') {
+                    const sg = row.querySelector('select[name^="eval_"]');
+                    if (sg) {
+                        const vg = sg.value;
+                        if (!vg) errors.push(`STT ${stt}: chưa chọn kết quả.`);
+                        if (vg === 'K') {
+                            row.querySelectorAll('textarea').forEach(ta => {
+                                if (!ta.value.trim()) {
+                                    const m = ta.name.match(/eval_\d+_(.)/);
+                                    if (m) errors.push(`STT ${stt} (K): thiếu ${colNames[m[1]] || m[1]}.`);
+                                }
+                            });
+                        }
                     }
                 }
+            });
+
+            if (role === 'danh_gia') {
+                const rs = document.querySelector('textarea[name="reviewer_signature"]');
+                if (rs && !rs.value.trim()) errors.push('Chưa nhập ô "Người đánh giá".');
+            } else {
+                document.querySelectorAll('textarea[name^="comment_"]').forEach(ta => {
+                    if (!ta.value.trim()) errors.push(`STT ${ta.dataset.stt}: chưa nhập ý kiến thẩm tra.`);
+                });
+                const cs = document.querySelector('textarea[name="checker_signature"]');
+                if (cs && !cs.value.trim()) errors.push('Chưa nhập ô "Người thẩm tra".');
+            }
+
+            if (errors.length) {
+                alert('⚠️ Vui lòng hoàn thành các thông tin sau:\n\n' + errors.join('\n'));
+                return;
+            }
+
+            const confirmed = confirm('Bạn có chắc chắn muốn lưu dữ liệu đã nhập không?');
+            if (confirmed) {
+                this.submit();
             }
         });
-
-        if (role === 'danh_gia') {
-            const rs = document.querySelector('textarea[name="reviewer_signature"]');
-            if (rs && !rs.value.trim()) errors.push('Chưa nhập ô "Người đánh giá".');
-        } else {
-            document.querySelectorAll('textarea[name^="comment_"]').forEach(ta => {
-                if (!ta.value.trim()) errors.push(`STT ${ta.dataset.stt}: chưa nhập ý kiến thẩm tra.`);
-            });
-            const cs = document.querySelector('textarea[name="checker_signature"]');
-            if (cs && !cs.value.trim()) errors.push('Chưa nhập ô "Người thẩm tra".');
-        }
-
-        if (errors.length) {
-            alert('⚠️ Vui lòng hoàn thành các thông tin sau:\n\n' + errors.join('\n'));
-            e.preventDefault();
-        }
-    });
+    }
 </script>
 </body>
 </html>

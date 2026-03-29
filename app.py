@@ -104,7 +104,9 @@ def init_db():
                 suggestion TEXT,
                 reviewer_comment TEXT,
                 reviewer_signature TEXT,
-                checker_signature TEXT
+                checker_signature TEXT,
+                locked_danh_gia INTEGER DEFAULT 0,
+                locked_tham_tra INTEGER DEFAULT 0
             );
         ''')
 
@@ -144,7 +146,7 @@ def init_db():
                         (uid, sname, 'tham_tra')
                     )
 
-        # Tạo tài khoản admin nếu chưa tồn tại
+        # Tạo tài khoản admin
         admin_username = 'admin'
         admin_exists = conn.execute('SELECT id FROM users WHERE username = ?', (admin_username,)).fetchone()
         if not admin_exists:
@@ -191,6 +193,25 @@ def get_sheet_data(sheet_name):
         print(f"Lỗi đọc sheet {sheet_name}: {e}")
         return None, None, None
 
+def is_evaluation_complete(sheet_name):
+    with get_db() as conn:
+        has_results = conn.execute(
+            '''SELECT COUNT(*) as cnt FROM evaluations
+               WHERE sheet_name = ? AND col_letter = 'G' AND value != ''
+               AND value IS NOT NULL''',
+            (sheet_name,)
+        ).fetchone()['cnt']
+
+        has_signature = conn.execute(
+            '''SELECT reviewer_signature FROM suggestions
+               WHERE sheet_name = ?''',
+            (sheet_name,)
+        ).fetchone()
+
+    sig_ok = (has_signature is not None and has_signature['reviewer_signature'] and
+              has_signature['reviewer_signature'].strip() != '')
+    return has_results > 0 and sig_ok
+
 # -------------------- ROUTES --------------------
 @app.route('/')
 def index():
@@ -219,16 +240,27 @@ def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     with get_db() as conn:
-        assigns = conn.execute(
-            'SELECT sheet_name, role FROM assignments WHERE user_id = ?',
-            (session['user_id'],)
-        ).fetchall()
-    return render_template('dashboard.html', assignments=assigns)
+        assigns = conn.execute('''
+            SELECT a.sheet_name, a.role,
+                   COALESCE(s.locked_danh_gia, 0) as locked_danh_gia,
+                   COALESCE(s.locked_tham_tra, 0) as locked_tham_tra
+            FROM assignments a
+            LEFT JOIN suggestions s ON a.sheet_name = s.sheet_name
+            WHERE a.user_id = ?
+        ''', (session['user_id'],)).fetchall()
+
+    eval_status = {}
+    for ass in assigns:
+        if ass['role'] == 'tham_tra':
+            eval_status[ass['sheet_name']] = is_evaluation_complete(ass['sheet_name'])
+
+    return render_template('dashboard.html', assignments=assigns, eval_status=eval_status)
 
 @app.route('/form/<sheet_name>')
 def evaluation_form(sheet_name):
     if 'user_id' not in session:
         return redirect(url_for('login'))
+
     with get_db() as conn:
         assign = conn.execute(
             'SELECT role FROM assignments WHERE user_id = ? AND sheet_name = ?',
@@ -242,15 +274,14 @@ def evaluation_form(sheet_name):
         return f"Không tìm thấy sheet {sheet_name} trong file forms.xlsx", 404
 
     with get_db() as conn:
-        # Lấy dữ liệu đánh giá và header đã lưu
         db_rows = conn.execute(
                      'SELECT row_index, col_letter, value FROM evaluations WHERE sheet_name = ?',
                      (sheet_name,)
                  ).fetchall()
-        
+
         evals = {(r['row_index'], r['col_letter']): r['value'] for r in db_rows if r['row_index'] >= 10}
         saved_header = {(r['row_index'], r['col_letter']): r['value'] for r in db_rows if r['row_index'] < 10}
-        
+
         comms = {r['row_index']: r['comment']
                  for r in conn.execute(
                      'SELECT row_index, comment FROM review_comments WHERE sheet_name = ?',
@@ -258,11 +289,12 @@ def evaluation_form(sheet_name):
                  ).fetchall()}
         s = conn.execute('SELECT * FROM suggestions WHERE sheet_name = ?', (sheet_name,)).fetchone()
 
-    # Xử lý giá trị None từ DB để tránh hiển thị chữ 'None' trên giao diện
     suggestion = (s['suggestion'] if s else '') or ''
     reviewer_comment = (s['reviewer_comment'] if s else '') or ''
     reviewer_signature = (s['reviewer_signature'] if s else '') or ''
     checker_signature = (s['checker_signature'] if s else '') or ''
+    locked_danh_gia = int(s['locked_danh_gia']) if s and s['locked_danh_gia'] is not None else 0
+    locked_tham_tra = int(s['locked_tham_tra']) if s and s['locked_tham_tra'] is not None else 0
 
     return render_template(
         'evaluation_form.html',
@@ -278,6 +310,8 @@ def evaluation_form(sheet_name):
         reviewer_comment=reviewer_comment,
         reviewer_signature=reviewer_signature,
         checker_signature=checker_signature,
+        locked_danh_gia=locked_danh_gia,
+        locked_tham_tra=locked_tham_tra,
         enumerate=enumerate
     )
 
@@ -289,7 +323,6 @@ def save():
     role = request.form.get('role')
     uid = session['user_id']
 
-    # Hàm chuyển tên cột sang tên hiển thị
     def col_name(col):
         return {
             'H': 'Mô tả',
@@ -298,7 +331,7 @@ def save():
             'K': 'Giải pháp'
         }.get(col, col)
 
-    # Kiểm tra và lưu dữ liệu header (nhiệt độ)
+    # Lưu header nhiệt độ
     with get_db() as conn:
         if role == 'danh_gia':
             cycle_val = request.form.get('header_6_E', '').strip()
@@ -320,7 +353,6 @@ def save():
             )
         conn.commit()
 
-    # Thu thập các ô eval
     eval_items = {}
     for key, value in request.form.items():
         if key.startswith('eval_'):
@@ -336,7 +368,6 @@ def save():
                 eval_items[row][col] = value
 
     if role == 'danh_gia':
-        # Kiểm tra từng dòng nội dung
         for row, cols in eval_items.items():
             if 'G' not in cols or not cols['G'].strip():
                 flash(f'Dòng {row}: chưa chọn kết quả (cột G).')
@@ -350,13 +381,11 @@ def save():
                     flash(f'Dòng {row} (kết quả K) còn thiếu các cột: {", ".join(missing)}.')
                     return redirect(url_for('evaluation_form', sheet_name=sn))
 
-        # Kiểm tra kiến nghị của người đánh giá
         reviewer_sig = request.form.get('reviewer_signature', '').strip()
         if not reviewer_sig:
             flash('Vui lòng nhập nội dung tại ô "Người đánh giá" (ký xác nhận).')
             return redirect(url_for('evaluation_form', sheet_name=sn))
 
-        # Lưu dữ liệu đánh giá chi tiết
         with get_db() as conn:
             for k, v in request.form.items():
                 if k.startswith('eval_'):
@@ -372,16 +401,15 @@ def save():
                             (uid, sn, row, col, v)
                         )
             conn.execute(
-                '''INSERT INTO suggestions (sheet_name, suggestion, reviewer_signature)
-                   VALUES (?,?,?) ON CONFLICT(sheet_name) DO UPDATE SET
-                   suggestion=excluded.suggestion, reviewer_signature=excluded.reviewer_signature''',
+                '''INSERT INTO suggestions (sheet_name, suggestion, reviewer_signature, locked_danh_gia)
+                   VALUES (?,?,?,1) ON CONFLICT(sheet_name) DO UPDATE SET
+                   suggestion=excluded.suggestion, reviewer_signature=excluded.reviewer_signature, locked_danh_gia=1''',
                 (sn, request.form.get('suggestion', ''), reviewer_sig)
             )
             conn.commit()
         flash('Đã lưu đánh giá thành công.')
 
     elif role == 'tham_tra':
-        # Kiểm tra ý kiến thẩm tra từng dòng
         comment_items = {}
         for key, value in request.form.items():
             if key.startswith('comment_'):
@@ -392,23 +420,20 @@ def save():
                     except:
                         continue
                     comment_items[row] = value
-        
+
         with get_db() as conn:
             rows_to_check = conn.execute('SELECT DISTINCT row_index FROM evaluations WHERE sheet_name=? AND col_letter="G"', (sn,)).fetchall()
-        
         for r in rows_to_check:
             row = r['row_index']
             if row not in comment_items or not comment_items[row].strip():
                 flash(f'Dòng {row}: chưa nhập ý kiến thẩm tra.')
                 return redirect(url_for('evaluation_form', sheet_name=sn))
 
-        # Kiểm tra chữ ký thẩm tra
         checker_sig = request.form.get('checker_signature', '').strip()
         if not checker_sig:
             flash('Vui lòng nhập nội dung tại ô "Người thẩm tra" (ký xác nhận).')
             return redirect(url_for('evaluation_form', sheet_name=sn))
 
-        # Lưu dữ liệu thẩm tra
         with get_db() as conn:
             for k, v in request.form.items():
                 if k.startswith('comment_'):
@@ -423,9 +448,9 @@ def save():
                             (uid, sn, row, v)
                         )
             conn.execute(
-                '''INSERT INTO suggestions (sheet_name, reviewer_comment, checker_signature)
-                   VALUES (?,?,?) ON CONFLICT(sheet_name) DO UPDATE SET
-                   reviewer_comment=excluded.reviewer_comment, checker_signature=excluded.checker_signature''',
+                '''INSERT INTO suggestions (sheet_name, reviewer_comment, checker_signature, locked_tham_tra)
+                   VALUES (?,?,?,1) ON CONFLICT(sheet_name) DO UPDATE SET
+                   reviewer_comment=excluded.reviewer_comment, checker_signature=excluded.checker_signature, locked_tham_tra=1''',
                 (sn, request.form.get('reviewer_comment', ''), checker_sig)
             )
             conn.commit()
@@ -554,5 +579,8 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    # init_db()  # Chỉ mở lại nếu muốn reset database từ file phan_giao.xlsx
+    # Bỏ comment dưới đây nếu muốn reset database khi khởi động (mất dữ liệu cũ)
+    # if os.path.exists(DATABASE):
+    #     os.remove(DATABASE)
+    # init_db()
     app.run(debug=True, host='0.0.0.0')

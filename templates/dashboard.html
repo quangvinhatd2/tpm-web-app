@@ -238,7 +238,7 @@
         .section-header.danh-gia .section-count-badge { background: var(--blue); color: #fff; box-shadow: 0 2px 6px rgba(0,48,135,0.2); }
         .section-header.tham-tra .section-count-badge { background: var(--green); color: #fff; box-shadow: 0 2px 6px rgba(26,122,74,0.2); }
 
-        /* ── FORM CARDS - NÂNG CẤP TRỰC QUAN ─────── */
+        /* ── FORM CARDS ─────────────────────────── */
         .forms-grid {
             display: flex;
             flex-direction: column;
@@ -274,32 +274,69 @@
             transition: opacity 0.3s;
         }
         .form-card.danh-gia:hover::before { opacity: 1; }
-        .form-card.tham-tra:hover::before { opacity: 1; }
+        .form-card.tham-tra:not(.locked):hover::before { opacity: 1; }
 
-        .form-card.danh-gia {
-            border-left: 4px solid var(--blue);
-        }
-        .form-card.tham-tra {
-            border-left: 4px solid var(--green);
-        }
+        .form-card.danh-gia { border-left: 4px solid var(--blue); }
+        .form-card.tham-tra { border-left: 4px solid var(--green); }
 
         .form-card.danh-gia:hover {
             transform: translateY(-6px) translateX(4px);
             box-shadow: 0 20px 30px -12px rgba(0,48,135,0.2);
             border-color: var(--blue-line);
         }
-        .form-card.tham-tra:hover {
+        .form-card.tham-tra:not(.locked):hover {
             transform: translateY(-6px) translateX(4px);
             box-shadow: 0 20px 30px -12px rgba(26,122,74,0.2);
             border-color: var(--green-line);
+        }
+
+        /* ── CARD KHOÁ ───────────────────────────── */
+        .form-card.locked {
+            opacity: .72;
+            cursor: not-allowed;
+            pointer-events: none;
+            background: #f7f8fc;
+            border-left-color: #b0bec5;
+        }
+        .form-card.locked .form-card-number {
+            background: #eceff1;
+            color: #90a4ae;
+        }
+        .form-card.locked .form-card-title { color: var(--text-3); }
+
+        .form-card.completed {
+            background: linear-gradient(120deg, #e8f5e9, #ffffff);
+            border-left-color: #2e7d32;
+        }
+        .form-card.pending {
+            background: linear-gradient(120deg, #fff9c4, #ffffff);
+            border-left-color: #fbc02d;
+        }
+
+        .lock-notice {
+            display: flex;
+            align-items: flex-start;
+            gap: 9px;
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            border-radius: 10px;
+            padding: 9px 12px;
+            font-size: 13px;
+            color: #7a5800;
+            line-height: 1.55;
+        }
+        .lock-notice i {
+            color: #f5a623;
+            font-size: 14px;
+            flex-shrink: 0;
+            margin-top: 2px;
         }
 
         .form-card-number {
             font-size: 14px;
             font-weight: 700;
             background: var(--surface);
-            width: 32px;
-            height: 32px;
+            width: 32px; height: 32px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -311,14 +348,12 @@
             box-shadow: inset 0 1px 2px rgba(0,0,0,0.02), 0 1px 1px rgba(0,0,0,0.02);
         }
         .form-card.danh-gia:hover .form-card-number {
-            background: var(--blue);
-            color: white;
+            background: var(--blue); color: white;
             transform: scale(1.05);
             box-shadow: 0 2px 8px rgba(0,48,135,0.3);
         }
-        .form-card.tham-tra:hover .form-card-number {
-            background: var(--green);
-            color: white;
+        .form-card.tham-tra:not(.locked):hover .form-card-number {
+            background: var(--green); color: white;
             transform: scale(1.05);
             box-shadow: 0 2px 8px rgba(26,122,74,0.3);
         }
@@ -338,7 +373,7 @@
             letter-spacing: -0.2px;
         }
         .form-card.danh-gia:hover .form-card-title { color: var(--blue-mid); }
-        .form-card.tham-tra:hover .form-card-title { color: var(--green); }
+        .form-card.tham-tra:not(.locked):hover .form-card-title { color: var(--green); }
 
         .form-card-footer {
             display: flex;
@@ -359,14 +394,14 @@
             transition: all 0.2s;
         }
         .form-card.danh-gia .form-cta { color: var(--blue); background: rgba(0,48,135,0.04); }
-        .form-card.tham-tra .form-cta { color: var(--green); background: rgba(26,122,74,0.04); }
+        .form-card.tham-tra:not(.locked) .form-cta { color: var(--green); background: rgba(26,122,74,0.04); }
+        .form-card.locked .form-cta { color: #b0bec5; background: transparent; }
         .form-cta i { font-size: 12px; transition: transform 0.2s; }
-        .form-card:hover .form-cta i { transform: translateX(4px); }
-        .form-card:hover .form-cta { background: rgba(0,0,0,0.02); }
+        .form-card:not(.locked):hover .form-cta i { transform: translateX(4px); }
+        .form-card:not(.locked):hover .form-cta { background: rgba(0,0,0,0.02); }
 
         .badge-icon {
-            width: 32px;
-            height: 32px;
+            width: 32px; height: 32px;
             background: linear-gradient(135deg, var(--blue-bg), var(--white));
             border-radius: 12px;
             display: flex;
@@ -488,7 +523,7 @@
                 {% for ass in assignments %}
                     {% if ass.role == 'danh_gia' %}
                         <a href="{{ url_for('evaluation_form', sheet_name=ass.sheet_name) }}"
-                           class="form-card danh-gia" data-section="danh-gia">
+                           class="form-card danh-gia {{ 'completed' if ass.locked_danh_gia else 'pending' }}" data-section="danh-gia">
                             <div class="form-card-header">
                                 <span class="form-card-number">{{ ns_dg.cnt }}</span>
                                 <div class="form-card-title">{{ ass.sheet_name }}</div>
@@ -537,6 +572,8 @@
                 {% set ns_tt = namespace(cnt=1) %}
                 {% for ass in assignments %}
                     {% if ass.role == 'tham_tra' %}
+                        {% set ready = eval_status.get(ass.sheet_name, false) %}
+                        {% if ready %}
                         <a href="{{ url_for('evaluation_form', sheet_name=ass.sheet_name) }}"
                            class="form-card tham-tra" data-section="tham-tra">
                             <div class="form-card-header">
@@ -559,6 +596,34 @@
                                 </span>
                             </div>
                         </a>
+                        {% else %}
+                        <div class="form-card tham-tra locked" data-section="tham-tra">
+                            <div class="form-card-header">
+                                <span class="form-card-number">{{ ns_tt.cnt }}</span>
+                                <div class="form-card-title">{{ ass.sheet_name }}</div>
+                            </div>
+                            <div class="lock-notice">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                Phiếu <strong>{{ ass.sheet_name }}</strong> chưa được người đánh giá hoàn thành.
+                                Vui lòng chờ người đánh giá lưu dữ liệu trước khi thẩm tra.
+                            </div>
+                            <div class="form-card-footer">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="badge-icon">
+                                        <i class="fa-solid fa-chart-line"></i>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-[11px] font-black text-gray-800 uppercase tracking-tight leading-none">
+                                            {{ ass.unit if ass.unit else 'Banvehpc' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <span class="form-cta">
+                                    <i class="fa-solid fa-lock"></i> Chờ đánh giá
+                                </span>
+                            </div>
+                        </div>
+                        {% endif %}
                         {% set ns_tt.cnt = ns_tt.cnt + 1 %}
                     {% endif %}
                 {% endfor %}
