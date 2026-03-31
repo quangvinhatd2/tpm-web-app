@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | TPM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background: #f0f3fa;
+            padding: 20px;
+        }
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px 30px;
+            border-radius: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        }
+        h1 {
+            font-size: 24px;
+            color: #003087;
+        }
+        .btn-group {
+            display: flex;
+            gap: 12px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-family: inherit;
+        }
+        .btn-primary {
+            background: #003087;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0055b3;
+        }
+        .btn-secondary {
+            background: #f5a623;
+            color: #1a2340;
+        }
+        .btn-secondary:hover {
+            background: #e69500;
+        }
+        .btn-outline {
+            background: white;
+            border: 1px solid #003087;
+            color: #003087;
+        }
+        .btn-outline:hover {
+            background: #e8f0fb;
+        }
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .stat-card h3 {
+            font-size: 14px;
+            color: #8796b0;
+            margin-bottom: 8px;
+        }
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #003087;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        }
+        .table-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            overflow-x: auto;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background: #f8faff;
+            font-weight: 600;
+            color: #1a2340;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #c0392b;
+            border-radius: 4px;
+            width: 0%;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-warning {
+            background: #fdecea;
+            color: #c0392b;
+        }
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+                text-align: center;
+            }
+            .btn-group {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard-container" id="dashboard-content">
+    <div class="header">
+        <h1><i class="fa-solid fa-chart-line"></i> Tổng quan khiếm khuyết thiết bị</h1>
+        <div class="btn-group">
+            <button class="btn btn-secondary" id="exportPdfBtn"><i class="fa-solid fa-download"></i> Xuất PDF</button>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+        </div>
+    </div>
+
+    <div class="stats-cards">
+        <div class="stat-card">
+            <h3>Tổng số hệ thống</h3>
+            <div class="number">{{ system_data|length }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Tổng số khiếm khuyết (K)</h3>
+            <div class="number">{{ system_data|sum(attribute='k_count') }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Trung bình tỷ lệ khiếm khuyết</h3>
+            <div class="number">{{ (system_data|sum(attribute='percentage') / system_data|length)|round(1) if system_data else 0 }}%</div>
+        </div>
+        <div class="stat-card">
+            <h3>Hệ thống có tỷ lệ cao nhất</h3>
+            <div class="number">{{ system_data[0].name if system_data else '—' }}</div>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="defectChart" width="800" height="400"></canvas>
+    </div>
+
+    <div class="table-container">
+        <h3 style="margin-bottom: 15px;">Chi tiết từng hệ thống</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Biểu mẫu</th>
+                    <th>Tổng số đánh giá</th>
+                    <th>Số khiếm khuyết (K)</th>
+                    <th>Tỷ lệ khiếm khuyết</th>
+                    <th>Biểu đồ</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in system_data %}
+                <tr>
+                    <td><strong>{{ item.name }}</strong></td>
+                    <td>{{ item.total }}</td>
+                    <td><span class="badge badge-warning">{{ item.k_count }}</span></td>
+                    <td>{{ item.percentage }}%</td>
+                    <td style="width: 200px;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ item.percentage }}%;"></div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not system_data %}
+                <tr><td colspan="5" style="text-align: center;">Chưa có dữ liệu đánh giá</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Dữ liệu từ backend
+    const systemData = {{ system_data | tojson }};
+    const labels = systemData.map(item => item.name);
+    const kCounts = systemData.map(item => item.k_count);
+    const percentages = systemData.map(item => item.percentage);
+
+    // Vẽ biểu đồ cột
+    const ctx = document.getElementById('defectChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Số khiếm khuyết (K)',
+                    data: kCounts,
+                    backgroundColor: '#c0392b',
+                    borderRadius: 6,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Tỷ lệ khiếm khuyết (%)',
+                    data: percentages,
+                    type: 'line',
+                    borderColor: '#f5a623',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#f5a623',
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    tension: 0.3,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Số khiếm khuyết'
+                    }
+                },
+                y1: {
+                    position: 'right',
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Tỷ lệ (%)'
+                    },
+                    grid: {
+                        drawOnChartArea: false
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            let value = context.raw;
+                            if (context.dataset.label === 'Tỷ lệ khiếm khuyết (%)') {
+                                return `${label}: ${value}%`;
+                            }
+                            return `${label}: ${value}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Xuất PDF
+    document.getElementById('exportPdfBtn').addEventListener('click', async function() {
+        const element = document.getElementById('dashboard-content');
+        // Thêm hiệu ứng loading
+        const btn = this;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xuất...';
+        btn.disabled = true;
+
+        try {
+            const canvas = await html2canvas(element, {
+                scale: 2,
+                backgroundColor: '#f0f3fa',
+                logging: false
+            });
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4'
+            });
+            const imgWidth = 280; // mm (A4 landscape width = 297mm, trừ margin)
+            const pageHeight = 210;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            pdf.addImage(imgData, 'PNG', 10, position + 10, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 10, position + 10, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+            }
+            pdf.save('TPM_Dashboard_Defect_Summary.pdf');
+        } catch (error) {
+            console.error('Xuất PDF lỗi:', error);
+            alert('Có lỗi xảy ra khi xuất PDF.');
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết phiếu lịch sử</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background: #f0f3fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 98%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        h1, h2 {
+            color: #003087;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 20px;
+            border: 1px solid #c9d4e8;
+        }
+        th, td {
+            border: 1px solid #c9d4e8;
+            padding: 8px;
+            vertical-align: top;
+        }
+        th {
+            background: #e8f0fb;
+            font-weight: 600;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #003087;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .info {
+            background: #f8faff;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <a href="{{ url_for('history') }}" class="back-link">← Quay lại lịch sử</a>
+    <h1>📄 Phiếu {{ history.sheet_name }}</h1>
+    <div class="info">
+        <strong>Thời gian lưu:</strong> {{ history.saved_at }}<br>
+        <strong>Vai trò:</strong> {{ 'Đánh giá' if history.role == 'danh_gia' else 'Thẩm tra' }}<br>
+        <strong>Người thực hiện:</strong> {{ history.user_fullname if history.user_fullname else '—' }}
+    </div>
+
+    <h2>📋 Thông tin chung (header)</h2>
+    <div style="overflow-x: auto;">
+    <table class="header-table">
+        <thead>
+            <tr>
+                <th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set header_data = {} %}
+            {% for e in snapshot.evals %}
+                {% set _ = header_data.update({ (e.row, e.col): e.value }) %}
+            {% endfor %}
+            {% for row_idx, row in enumerate(headers, start=1) %}
+             <tr>
+                {% for col in ['A','B','C','D','E','F'] %}
+                    {% set saved_value = header_data.get((row_idx, col)) %}
+                    <td>{{ saved_value if saved_value is not none else (row[col] or '') }}</td>
+                {% endfor %}
+             </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    <h2>📊 Nội dung đánh giá</h2>
+    <div style="overflow-x: auto;">
+    <table class="content-table">
+        <thead>
+             <tr>
+                <th>Hạng mục</th><th>STT</th><th>Nội dung</th><th>Tiêu chuẩn</th><th>Phương pháp</th><th>Trạng thái TB</th>
+                <th>Kết quả</th><th>Mô tả</th><th>Đơn vị</th><th>Thời gian</th><th>Giải pháp</th>
+                {% if history.role == 'tham_tra' %}<th>Ý kiến thẩm tra</th>{% endif %}
+             </tr>
+        </thead>
+        <tbody>
+            {% set evals_map = {} %}
+            {% for e in snapshot.evals %}
+                {% set _ = evals_map.update({ (e.row, e.col): e.value }) %}
+            {% endfor %}
+            {% set comments_map = {} %}
+            {% for c in snapshot.comments %}
+                {% set _ = comments_map.update({ c.row: c.comment }) %}
+            {% endfor %}
+            {% for idx, row in enumerate(rows, start=10) %}
+             <tr>
+                <td>{{ row.A }}</td>
+                <td>{{ row.B }}</td>
+                <td>{{ row.C }}</td>
+                <td>{{ row.D }}</td>
+                <td>{{ row.E }}</td>
+                <td>{{ row.F }}</td>
+                <td>{{ evals_map.get((idx, 'G'), '') }}</td>
+                <td>{{ evals_map.get((idx, 'H'), '') }}</td>
+                <td>{{ evals_map.get((idx, 'I'), '') }}</td>
+                <td>{{ evals_map.get((idx, 'J'), '') }}</td>
+                <td>{{ evals_map.get((idx, 'K'), '') }}</td>
+                {% if history.role == 'tham_tra' %}
+                <td>{{ comments_map.get(idx, '') }}</td>
+                {% endif %}
+             </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    <h2>✍️ Kiến nghị & ký xác nhận</h2>
+    <div style="overflow-x: auto;">
+    <table>
+         <tr><td style="width:150px; background:#f5f8ff;">Kiến nghị (nếu có)</td><td>{{ snapshot.suggestions.get('suggestion', '') }}</td></tr>
+         <tr><td style="background:#f5f8ff;">Người đánh giá</td><td>{{ snapshot.suggestions.get('reviewer_signature', '') }}</td></tr>
+         <tr><td style="background:#f5f8ff;">Người thẩm tra</td><td>{{ snapshot.suggestions.get('checker_signature', '') }}</td></tr>
+    </table>
+    </div>
+</div>
+</body>
+</html>

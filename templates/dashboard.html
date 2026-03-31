@@ -470,7 +470,7 @@
         <div class="nav-label">Điều hướng</div>
         <a href="#" class="nav-item active"><i class="fa-solid fa-house"></i> Tổng quan</a>
         <a href="#" class="nav-item"><i class="fa-solid fa-file-lines"></i> Danh sách biểu mẫu</a>
-        <a href="#" class="nav-item"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử đánh giá</a>
+        <a href="{{ url_for('history') }}" class="nav-item"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử đánh giá & thẩm tra</a>
         <a href="#" class="nav-item"><i class="fa-solid fa-chart-bar"></i> Báo cáo</a>
 
         {% if session.role == 'admin' %}
@@ -484,6 +484,9 @@
         <a href="{{ url_for('reset_cycle') }}" class="nav-item admin">
             <i class="fa-solid fa-arrows-rotate"></i> Bắt đầu tháng mới
         </a>
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-item admin">
+    <i class="fa-solid fa-chart-pie"></i> Dashboard thống kê
+</a>
         {% endif %}
     </nav>
 

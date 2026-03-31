@@ -116,6 +116,14 @@ def init_db():
                 table_name TEXT NOT NULL,
                 row_data TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                sheet_name TEXT NOT NULL,
+                role TEXT NOT NULL,
+                user_id INTEGER NOT NULL,
+                saved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                snapshot TEXT NOT NULL
+            );
         ''')
 
         wb = load_workbook(PHAN_GIAO_FILE, data_only=True)
@@ -470,6 +478,22 @@ def save():
                    suggestion=excluded.suggestion, reviewer_signature=excluded.reviewer_signature, locked_danh_gia=1''',
                 (sn, request.form.get('suggestion', ''), reviewer_sig)
             )
+            # Lưu snapshot vào history
+            evals_snapshot = conn.execute('SELECT row_index, col_letter, value FROM evaluations WHERE sheet_name = ?', (sn,)).fetchall()
+            evals_list = [{'row': r['row_index'], 'col': r['col_letter'], 'value': r['value']} for r in evals_snapshot]
+            comms_snapshot = conn.execute('SELECT row_index, comment FROM review_comments WHERE sheet_name = ?', (sn,)).fetchall()
+            comms_list = [{'row': r['row_index'], 'comment': r['comment']} for r in comms_snapshot]
+            sugg = conn.execute('SELECT * FROM suggestions WHERE sheet_name = ?', (sn,)).fetchone()
+            sugg_dict = dict(sugg) if sugg else {}
+            snapshot = json.dumps({
+                'evals': evals_list,
+                'comments': comms_list,
+                'suggestions': sugg_dict
+            }, ensure_ascii=False)
+            conn.execute(
+                'INSERT INTO history (sheet_name, role, user_id, snapshot) VALUES (?, ?, ?, ?)',
+                (sn, role, uid, snapshot)
+            )
             conn.commit()
         flash('Đã lưu đánh giá thành công.')
 
@@ -523,10 +547,58 @@ def save():
                    reviewer_comment=excluded.reviewer_comment, checker_signature=excluded.checker_signature, locked_tham_tra=1''',
                 (sn, request.form.get('reviewer_comment', ''), checker_sig)
             )
+            # Lưu snapshot vào history
+            evals_snapshot = conn.execute('SELECT row_index, col_letter, value FROM evaluations WHERE sheet_name = ?', (sn,)).fetchall()
+            evals_list = [{'row': r['row_index'], 'col': r['col_letter'], 'value': r['value']} for r in evals_snapshot]
+            comms_snapshot = conn.execute('SELECT row_index, comment FROM review_comments WHERE sheet_name = ?', (sn,)).fetchall()
+            comms_list = [{'row': r['row_index'], 'comment': r['comment']} for r in comms_snapshot]
+            sugg = conn.execute('SELECT * FROM suggestions WHERE sheet_name = ?', (sn,)).fetchone()
+            sugg_dict = dict(sugg) if sugg else {}
+            snapshot = json.dumps({
+                'evals': evals_list,
+                'comments': comms_list,
+                'suggestions': sugg_dict
+            }, ensure_ascii=False)
+            conn.execute(
+                'INSERT INTO history (sheet_name, role, user_id, snapshot) VALUES (?, ?, ?, ?)',
+                (sn, role, uid, snapshot)
+            )
             conn.commit()
         flash('Đã lưu ý kiến thẩm tra thành công.')
 
     return redirect(url_for('evaluation_form', sheet_name=sn))
+
+@app.route('/history')
+def history():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    with get_db() as conn:
+        rows = conn.execute('''
+            SELECT h.id, h.sheet_name, h.role, h.saved_at, u.fullname
+            FROM history h
+            JOIN users u ON h.user_id = u.id
+            ORDER BY h.saved_at DESC
+        ''').fetchall()
+    return render_template('history.html', history=rows)
+
+@app.route('/view_history/<int:history_id>')
+def view_history(history_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    with get_db() as conn:
+        h = conn.execute('''
+            SELECT h.*, u.fullname as user_fullname
+            FROM history h
+            JOIN users u ON h.user_id = u.id
+            WHERE h.id = ?
+        ''', (history_id,)).fetchone()
+        if not h:
+            flash('Không tìm thấy bản ghi lịch sử.')
+            return redirect(url_for('history'))
+        snapshot = json.loads(h['snapshot'])
+        # Lấy headers và rows từ file Excel để hiển thị
+        headers, rows, extra = get_sheet_data(h['sheet_name'])
+        return render_template('view_history.html', history=h, snapshot=snapshot, headers=headers, rows=rows, extra=extra, enumerate=enumerate)
 
 @app.route('/export_all_forms')
 def export_all_forms():
@@ -777,7 +849,37 @@ def export_summary():
                      download_name='TonghopKKTB TPM.xlsx',
                      as_attachment=True,
                      mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+@app.route('/admin_dashboard')
+def admin_dashboard():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        flash('Bạn không có quyền truy cập trang này.')
+        return redirect(url_for('dashboard'))
 
+    with get_db() as conn:
+        # Lấy danh sách các sheet có dữ liệu đánh giá
+        sheets = conn.execute('SELECT DISTINCT sheet_name FROM evaluations WHERE col_letter = "G" AND value != ""').fetchall()
+        system_data = []
+        for sheet in sheets:
+            sheet_name = sheet['sheet_name']
+            # Đếm số dòng có kết quả K
+            k_count = conn.execute(
+                'SELECT COUNT(*) as cnt FROM evaluations WHERE sheet_name = ? AND col_letter = "G" AND value = "K"',
+                (sheet_name,)
+            ).fetchone()['cnt']
+            total_count = conn.execute(
+                'SELECT COUNT(*) as cnt FROM evaluations WHERE sheet_name = ? AND col_letter = "G" AND value != ""',
+                (sheet_name,)
+            ).fetchone()['cnt']
+            system_data.append({
+                'name': sheet_name,
+                'total': total_count,
+                'k_count': k_count,
+                'percentage': round((k_count / total_count * 100) if total_count > 0 else 0, 1)
+            })
+        # Sắp xếp giảm dần theo tỷ lệ khiếm khuyết
+        system_data.sort(key=lambda x: x['percentage'], reverse=True)
+
+    return render_template('admin_dashboard.html', system_data=system_data)
 @app.route('/logout')
 def logout():
     session.clear()
