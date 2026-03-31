@@ -6,7 +6,6 @@
     <title>{{ 'Đánh giá' if role == 'danh_gia' else 'Thẩm tra' }}: {{ sheet_name }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* (toàn bộ CSS giữ nguyên) */
         :root {
             --evn-blue:      #003087;
             --evn-blue-mid:  #0055b3;
@@ -216,7 +215,7 @@
         }
 
         /* Column widths – header */
-        .header-table th:nth-child(1), .header-table td:nth-child(1) { width: 18%; }
+        .header-table th:nth-child(1), .header-table td:nth-child(1) { width: 22%; }
         .header-table th:nth-child(2), .header-table td:nth-child(2) { width: 14%; }
         .header-table th:nth-child(3), .header-table td:nth-child(3) { width: 5%; }
         .header-table th:nth-child(4), .header-table td:nth-child(4) { width: 15%; }
@@ -225,7 +224,26 @@
         .header-table th:nth-child(7), .header-table td:nth-child(7) { width: 23%; }
 
         /* ── CONTENT TABLE ── */
-        .content-table { table-layout: fixed; }
+        .content-table {
+            table-layout: fixed;
+            /* Để cuộn được bảng, cần overflow: auto và chiều cao xác định */
+            display: block;
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 70vh; /* Điều chỉnh theo nhu cầu, có thể để auto nhưng phải có max-height để kích hoạt thanh cuộn */
+        }
+        .content-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: var(--evn-blue); /* Đảm bảo màu nền cho thead */
+        }
+        .content-table th {
+            background: var(--evn-blue); /* Giữ nguyên màu nền cho th */
+            position: sticky;
+            top: 0;
+            z-index: 11;
+        }
         .content-table td { font-size: 12.5px; vertical-align: middle; }
         .content-table td:nth-child(2),
         .content-table td:nth-child(6),
@@ -490,7 +508,7 @@
 <!-- TOP NAV -->
 <nav class="topnav">
     <div class="topnav-brand">
-        <span class="topnav-logo">EVN</span>
+        <span class="topnav-logo">EVNGENCO1-HPCBANVE</span>
         <span class="topnav-title">Hệ thống Đánh giá & Thẩm tra biểu mẫu TPM</span>
     </div>
     <div class="topnav-links">
@@ -537,7 +555,7 @@
                 <div class="table-scroll">
                 <table class="header-table">
                     {% for row_idx, row in enumerate(headers, start=1) %}
-                     <tr>
+                      <tr>
                         {% for col in ['A','B','C','D','E','F'] %}
                             {% set cell_value = row[col] or '' %}
                             {% set cell_key = (row_idx, col) %}
@@ -547,7 +565,7 @@
                             {% elif role == 'tham_tra' and row_idx == 6 and col == 'F' %}
                                 {% set editable = True %}
                             {% endif %}
-                             <td>
+                              <td>
                                 {% if editable %}
                                     {% set current_value = saved_header.get(cell_key, cell_value) if saved_header is defined else cell_value %}
                                     <input type="text" name="header_{{ row_idx }}_{{ col }}"
@@ -557,10 +575,10 @@
                                     {% set other_val = saved_header.get(cell_key) if saved_header is defined else None %}
                                     {{ other_val if (other_val != None and other_val != '') else cell_value }}
                                 {% endif %}
-                             </td>
+                              </td>
                         {% endfor %}
                         <td colspan="5"></td>
-                     </tr>
+                      </tr>
                     {% endfor %}
                 </table>
                 </div>
@@ -576,7 +594,7 @@
                 <div class="table-scroll">
                 <table class="content-table">
                     <thead>
-                         <tr>
+                          <tr>
                             <th>Hạng mục</th>
                             <th>STT</th>
                             <th>Nội dung đánh giá</th>
@@ -589,11 +607,11 @@
                             <th>Thời gian</th>
                             <th>Giải pháp</th>
                             {% if role == 'tham_tra' %}<th>Ý kiến thẩm tra</th>{% endif %}
-                         </tr>
+                          </tr>
                     </thead>
                     <tbody>
                         {% for idx, row in enumerate(rows, start=10) %}
-                         <tr>
+                          <tr>
                             <td data-label="Hạng mục">{{ row['A'] }}</td>
                             <td data-label="STT">{{ row['B'] }}</td>
                             <td data-label="Nội dung">{{ row['C'] }}</td>
@@ -644,7 +662,7 @@
                                 <td data-label="Giải pháp">{{ saved.get((idx, 'K'), '') if saved.get((idx, 'K')) != None else '' }}</td>
                                 <td data-label="Ý kiến thẩm tra"><textarea name="comment_{{ idx }}" data-stt="{{ row['B'] }}" rows="2" placeholder="Nhập ý kiến thẩm tra…">{{ saved_comments.get(idx, '') if saved_comments.get(idx) != None else '' }}</textarea></td>
                             {% endif %}
-                         </tr>
+                          </tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -659,7 +677,7 @@
             </div>
             <div class="card-body" style="padding: 0;">
                 <table class="extra-table">
-                     <tr>
+                      <tr>
                         <td class="label-cell"><span class="cell-icon">📌</span>Kiến nghị (nếu có)</td>
                         <td>
                             {% for row in extra %}
@@ -668,8 +686,8 @@
                                 {% endif %}
                             {% endfor %}
                         </td>
-                     </tr>
-                     <tr>
+                      </tr>
+                      <tr>
                         <td class="label-cell"><span class="cell-icon">👤</span>Người đánh giá</td>
                         <td>
                             {% if role == 'danh_gia' %}
@@ -678,8 +696,8 @@
                                 <span style="white-space:pre-line;">{{ reviewer_signature if (reviewer_signature != None and reviewer_signature != 'None') else '—' }}</span>
                             {% endif %}
                         </td>
-                     </tr>
-                     <tr>
+                      </tr>
+                      <tr>
                         <td class="label-cell"><span class="cell-icon">🔍</span>Người thẩm tra</td>
                         <td>
                             {% if role == 'tham_tra' %}
@@ -688,7 +706,7 @@
                                 <span style="white-space:pre-line;">{{ checker_signature if (checker_signature != None and checker_signature != 'None') else '—' }}</span>
                             {% endif %}
                         </td>
-                     </tr>
+                      </tr>
                 </table>
             </div>
         </div>

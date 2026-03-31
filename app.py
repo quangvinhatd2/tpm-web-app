@@ -6,7 +6,7 @@ from io import BytesIO
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
 from openpyxl import load_workbook, Workbook
-from openpyxl.styles import Font, Alignment
+from openpyxl.styles import Font, Alignment, Border, Side
 from unicodedata import normalize
 
 app = Flask(__name__)
@@ -599,6 +599,18 @@ def export_all_forms():
         ws.append(["Kiến nghị (nếu có):", extra[0].get('B', '') if extra else ''])
         ws.append(["Người đánh giá:", sugg['reviewer_signature'] if sugg else ''])
         ws.append(["Người thẩm tra:", sugg['checker_signature'] if sugg else ''])
+
+        # Áp dụng border đơn cho tất cả các ô có dữ liệu
+        thin_border = Border(
+            left=Side(style='thin'),
+            right=Side(style='thin'),
+            top=Side(style='thin'),
+            bottom=Side(style='thin')
+        )
+        for row in ws.iter_rows():
+            for cell in row:
+                if cell.value is not None or cell.column_letter:
+                    cell.border = thin_border
 
         # Tự động điều chỉnh độ rộng cột
         for col in ws.columns:

@@ -24,12 +24,12 @@
             --text-1:    #1a2340;
             --text-2:    #4e5f80;
             --text-3:    #8796b0;
-            --sidebar-w: 280px;
+            --sidebar-w: 220px;
         }
 
         body {
             font-family: 'Be Vietnam Pro', sans-serif;
-            font-size: 16px;
+            font-size: 13px;
             background: var(--surface);
             color: var(--text-1);
             min-height: 100vh;
@@ -49,150 +49,148 @@
             box-shadow: 2px 0 20px rgba(0,0,0,0.05);
         }
         .sidebar-brand {
-            padding: 28px 24px 24px;
+            padding: 16px 12px 12px;
             border-bottom: 1px solid rgba(255,255,255,.1);
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
         }
         .brand-logo {
             background: var(--gold);
             color: var(--blue);
             font-weight: 700;
-            font-size: 18px;
-            width: 44px; height: 44px;
-            border-radius: 12px;
+            font-size: 15px;
+            width: 34px; height: 34px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
         }
-        .brand-name { color: #fff; font-size: 18px; font-weight: 700; line-height: 1.2; }
-        .brand-sub  { color: rgba(255,255,255,.45); font-size: 12px; }
+        .brand-name { color: #fff; font-size: 14px; font-weight: 700; line-height: 1.2; }
+        .brand-sub  { color: rgba(255,255,255,.45); font-size: 9px; }
 
         .sidebar-user {
-            margin: 20px 16px 0;
-            padding: 14px 16px;
+            margin: 12px 10px 0;
+            padding: 8px 10px;
             background: rgba(255,255,255,.07);
             backdrop-filter: blur(4px);
-            border-radius: 16px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 8px;
             transition: background 0.2s;
         }
-        .sidebar-user:hover {
-            background: rgba(255,255,255,.12);
-        }
+        .sidebar-user:hover { background: rgba(255,255,255,.12); }
         .user-av {
-            width: 40px; height: 40px;
+            width: 28px; height: 28px;
             background: linear-gradient(135deg, var(--gold), #ffbe5e);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 16px;
+            font-size: 12px;
             color: var(--blue);
             flex-shrink: 0;
         }
         .user-name {
-            font-size: 15px; font-weight: 600; color: #fff;
+            font-size: 12px; font-weight: 600; color: #fff;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        .user-role { font-size: 11px; color: rgba(255,255,255,.5); text-transform: uppercase; letter-spacing: .8px; }
+        .user-role { font-size: 8px; color: rgba(255,255,255,.5); text-transform: uppercase; letter-spacing: .8px; }
 
-        .sidebar-nav { flex: 1; padding: 24px 12px; overflow-y: auto; }
+        .sidebar-nav { flex: 1; padding: 12px 6px; overflow-y: auto; }
         .nav-label {
-            font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+            font-size: 8px; font-weight: 700; letter-spacing: 1px;
             text-transform: uppercase; color: rgba(255,255,255,.3);
-            padding: 0 12px; margin: 20px 0 10px;
+            padding: 0 8px; margin: 12px 0 6px;
         }
         .nav-item {
-            display: flex; align-items: center; gap: 14px;
-            padding: 12px 14px; border-radius: 12px;
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 8px; border-radius: 8px;
             color: rgba(255,255,255,.7); text-decoration: none;
-            font-size: 15px; font-weight: 500;
-            transition: all 0.2s ease; margin-bottom: 4px;
+            font-size: 11px; font-weight: 500;
+            transition: all 0.2s ease; margin-bottom: 2px;
         }
-        .nav-item i { width: 20px; text-align: center; font-size: 15px; }
-        .nav-item:hover { background: rgba(255,255,255,.12); color: #fff; transform: translateX(4px); }
+        .nav-item i { width: 14px; text-align: center; font-size: 11px; }
+        .nav-item:hover { background: rgba(255,255,255,.12); color: #fff; transform: translateX(2px); }
         .nav-item.active {
             background: rgba(255,255,255,.2); color: #fff; font-weight: 600;
-            border-left: 3px solid var(--gold); padding-left: 11px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 3px solid var(--gold); padding-left: 5px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
         .nav-item.admin { color: var(--gold); background: rgba(245,166,35,.1); }
         .nav-item.admin:hover { background: rgba(245,166,35,.2); }
 
-        .sidebar-footer { padding: 18px 12px; border-top: 1px solid rgba(255,255,255,.1); }
+        .sidebar-footer { padding: 10px 6px; border-top: 1px solid rgba(255,255,255,.1); }
         .btn-logout {
-            display: flex; align-items: center; gap: 12px;
-            width: 100%; padding: 12px 14px; border-radius: 12px;
+            display: flex; align-items: center; gap: 6px;
+            width: 100%; padding: 6px 8px; border-radius: 8px;
             background: rgba(255,255,255,.05);
             border: 1px solid rgba(255,255,255,.1);
-            color: rgba(255,255,255,.6); font-size: 15px; font-weight: 500;
+            color: rgba(255,255,255,.6); font-size: 11px; font-weight: 500;
             font-family: inherit; cursor: pointer; text-decoration: none;
             transition: all 0.2s;
         }
-        .btn-logout:hover { background: rgba(200,30,30,.2); border-color: rgba(200,30,30,.3); color: #f87171; transform: translateY(-2px); }
+        .btn-logout:hover { background: rgba(200,30,30,.2); border-color: rgba(200,30,30,.3); color: #f87171; transform: translateY(-1px); }
 
         /* ── MAIN ────────────────────────────────── */
         .main { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--surface); }
 
         .topbar {
-            height: 68px;
+            height: 48px;
             background: var(--white);
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 36px;
+            padding: 0 16px;
             position: sticky; top: 0; z-index: 30;
             box-shadow: 0 1px 4px rgba(0,0,0,0.02);
         }
-        .topbar-title { font-size: 18px; font-weight: 700; background: linear-gradient(135deg, var(--blue), var(--blue-mid)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .topbar-right { display: flex; align-items: center; gap: 14px; }
+        .topbar-title { font-size: 14px; font-weight: 700; background: linear-gradient(135deg, var(--blue), var(--blue-mid)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .topbar-right { display: flex; align-items: center; gap: 8px; }
 
         .search-wrap { position: relative; }
         .search-wrap i {
-            position: absolute; left: 12px; top: 50%;
-            transform: translateY(-50%); color: var(--text-3); font-size: 14px; pointer-events: none;
+            position: absolute; left: 8px; top: 50%;
+            transform: translateY(-50%); color: var(--text-3); font-size: 11px; pointer-events: none;
         }
         .search-input {
-            padding: 10px 12px 10px 38px; width: 260px;
-            border: 1.5px solid var(--border); border-radius: 40px;
-            font-family: inherit; font-size: 14px; color: var(--text-1);
+            padding: 5px 8px 5px 26px; width: 180px;
+            border: 1.5px solid var(--border); border-radius: 30px;
+            font-family: inherit; font-size: 11px; color: var(--text-1);
             outline: none; background: var(--surface);
             transition: all 0.2s;
         }
-        .search-input:focus { border-color: var(--blue-mid); background: #fff; width: 320px; box-shadow: 0 0 0 3px rgba(0,48,135,0.1); }
+        .search-input:focus { border-color: var(--blue-mid); background: #fff; width: 210px; box-shadow: 0 0 0 2px rgba(0,48,135,0.1); }
 
         /* ── PAGE BODY ── 2 CỘT ──────────────────── */
         .page-body {
-            padding: 36px 40px 60px;
+            padding: 16px 20px 32px;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 36px;
+            gap: 20px;
         }
 
         .section-block {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 12px;
         }
 
         .section-header {
             display: flex;
             align-items: center;
-            gap: 18px;
-            padding: 18px 24px;
-            border-radius: 20px;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 12px;
             background: var(--white);
-            border-left: 5px solid;
+            border-left: 4px solid;
             transition: all 0.2s;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.02);
         }
         .section-header.danh-gia {
             border-left-color: var(--blue);
@@ -203,66 +201,66 @@
             background: linear-gradient(120deg, var(--white), var(--green-bg));
         }
         .section-header:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
         }
 
         .section-header-icon {
-            width: 48px; height: 48px;
-            border-radius: 16px;
+            width: 32px; height: 32px;
+            border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 20px;
+            font-size: 14px;
             flex-shrink: 0;
         }
-        .section-header.danh-gia .section-header-icon { background: var(--blue); color: #fff; box-shadow: 0 4px 12px rgba(0,48,135,0.2); }
-        .section-header.tham-tra .section-header-icon { background: var(--green); color: #fff; box-shadow: 0 4px 12px rgba(26,122,74,0.2); }
+        .section-header.danh-gia .section-header-icon { background: var(--blue); color: #fff; box-shadow: 0 2px 6px rgba(0,48,135,0.2); }
+        .section-header.tham-tra .section-header-icon { background: var(--green); color: #fff; box-shadow: 0 2px 6px rgba(26,122,74,0.2); }
 
         .section-header-text { flex: 1; }
         .section-header-title {
-            font-size: 18px;
+            font-size: 13px;
             font-weight: 700;
             line-height: 1.3;
         }
         .section-header.danh-gia .section-header-title { color: var(--blue); }
         .section-header.tham-tra .section-header-title { color: var(--green); }
 
-        .section-header-desc { font-size: 14px; color: var(--text-3); margin-top: 4px; }
+        .section-header-desc { font-size: 10px; color: var(--text-3); margin-top: 1px; }
 
         .section-count-badge {
-            font-size: 14px;
+            font-size: 11px;
             font-weight: 700;
-            padding: 5px 16px;
-            border-radius: 40px;
+            padding: 2px 10px;
+            border-radius: 30px;
             flex-shrink: 0;
         }
-        .section-header.danh-gia .section-count-badge { background: var(--blue); color: #fff; box-shadow: 0 2px 6px rgba(0,48,135,0.2); }
-        .section-header.tham-tra .section-count-badge { background: var(--green); color: #fff; box-shadow: 0 2px 6px rgba(26,122,74,0.2); }
+        .section-header.danh-gia .section-count-badge { background: var(--blue); color: #fff; box-shadow: 0 2px 4px rgba(0,48,135,0.2); }
+        .section-header.tham-tra .section-count-badge { background: var(--green); color: #fff; box-shadow: 0 2px 4px rgba(26,122,74,0.2); }
 
         /* ── FORM CARDS ─────────────────────────── */
         .forms-grid {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 8px;
         }
 
         .form-card {
             background: var(--white);
-            border-radius: 20px;
-            padding: 20px 24px;
+            border-radius: 12px;
+            padding: 12px 14px;
             text-decoration: none;
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 6px;
             transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
             position: relative;
             border: 1px solid rgba(0,0,0,0.04);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.02);
         }
         .form-card::before {
             content: '';
             position: absolute;
             inset: 0;
-            border-radius: 20px;
+            border-radius: 12px;
             padding: 1px;
             background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
             mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -276,23 +274,22 @@
         .form-card.danh-gia:hover::before { opacity: 1; }
         .form-card.tham-tra:not(.locked):hover::before { opacity: 1; }
 
-        .form-card.danh-gia { border-left: 4px solid var(--blue); }
-        .form-card.tham-tra { border-left: 4px solid var(--green); }
+        .form-card.danh-gia { border-left: 3px solid var(--blue); }
+        .form-card.tham-tra { border-left: 3px solid var(--green); }
 
         .form-card.danh-gia:hover {
-            transform: translateY(-6px) translateX(4px);
-            box-shadow: 0 20px 30px -12px rgba(0,48,135,0.2);
+            transform: translateY(-2px) translateX(2px);
+            box-shadow: 0 10px 20px -10px rgba(0,48,135,0.2);
             border-color: var(--blue-line);
         }
         .form-card.tham-tra:not(.locked):hover {
-            transform: translateY(-6px) translateX(4px);
-            box-shadow: 0 20px 30px -12px rgba(26,122,74,0.2);
+            transform: translateY(-2px) translateX(2px);
+            box-shadow: 0 10px 20px -10px rgba(26,122,74,0.2);
             border-color: var(--green-line);
         }
 
-        /* ── CARD KHOÁ ───────────────────────────── */
         .form-card.locked {
-            opacity: .72;
+            opacity: .7;
             cursor: not-allowed;
             pointer-events: none;
             background: #f7f8fc;
@@ -316,33 +313,33 @@
         .lock-notice {
             display: flex;
             align-items: flex-start;
-            gap: 9px;
+            gap: 5px;
             background: #fff8e1;
             border: 1px solid #ffe082;
-            border-radius: 10px;
-            padding: 9px 12px;
-            font-size: 13px;
+            border-radius: 8px;
+            padding: 5px 7px;
+            font-size: 10px;
             color: #7a5800;
-            line-height: 1.55;
+            line-height: 1.35;
         }
         .lock-notice i {
             color: #f5a623;
-            font-size: 14px;
+            font-size: 11px;
             flex-shrink: 0;
-            margin-top: 2px;
+            margin-top: 1px;
         }
 
         .form-card-number {
-            font-size: 14px;
+            font-size: 11px;
             font-weight: 700;
             background: var(--surface);
-            width: 32px; height: 32px;
+            width: 22px; height: 22px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            border-radius: 40px;
+            border-radius: 30px;
             color: var(--text-3);
-            margin-right: 14px;
+            margin-right: 8px;
             transition: all 0.2s;
             flex-shrink: 0;
             box-shadow: inset 0 1px 2px rgba(0,0,0,0.02), 0 1px 1px rgba(0,0,0,0.02);
@@ -350,25 +347,25 @@
         .form-card.danh-gia:hover .form-card-number {
             background: var(--blue); color: white;
             transform: scale(1.05);
-            box-shadow: 0 2px 8px rgba(0,48,135,0.3);
+            box-shadow: 0 2px 6px rgba(0,48,135,0.3);
         }
         .form-card.tham-tra:not(.locked):hover .form-card-number {
             background: var(--green); color: white;
             transform: scale(1.05);
-            box-shadow: 0 2px 8px rgba(26,122,74,0.3);
+            box-shadow: 0 2px 6px rgba(26,122,74,0.3);
         }
 
         .form-card-header {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 5px;
         }
 
         .form-card-title {
-            font-size: 16px;
+            font-size: 12px;
             font-weight: 600;
             color: var(--text-1);
-            line-height: 1.45;
+            line-height: 1.35;
             flex: 1;
             letter-spacing: -0.2px;
         }
@@ -379,75 +376,74 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding-top: 14px;
+            padding-top: 6px;
             border-top: 1px solid var(--border);
-            font-size: 14px;
+            font-size: 10px;
             color: var(--text-3);
-            padding-left: 46px;
+            padding-left: 30px;
         }
 
         .form-cta {
-            font-size: 14px; font-weight: 600;
-            display: flex; align-items: center; gap: 8px;
-            padding: 6px 12px;
-            border-radius: 40px;
+            font-size: 10px; font-weight: 600;
+            display: flex; align-items: center; gap: 4px;
+            padding: 2px 6px;
+            border-radius: 30px;
             transition: all 0.2s;
         }
         .form-card.danh-gia .form-cta { color: var(--blue); background: rgba(0,48,135,0.04); }
         .form-card.tham-tra:not(.locked) .form-cta { color: var(--green); background: rgba(26,122,74,0.04); }
         .form-card.locked .form-cta { color: #b0bec5; background: transparent; }
-        .form-cta i { font-size: 12px; transition: transform 0.2s; }
-        .form-card:not(.locked):hover .form-cta i { transform: translateX(4px); }
+        .form-cta i { font-size: 8px; transition: transform 0.2s; }
+        .form-card:not(.locked):hover .form-cta i { transform: translateX(2px); }
         .form-card:not(.locked):hover .form-cta { background: rgba(0,0,0,0.02); }
 
         .badge-icon {
-            width: 32px; height: 32px;
+            width: 24px; height: 24px;
             background: linear-gradient(135deg, var(--blue-bg), var(--white));
-            border-radius: 12px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 11px;
             color: var(--blue-mid);
         }
 
-        /* ── EMPTY ───────────────────────────────── */
         .empty-section {
-            padding: 36px 28px;
+            padding: 20px 16px;
             background: var(--white);
             border: 2px dashed var(--border);
-            border-radius: 20px;
+            border-radius: 12px;
             text-align: center;
             color: var(--text-3);
-            font-size: 15px;
+            font-size: 11px;
             transition: all 0.2s;
         }
-        .empty-section i { margin-right: 8px; font-size: 18px; color: var(--text-2); }
+        .empty-section i { margin-right: 4px; font-size: 12px; color: var(--text-2); }
         .empty-section:hover { border-color: var(--blue-line); background: var(--blue-bg); }
 
         /* ── MOBILE ──────────────────────────────── */
         @media (max-width: 860px) {
             .sidebar   { display: none; }
-            .topbar    { padding: 0 20px; height: 60px; }
+            .topbar    { padding: 0 12px; height: 44px; }
             .page-body {
-                padding: 20px 20px 48px;
+                padding: 12px 12px 24px;
                 grid-template-columns: 1fr;
-                gap: 28px;
+                gap: 16px;
             }
-            .search-input { width: 180px; padding: 8px 12px 8px 34px; }
-            .search-input:focus { width: 220px; }
-            .section-header { padding: 12px 16px; gap: 12px; }
-            .section-header-icon { width: 38px; height: 38px; font-size: 16px; }
-            .form-card { padding: 14px 16px; }
-            .form-card-number { width: 28px; height: 28px; font-size: 13px; margin-right: 10px; }
-            .form-card-footer { padding-left: 38px; }
-            .form-card-title { font-size: 14px; }
+            .search-input { width: 130px; padding: 4px 6px 4px 24px; font-size: 10px; }
+            .search-input:focus { width: 160px; }
+            .section-header { padding: 8px 10px; gap: 8px; }
+            .section-header-icon { width: 28px; height: 28px; font-size: 12px; }
+            .form-card { padding: 10px 12px; }
+            .form-card-number { width: 20px; height: 20px; font-size: 10px; margin-right: 6px; }
+            .form-card-footer { padding-left: 26px; }
+            .form-card-title { font-size: 11px; }
         }
         @media (max-width: 500px) {
-            .section-header { padding: 10px 14px; gap: 10px; }
-            .section-header-icon { width: 32px; height: 32px; font-size: 14px; }
-            .section-header-title { font-size: 15px; }
-            .section-header-desc { font-size: 12px; }
+            .section-header { padding: 6px 8px; gap: 6px; }
+            .section-header-icon { width: 24px; height: 24px; font-size: 10px; }
+            .section-header-title { font-size: 12px; }
+            .section-header-desc { font-size: 9px; }
         }
     </style>
 </head>
@@ -535,12 +531,12 @@
                                 <div class="form-card-title">{{ ass.sheet_name }}</div>
                             </div>
                             <div class="form-card-footer">
-                                <div class="flex items-center gap-2.5">
+                                <div class="flex items-center gap-2">
                                     <div class="badge-icon">
                                         <i class="fa-solid fa-tower-observation"></i>
                                     </div>
                                     <div class="flex flex-col">
-                                        <span class="text-[11px] font-black text-gray-800 uppercase tracking-tight leading-none">
+                                        <span class="text-[10px] font-black text-gray-800 uppercase tracking-tight leading-none">
                                             {{ ass.unit if ass.unit else 'Banvehpc' }}
                                         </span>
                                     </div>
@@ -587,12 +583,12 @@
                                 <div class="form-card-title">{{ ass.sheet_name }}</div>
                             </div>
                             <div class="form-card-footer">
-                                <div class="flex items-center gap-2.5">
+                                <div class="flex items-center gap-2">
                                     <div class="badge-icon">
                                         <i class="fa-solid fa-chart-line"></i>
                                     </div>
                                     <div class="flex flex-col">
-                                        <span class="text-[11px] font-black text-gray-800 uppercase tracking-tight leading-none">
+                                        <span class="text-[10px] font-black text-gray-800 uppercase tracking-tight leading-none">
                                             {{ ass.unit if ass.unit else 'Banvehpc' }}
                                         </span>
                                     </div>
@@ -614,12 +610,12 @@
                                 Vui lòng chờ người đánh giá lưu dữ liệu trước khi thẩm tra.
                             </div>
                             <div class="form-card-footer">
-                                <div class="flex items-center gap-2.5">
+                                <div class="flex items-center gap-2">
                                     <div class="badge-icon">
                                         <i class="fa-solid fa-chart-line"></i>
                                     </div>
                                     <div class="flex flex-col">
-                                        <span class="text-[11px] font-black text-gray-800 uppercase tracking-tight leading-none">
+                                        <span class="text-[10px] font-black text-gray-800 uppercase tracking-tight leading-none">
                                             {{ ass.unit if ass.unit else 'Banvehpc' }}
                                         </span>
                                     </div>
