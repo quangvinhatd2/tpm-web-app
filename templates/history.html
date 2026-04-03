@@ -61,39 +61,60 @@
         .back-link:hover {
             text-decoration: underline;
         }
+        .filter-form {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        select {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #c9d4e8;
+            background: white;
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <a href="{{ url_for('dashboard') }}" class="back-link">← Về trang chủ</a>
-    <h1>📜 Lịch sử đánh giá & thẩm tra</h1>
+    <h1>📜 Lịch sử thẩm tra</h1>
+    <form method="get" action="{{ url_for('history') }}" class="filter-form">
+        <label for="month">Chọn tháng: </label>
+        <select name="month" id="month" onchange="this.form.submit()">
+            <option value="">-- Tất cả --</option>
+            {% for m in months %}
+            <option value="{{ m.month }}" {% if selected_month == m.month %}selected{% endif %}>{{ m.month }}</option>
+            {% endfor %}
+        </select>
+    </form>
     {% if history %}
         <div style="overflow-x: auto;">
-         <table>
-            <thead>
-                 <tr>
-                    <th>Thời gian</th>
-                    <th>Biểu mẫu</th>
-                    <th>Vai trò</th>
-                    <th>Người thực hiện</th>
-                    <th></th>
-                 </tr>
-            </thead>
-            <tbody>
-                {% for item in history %}
-                <tr>
-                    <td>{{ item.saved_at }}</td>
-                    <td>{{ item.sheet_name }}</td>
-                    <td>{{ 'Đánh giá' if item.role == 'danh_gia' else 'Thẩm tra' }}</td>
-                    <td>{{ item.fullname }}</td>
-                    <td><a href="{{ url_for('view_history', history_id=item.id) }}" class="btn">Xem chi tiết</a></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Thời gian</th>
+                        <th>Biểu mẫu</th>
+                        <th>Vai trò</th>
+                        <th>Người thực hiện</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in history %}
+                    <tr>
+                        <td>{{ item.saved_at }}</td>
+                        <td>{{ item.sheet_name }}</td>
+                        <td>{{ 'Đánh giá' if item.role == 'danh_gia' else 'Thẩm tra' }}</td>
+                        <td>{{ item.fullname }}</td>
+                        <td><a href="{{ url_for('view_history', history_id=item.id) }}" class="btn">Xem chi tiết</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     {% else %}
-        <p>Chưa có dữ liệu lịch sử.</p>
+        <p>Không có dữ liệu lịch sử.</p>
     {% endif %}
 </div>
 </body>

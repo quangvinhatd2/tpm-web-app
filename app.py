@@ -25,10 +25,73 @@ def get_db():
     return conn
 
 def unsigned_user(text):
+    """
+    Chuyển tên tiếng Việt thành username không dấu, không khoảng trắng.
+    Xử lý đúng chữ Đ/đ và toàn bộ ký tự tiếng Việt đặc biệt.
+    """
     if not text:
         return None
-    text = normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
-    return re.sub(r'[^a-zA-Z0-9]', '', text).lower()
+    text = text.strip()
+
+    # Bảng thay thế thủ công — đảm bảo Đ→D, đ→d và các tổ hợp dấu
+    replacements = {
+        'Đ': 'D', 'đ': 'd',
+        'À': 'A', 'Á': 'A', 'Â': 'A', 'Ã': 'A',
+        'à': 'a', 'á': 'a', 'â': 'a', 'ã': 'a',
+        'È': 'E', 'É': 'E', 'Ê': 'E',
+        'è': 'e', 'é': 'e', 'ê': 'e',
+        'Ì': 'I', 'Í': 'I', 'ì': 'i', 'í': 'i',
+        'Ò': 'O', 'Ó': 'O', 'Ô': 'O', 'Õ': 'O',
+        'ò': 'o', 'ó': 'o', 'ô': 'o', 'õ': 'o',
+        'Ù': 'U', 'Ú': 'U', 'ù': 'u', 'ú': 'u',
+        'Ý': 'Y', 'ý': 'y',
+        # Ă và các dấu kết hợp
+        'Ă': 'A', 'ă': 'a',
+        'Ắ': 'A', 'ắ': 'a', 'Ặ': 'A', 'ặ': 'a',
+        'Ằ': 'A', 'ằ': 'a', 'Ẳ': 'A', 'ẳ': 'a', 'Ẵ': 'A', 'ẵ': 'a',
+        # Â và các dấu kết hợp
+        'Ấ': 'A', 'ấ': 'a', 'Ầ': 'A', 'ầ': 'a',
+        'Ẩ': 'A', 'ẩ': 'a', 'Ẫ': 'A', 'ẫ': 'a', 'Ậ': 'A', 'ậ': 'a',
+        # Ơ và các dấu kết hợp
+        'Ơ': 'O', 'ơ': 'o',
+        'Ớ': 'O', 'ớ': 'o', 'Ờ': 'O', 'ờ': 'o',
+        'Ở': 'O', 'ở': 'o', 'Ỡ': 'O', 'ỡ': 'o', 'Ợ': 'O', 'ợ': 'o',
+        # Ô và các dấu kết hợp
+        'Ố': 'O', 'ố': 'o', 'Ồ': 'O', 'ồ': 'o',
+        'Ổ': 'O', 'ổ': 'o', 'Ỗ': 'O', 'ỗ': 'o', 'Ộ': 'O', 'ộ': 'o',
+        # Ư và các dấu kết hợp
+        'Ư': 'U', 'ư': 'u',
+        'Ứ': 'U', 'ứ': 'u', 'Ừ': 'U', 'ừ': 'u',
+        'Ử': 'U', 'ử': 'u', 'Ữ': 'U', 'ữ': 'u', 'Ự': 'U', 'ự': 'u',
+        # Ê và các dấu kết hợp
+        'Ế': 'E', 'ế': 'e', 'Ề': 'E', 'ề': 'e',
+        'Ể': 'E', 'ể': 'e', 'Ễ': 'E', 'ễ': 'e', 'Ệ': 'E', 'ệ': 'e',
+        # I và các dấu
+        'Ỉ': 'I', 'ỉ': 'i', 'Ị': 'I', 'ị': 'i',
+        # Y và các dấu
+        'Ỳ': 'Y', 'ỳ': 'y', 'Ỷ': 'Y', 'ỷ': 'y',
+        'Ỹ': 'Y', 'ỹ': 'y', 'Ỵ': 'Y', 'ỵ': 'y',
+        # A và các dấu đứng
+        'Ả': 'A', 'ả': 'a', 'Ạ': 'A', 'ạ': 'a',
+        # E và các dấu đứng
+        'Ẻ': 'E', 'ẻ': 'e', 'Ẽ': 'E', 'ẽ': 'e', 'Ẹ': 'E', 'ẹ': 'e',
+        # O và các dấu đứng
+        'Ỏ': 'O', 'ỏ': 'o', 'Ọ': 'O', 'ọ': 'o',
+        # U và các dấu đứng
+        'Ủ': 'U', 'ủ': 'u', 'Ụ': 'U', 'ụ': 'u',
+    }
+
+    result = ''
+    for ch in text:
+        if ch in replacements:
+            result += replacements[ch]
+        else:
+            # Với ký tự còn lại, dùng NFKD bình thường
+            normalized = normalize('NFKD', ch).encode('ascii', 'ignore').decode('ascii')
+            result += normalized
+
+    # Chỉ giữ chữ cái và số, chuyển thường
+    return re.sub(r'[^a-zA-Z0-9]', '', result).lower()
 
 def build_sheet_mapping():
     wb = load_workbook(FORMS_FILE, data_only=True)
@@ -131,8 +194,8 @@ def init_db():
 
         for row in range(8, ws.max_row + 1):
             ma_bieu_mau = str(ws[f'C{row}'].value or '').strip()
-            name_eval = str(ws[f'E{row}'].value or '').strip()
-            name_check = str(ws[f'F{row}'].value or '').strip()
+            name_eval   = str(ws[f'E{row}'].value or '').strip()
+            name_check  = str(ws[f'F{row}'].value or '').strip()
 
             if not ma_bieu_mau or (not name_eval and not name_check):
                 continue
@@ -176,9 +239,15 @@ def init_db():
     print("--- Đã nạp dữ liệu phân công thành công ---")
 
 def create_or_get_user(conn, fullname, role):
+    """
+    Tạo hoặc lấy user. fullname luôn được lưu đúng từ file Excel (có dấu).
+    Username là phiên bản không dấu dùng để đăng nhập.
+    """
     username = unsigned_user(fullname)
     user = conn.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone()
     if user:
+        # Cập nhật lại fullname đúng từ file Excel phòng trường hợp tên bị lệch
+        conn.execute('UPDATE users SET fullname = ? WHERE username = ?', (fullname, username))
         return user['id']
     cursor = conn.execute(
         'INSERT INTO users (username, password, fullname, role) VALUES (?,?,?,?)',
@@ -217,13 +286,10 @@ def is_evaluation_complete(sheet_name):
                AND value IS NOT NULL''',
             (sheet_name,)
         ).fetchone()['cnt']
-
         has_signature = conn.execute(
-            '''SELECT reviewer_signature FROM suggestions
-               WHERE sheet_name = ?''',
+            'SELECT reviewer_signature FROM suggestions WHERE sheet_name = ?',
             (sheet_name,)
         ).fetchone()
-
     sig_ok = (has_signature is not None and has_signature['reviewer_signature'] and
               has_signature['reviewer_signature'].strip() != '')
     return has_results > 0 and sig_ok
@@ -244,30 +310,17 @@ def archive_current_data():
     ensure_archive_table()
     archive_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     with get_db() as conn:
-        # Lưu evaluations
-        evals = conn.execute('SELECT * FROM evaluations').fetchall()
-        for row in evals:
-            row_dict = {key: row[key] for key in row.keys()}
-            conn.execute(
-                'INSERT INTO archives (archive_date, table_name, row_data) VALUES (?, ?, ?)',
-                (archive_date, 'evaluations', json.dumps(row_dict, ensure_ascii=False))
-            )
-        # Lưu review_comments
-        comments = conn.execute('SELECT * FROM review_comments').fetchall()
-        for row in comments:
-            row_dict = {key: row[key] for key in row.keys()}
-            conn.execute(
-                'INSERT INTO archives (archive_date, table_name, row_data) VALUES (?, ?, ?)',
-                (archive_date, 'review_comments', json.dumps(row_dict, ensure_ascii=False))
-            )
-        # Lưu suggestions
-        suggs = conn.execute('SELECT * FROM suggestions').fetchall()
-        for row in suggs:
-            row_dict = {key: row[key] for key in row.keys()}
-            conn.execute(
-                'INSERT INTO archives (archive_date, table_name, row_data) VALUES (?, ?, ?)',
-                (archive_date, 'suggestions', json.dumps(row_dict, ensure_ascii=False))
-            )
+        for table, tname in [
+            (conn.execute('SELECT * FROM evaluations').fetchall(), 'evaluations'),
+            (conn.execute('SELECT * FROM review_comments').fetchall(), 'review_comments'),
+            (conn.execute('SELECT * FROM suggestions').fetchall(), 'suggestions'),
+        ]:
+            for row in table:
+                row_dict = {key: row[key] for key in row.keys()}
+                conn.execute(
+                    'INSERT INTO archives (archive_date, table_name, row_data) VALUES (?, ?, ?)',
+                    (archive_date, tname, json.dumps(row_dict, ensure_ascii=False))
+                )
         conn.commit()
     print(f"Đã sao lưu dữ liệu vào archive ngày {archive_date}")
 
@@ -341,13 +394,11 @@ def evaluation_form(sheet_name):
 
     with get_db() as conn:
         db_rows = conn.execute(
-                     'SELECT row_index, col_letter, value FROM evaluations WHERE sheet_name = ?',
-                     (sheet_name,)
-                 ).fetchall()
-
+            'SELECT row_index, col_letter, value FROM evaluations WHERE sheet_name = ?',
+            (sheet_name,)
+        ).fetchall()
         evals = {(r['row_index'], r['col_letter']): r['value'] for r in db_rows if r['row_index'] >= 10}
         saved_header = {(r['row_index'], r['col_letter']): r['value'] for r in db_rows if r['row_index'] < 10}
-
         comms = {r['row_index']: r['comment']
                  for r in conn.execute(
                      'SELECT row_index, comment FROM review_comments WHERE sheet_name = ?',
@@ -355,12 +406,12 @@ def evaluation_form(sheet_name):
                  ).fetchall()}
         s = conn.execute('SELECT * FROM suggestions WHERE sheet_name = ?', (sheet_name,)).fetchone()
 
-    suggestion = (s['suggestion'] if s else '') or ''
-    reviewer_comment = (s['reviewer_comment'] if s else '') or ''
-    reviewer_signature = (s['reviewer_signature'] if s else '') or ''
-    checker_signature = (s['checker_signature'] if s else '') or ''
-    locked_danh_gia = int(s['locked_danh_gia']) if s and s['locked_danh_gia'] is not None else 0
-    locked_tham_tra = int(s['locked_tham_tra']) if s and s['locked_tham_tra'] is not None else 0
+    suggestion         = (s['suggestion']          if s else '') or ''
+    reviewer_comment   = (s['reviewer_comment']    if s else '') or ''
+    reviewer_signature = (s['reviewer_signature']  if s else '') or ''
+    checker_signature  = (s['checker_signature']   if s else '') or ''
+    locked_danh_gia    = int(s['locked_danh_gia'])  if s and s['locked_danh_gia']  is not None else 0
+    locked_tham_tra    = int(s['locked_tham_tra'])  if s and s['locked_tham_tra']  is not None else 0
 
     return render_template(
         'evaluation_form.html',
@@ -385,19 +436,13 @@ def evaluation_form(sheet_name):
 def save():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    sn = request.form['sheet_name']
+    sn   = request.form['sheet_name']
     role = request.form.get('role')
-    uid = session['user_id']
+    uid  = session['user_id']
 
     def col_name(col):
-        return {
-            'H': 'Mô tả',
-            'I': 'Đơn vị thực hiện',
-            'J': 'Thời gian',
-            'K': 'Giải pháp'
-        }.get(col, col)
+        return {'H': 'Mô tả', 'I': 'Đơn vị thực hiện', 'J': 'Thời gian', 'K': 'Giải pháp'}.get(col, col)
 
-    # Lưu header nhiệt độ
     with get_db() as conn:
         if role == 'danh_gia':
             cycle_val = request.form.get('header_6_E', '').strip()
@@ -439,12 +484,10 @@ def save():
                 flash(f'Dòng {row}: chưa chọn kết quả (cột G).')
                 return redirect(url_for('evaluation_form', sheet_name=sn))
             if cols.get('G') == 'K':
-                missing = []
-                for col in ['H','I','J','K']:
-                    if col not in cols or not cols[col].strip():
-                        missing.append(col_name(col))
+                missing = [col_name(c) for c in ['H', 'I', 'J', 'K']
+                           if c not in cols or not cols[c].strip()]
                 if missing:
-                    flash(f'Dòng {row} (kết quả K) còn thiếu các cột: {", ".join(missing)}.')
+                    flash(f'Dòng {row} (kết quả K) còn thiếu: {", ".join(missing)}.')
                     return redirect(url_for('evaluation_form', sheet_name=sn))
 
         reviewer_sig = request.form.get('reviewer_signature', '').strip()
@@ -466,7 +509,6 @@ def save():
                             'INSERT OR REPLACE INTO evaluations (user_id, sheet_name, row_index, col_letter, value) VALUES (?,?,?,?,?)',
                             (uid, sn, row, col, v)
                         )
-            # Lưu thời gian hoàn thành cho đánh giá (hàng 4, cột F)
             now = datetime.now().strftime('%Hh%M ngày %d/%m/%y')
             conn.execute(
                 'INSERT OR REPLACE INTO evaluations (user_id, sheet_name, row_index, col_letter, value) VALUES (?,?,?,?,?)',
@@ -475,24 +517,10 @@ def save():
             conn.execute(
                 '''INSERT INTO suggestions (sheet_name, suggestion, reviewer_signature, locked_danh_gia)
                    VALUES (?,?,?,1) ON CONFLICT(sheet_name) DO UPDATE SET
-                   suggestion=excluded.suggestion, reviewer_signature=excluded.reviewer_signature, locked_danh_gia=1''',
+                   suggestion=excluded.suggestion,
+                   reviewer_signature=excluded.reviewer_signature,
+                   locked_danh_gia=1''',
                 (sn, request.form.get('suggestion', ''), reviewer_sig)
-            )
-            # Lưu snapshot vào history
-            evals_snapshot = conn.execute('SELECT row_index, col_letter, value FROM evaluations WHERE sheet_name = ?', (sn,)).fetchall()
-            evals_list = [{'row': r['row_index'], 'col': r['col_letter'], 'value': r['value']} for r in evals_snapshot]
-            comms_snapshot = conn.execute('SELECT row_index, comment FROM review_comments WHERE sheet_name = ?', (sn,)).fetchall()
-            comms_list = [{'row': r['row_index'], 'comment': r['comment']} for r in comms_snapshot]
-            sugg = conn.execute('SELECT * FROM suggestions WHERE sheet_name = ?', (sn,)).fetchone()
-            sugg_dict = dict(sugg) if sugg else {}
-            snapshot = json.dumps({
-                'evals': evals_list,
-                'comments': comms_list,
-                'suggestions': sugg_dict
-            }, ensure_ascii=False)
-            conn.execute(
-                'INSERT INTO history (sheet_name, role, user_id, snapshot) VALUES (?, ?, ?, ?)',
-                (sn, role, uid, snapshot)
             )
             conn.commit()
         flash('Đã lưu đánh giá thành công.')
@@ -510,7 +538,10 @@ def save():
                     comment_items[row] = value
 
         with get_db() as conn:
-            rows_to_check = conn.execute('SELECT DISTINCT row_index FROM evaluations WHERE sheet_name=? AND col_letter="G"', (sn,)).fetchall()
+            rows_to_check = conn.execute(
+                'SELECT DISTINCT row_index FROM evaluations WHERE sheet_name=? AND col_letter="G"',
+                (sn,)
+            ).fetchall()
         for r in rows_to_check:
             row = r['row_index']
             if row not in comment_items or not comment_items[row].strip():
@@ -535,7 +566,6 @@ def save():
                             'INSERT OR REPLACE INTO review_comments (reviewer_id, sheet_name, row_index, comment) VALUES (?,?,?,?)',
                             (uid, sn, row, v)
                         )
-            # Lưu thời gian hoàn thành cho thẩm tra (hàng 5, cột F)
             now = datetime.now().strftime('%Hh%M ngày %d/%m/%y')
             conn.execute(
                 'INSERT OR REPLACE INTO evaluations (user_id, sheet_name, row_index, col_letter, value) VALUES (?,?,?,?,?)',
@@ -544,20 +574,22 @@ def save():
             conn.execute(
                 '''INSERT INTO suggestions (sheet_name, reviewer_comment, checker_signature, locked_tham_tra)
                    VALUES (?,?,?,1) ON CONFLICT(sheet_name) DO UPDATE SET
-                   reviewer_comment=excluded.reviewer_comment, checker_signature=excluded.checker_signature, locked_tham_tra=1''',
+                   reviewer_comment=excluded.reviewer_comment,
+                   checker_signature=excluded.checker_signature,
+                   locked_tham_tra=1''',
                 (sn, request.form.get('reviewer_comment', ''), checker_sig)
             )
-            # Lưu snapshot vào history
-            evals_snapshot = conn.execute('SELECT row_index, col_letter, value FROM evaluations WHERE sheet_name = ?', (sn,)).fetchall()
-            evals_list = [{'row': r['row_index'], 'col': r['col_letter'], 'value': r['value']} for r in evals_snapshot]
-            comms_snapshot = conn.execute('SELECT row_index, comment FROM review_comments WHERE sheet_name = ?', (sn,)).fetchall()
-            comms_list = [{'row': r['row_index'], 'comment': r['comment']} for r in comms_snapshot]
+            evals_snapshot = conn.execute(
+                'SELECT row_index, col_letter, value FROM evaluations WHERE sheet_name = ?', (sn,)
+            ).fetchall()
+            comms_snapshot = conn.execute(
+                'SELECT row_index, comment FROM review_comments WHERE sheet_name = ?', (sn,)
+            ).fetchall()
             sugg = conn.execute('SELECT * FROM suggestions WHERE sheet_name = ?', (sn,)).fetchone()
-            sugg_dict = dict(sugg) if sugg else {}
             snapshot = json.dumps({
-                'evals': evals_list,
-                'comments': comms_list,
-                'suggestions': sugg_dict
+                'evals':    [{'row': r['row_index'], 'col': r['col_letter'], 'value': r['value']} for r in evals_snapshot],
+                'comments': [{'row': r['row_index'], 'comment': r['comment']} for r in comms_snapshot],
+                'suggestions': dict(sugg) if sugg else {}
             }, ensure_ascii=False)
             conn.execute(
                 'INSERT INTO history (sheet_name, role, user_id, snapshot) VALUES (?, ?, ?, ?)',
@@ -572,14 +604,26 @@ def save():
 def history():
     if 'user_id' not in session:
         return redirect(url_for('login'))
+    selected_month = request.args.get('month')
     with get_db() as conn:
-        rows = conn.execute('''
-            SELECT h.id, h.sheet_name, h.role, h.saved_at, u.fullname
-            FROM history h
-            JOIN users u ON h.user_id = u.id
-            ORDER BY h.saved_at DESC
+        months = conn.execute('''
+            SELECT DISTINCT strftime('%Y-%m', saved_at) as month
+            FROM history ORDER BY month DESC
         ''').fetchall()
-    return render_template('history.html', history=rows)
+        if selected_month:
+            rows = conn.execute('''
+                SELECT h.id, h.sheet_name, h.role, h.saved_at, u.fullname
+                FROM history h JOIN users u ON h.user_id = u.id
+                WHERE strftime('%Y-%m', h.saved_at) = ?
+                ORDER BY h.saved_at DESC
+            ''', (selected_month,)).fetchall()
+        else:
+            rows = conn.execute('''
+                SELECT h.id, h.sheet_name, h.role, h.saved_at, u.fullname
+                FROM history h JOIN users u ON h.user_id = u.id
+                ORDER BY h.saved_at DESC
+            ''').fetchall()
+    return render_template('history.html', history=rows, months=months, selected_month=selected_month)
 
 @app.route('/view_history/<int:history_id>')
 def view_history(history_id):
@@ -588,17 +632,20 @@ def view_history(history_id):
     with get_db() as conn:
         h = conn.execute('''
             SELECT h.*, u.fullname as user_fullname
-            FROM history h
-            JOIN users u ON h.user_id = u.id
+            FROM history h JOIN users u ON h.user_id = u.id
             WHERE h.id = ?
         ''', (history_id,)).fetchone()
         if not h:
             flash('Không tìm thấy bản ghi lịch sử.')
             return redirect(url_for('history'))
         snapshot = json.loads(h['snapshot'])
-        # Lấy headers và rows từ file Excel để hiển thị
         headers, rows, extra = get_sheet_data(h['sheet_name'])
-        return render_template('view_history.html', history=h, snapshot=snapshot, headers=headers, rows=rows, extra=extra, enumerate=enumerate)
+        return render_template(
+            'view_history.html',
+            history=h, snapshot=snapshot,
+            headers=headers, rows=rows, extra=extra,
+            enumerate=enumerate
+        )
 
 @app.route('/export_all_forms')
 def export_all_forms():
@@ -606,40 +653,32 @@ def export_all_forms():
         flash('Bạn không có quyền truy cập chức năng này.')
         return redirect(url_for('dashboard'))
 
-    # Lấy danh sách các sheet đã được thẩm tra (locked_tham_tra = 1)
     with get_db() as conn:
-        sheets = conn.execute('''
-            SELECT DISTINCT sheet_name FROM suggestions WHERE locked_tham_tra = 1
-        ''').fetchall()
+        sheets = conn.execute(
+            'SELECT DISTINCT sheet_name FROM suggestions WHERE locked_tham_tra = 1'
+        ).fetchall()
     if not sheets:
         flash('Chưa có biểu mẫu nào được thẩm tra hoàn thành.')
         return redirect(url_for('dashboard'))
 
     wb = Workbook()
-    # Xóa sheet mặc định
     wb.remove(wb.active)
-
     rev_map = build_reverse_mapping()
+
     for sheet in sheets:
         sheet_name = sheet['sheet_name']
-        # Lấy dữ liệu của sheet này
         headers, rows, extra = get_sheet_data(sheet_name)
         if not headers:
             continue
-        # Tạo sheet mới với tên sheet (ánh xạ ngược lại mã biểu mẫu nếu cần)
         display_name = rev_map.get(sheet_name, sheet_name)
-        ws = wb.create_sheet(title=display_name[:31])  # Excel giới hạn 31 ký tự
+        ws = wb.create_sheet(title=display_name[:31])
 
-        # Ghi header (7 dòng đầu)
         for i, row in enumerate(headers, start=1):
             ws.append([row.get(col, '') for col in 'ABCDEF'])
-        # Thêm dòng trống
         ws.append([])
-        # Ghi nội dung đánh giá (từ rows)
-        # Thêm tiêu đề cột cho phần đánh giá
-        ws.append(["Hạng mục", "STT", "Nội dung đánh giá", "Tiêu chuẩn", "Phương pháp", "Trạng thái TB",
-                   "Kết quả", "Mô tả", "Đơn vị thực hiện", "Thời gian", "Giải pháp"])
-        # Lấy dữ liệu đã lưu
+        ws.append(["Hạng mục", "STT", "Nội dung đánh giá", "Tiêu chuẩn", "Phương pháp",
+                   "Trạng thái TB", "Kết quả", "Mô tả", "Đơn vị thực hiện", "Thời gian", "Giải pháp"])
+
         with get_db() as conn:
             evals = {(r['row_index'], r['col_letter']): r['value']
                      for r in conn.execute(
@@ -652,50 +691,32 @@ def export_all_forms():
                             (sheet_name,)
                         )}
             sugg = conn.execute('SELECT * FROM suggestions WHERE sheet_name = ?', (sheet_name,)).fetchone()
-        # Ghi từng dòng
+
         for idx, row in enumerate(rows, start=10):
             ws.append([
                 row['A'], row['B'], row['C'], row['D'], row['E'], row['F'],
-                evals.get((idx, 'G'), ''),
-                evals.get((idx, 'H'), ''),
-                evals.get((idx, 'I'), ''),
-                evals.get((idx, 'J'), ''),
+                evals.get((idx, 'G'), ''), evals.get((idx, 'H'), ''),
+                evals.get((idx, 'I'), ''), evals.get((idx, 'J'), ''),
                 evals.get((idx, 'K'), '')
             ])
-            # Nếu có ý kiến thẩm tra, thêm vào cột thứ 12 (vị trí sau giải pháp)
             if comments.get(idx):
                 ws.cell(row=ws.max_row, column=12, value=comments[idx])
-        # Ghi phần extra (kiến nghị, ký xác nhận)
+
         ws.append([])
         ws.append(["Kiến nghị và ký xác nhận"])
         ws.append(["Kiến nghị (nếu có):", extra[0].get('B', '') if extra else ''])
         ws.append(["Người đánh giá:", sugg['reviewer_signature'] if sugg else ''])
         ws.append(["Người thẩm tra:", sugg['checker_signature'] if sugg else ''])
 
-        # Áp dụng border đơn cho tất cả các ô có dữ liệu
-        thin_border = Border(
-            left=Side(style='thin'),
-            right=Side(style='thin'),
-            top=Side(style='thin'),
-            bottom=Side(style='thin')
-        )
+        thin = Border(left=Side(style='thin'), right=Side(style='thin'),
+                      top=Side(style='thin'), bottom=Side(style='thin'))
         for row in ws.iter_rows():
             for cell in row:
-                if cell.value is not None or cell.column_letter:
-                    cell.border = thin_border
+                cell.border = thin
 
-        # Tự động điều chỉnh độ rộng cột
         for col in ws.columns:
-            max_length = 0
-            col_letter = col[0].column_letter
-            for cell in col:
-                try:
-                    if len(str(cell.value)) > max_length:
-                        max_length = len(str(cell.value))
-                except:
-                    pass
-            adjusted_width = min(max_length + 2, 50)
-            ws.column_dimensions[col_letter].width = adjusted_width
+            max_len = max((len(str(cell.value)) for cell in col if cell.value), default=0)
+            ws.column_dimensions[col[0].column_letter].width = min(max_len + 2, 50)
 
     output = BytesIO()
     wb.save(output)
@@ -711,9 +732,7 @@ def reset_cycle():
         flash('Bạn không có quyền truy cập chức năng này.')
         return redirect(url_for('dashboard'))
     return '''
-    <!DOCTYPE html>
-    <html>
-    <head><title>Xác nhận reset chu kỳ</title></head>
+    <!DOCTYPE html><html><head><title>Xác nhận reset chu kỳ</title></head>
     <body>
         <h2>Bạn có chắc chắn muốn reset dữ liệu cho chu kỳ mới?</h2>
         <p>Dữ liệu hiện tại sẽ được sao lưu và xóa để bắt đầu chu kỳ đánh giá mới.</p>
@@ -721,8 +740,7 @@ def reset_cycle():
             <button type="submit">Xác nhận reset</button>
             <a href="/dashboard">Hủy</a>
         </form>
-    </body>
-    </html>
+    </body></html>
     '''
 
 @app.route('/confirm_reset', methods=['POST'])
@@ -745,24 +763,20 @@ def export_summary():
         rows = conn.execute('''
             SELECT e.sheet_name, e.row_index,
                    e.value as result,
-                   (SELECT value FROM evaluations e2 
-                    WHERE e2.sheet_name = e.sheet_name 
-                      AND e2.row_index = e.row_index 
+                   (SELECT value FROM evaluations e2
+                    WHERE e2.sheet_name = e.sheet_name AND e2.row_index = e.row_index
                       AND e2.col_letter = 'H') as description,
-                   (SELECT comment FROM review_comments rc 
-                    WHERE rc.sheet_name = e.sheet_name 
-                      AND rc.row_index = e.row_index) as reviewer_comment
+                   (SELECT comment FROM review_comments rc
+                    WHERE rc.sheet_name = e.sheet_name AND rc.row_index = e.row_index) as reviewer_comment
             FROM evaluations e
             WHERE e.col_letter = 'G' AND e.value = 'K'
             ORDER BY e.sheet_name, e.row_index
         ''').fetchall()
-
         suggestions = conn.execute('''
-            SELECT sheet_name, reviewer_signature, checker_signature
-            FROM suggestions
-            WHERE sheet_name IN (SELECT DISTINCT sheet_name 
-                                 FROM evaluations 
-                                 WHERE col_letter = 'G' AND value = 'K')
+            SELECT sheet_name, reviewer_signature, checker_signature FROM suggestions
+            WHERE sheet_name IN (
+                SELECT DISTINCT sheet_name FROM evaluations WHERE col_letter = 'G' AND value = 'K'
+            )
         ''').fetchall()
         sug_dict = {s['sheet_name']: (s['reviewer_signature'], s['checker_signature']) for s in suggestions}
 
@@ -771,47 +785,26 @@ def export_summary():
         return redirect(url_for('dashboard'))
 
     rev_map = build_reverse_mapping()
-
     wb = Workbook()
     ws = wb.active
     ws.title = "Tổng hợp KKTB"
-
     ws.merge_cells('A1:D1')
     ws['A1'] = "TỔNG HỢP KHIẾM KHUYẾT THIẾT BỊ TPM"
     ws['A1'].font = Font(bold=True, size=14)
     ws['A1'].alignment = Alignment(horizontal='center')
-
-    headers = ["STT", "Biểu mẫu", "Nội dung khiếm khuyết (Mô tả của ĐG)", "Mô tả của Thẩm tra"]
-    ws.append(headers)
+    ws.append(["STT", "Biểu mẫu", "Nội dung khiếm khuyết (Mô tả của ĐG)", "Mô tả của Thẩm tra"])
     for cell in ws[2]:
         cell.font = Font(bold=True)
         cell.alignment = Alignment(horizontal='center')
 
-    stt = 1
-    for row in rows:
-        sheet_code = rev_map.get(row['sheet_name'], row['sheet_name'])
-        ws.append([
-            stt,
-            sheet_code,
-            row['description'] or '',
-            row['reviewer_comment'] or ''
-        ])
-        stt += 1
+    for stt, row in enumerate(rows, start=1):
+        ws.append([stt, rev_map.get(row['sheet_name'], row['sheet_name']),
+                   row['description'] or '', row['reviewer_comment'] or ''])
 
     for col in ws.columns:
-        max_length = 0
-        col_letter = None
-        for cell in col:
-            if hasattr(cell, 'column_letter'):
-                col_letter = cell.column_letter
-                try:
-                    if len(str(cell.value)) > max_length:
-                        max_length = len(str(cell.value))
-                except:
-                    pass
-        if col_letter:
-            adjusted_width = min(max_length + 2, 50)
-            ws.column_dimensions[col_letter].width = adjusted_width
+        max_len = max((len(str(c.value)) for c in col if c.value), default=0)
+        if col[0].column_letter:
+            ws.column_dimensions[col[0].column_letter].width = min(max_len + 2, 50)
 
     if sug_dict:
         ws.append([])
@@ -819,75 +812,115 @@ def export_summary():
         ws.merge_cells(f'A{ws.max_row}:D{ws.max_row}')
         ws.cell(row=ws.max_row, column=1).font = Font(bold=True)
         ws.cell(row=ws.max_row, column=1).alignment = Alignment(horizontal='center')
-
-        for sheet_code, (reviewer_sug, checker_comm) in sug_dict.items():
-            ws.append([sheet_code, "Kiến nghị của người đánh giá:", reviewer_sug or '', ""])
-            ws.append([sheet_code, "Ý kiến của người thẩm tra:", checker_comm or '', ""])
-            for row in range(ws.max_row-1, ws.max_row+1):
-                for cell in ws[row]:
+        for sc, (rs, cc) in sug_dict.items():
+            ws.append([sc, "Kiến nghị của người đánh giá:", rs or '', ""])
+            ws.append([sc, "Ý kiến của người thẩm tra:", cc or '', ""])
+            for r in range(ws.max_row - 1, ws.max_row + 1):
+                for cell in ws[r]:
                     cell.alignment = Alignment(horizontal='left', wrap_text=True)
-        for col in ws.columns:
-            max_length = 0
-            col_letter = None
-            for cell in col:
-                if hasattr(cell, 'column_letter'):
-                    col_letter = cell.column_letter
-                    try:
-                        if len(str(cell.value)) > max_length:
-                            max_length = len(str(cell.value))
-                    except:
-                        pass
-            if col_letter:
-                adjusted_width = min(max_length + 2, 50)
-                ws.column_dimensions[col_letter].width = adjusted_width
 
     output = BytesIO()
     wb.save(output)
     output.seek(0)
-
-    return send_file(output,
-                     download_name='TonghopKKTB TPM.xlsx',
-                     as_attachment=True,
+    return send_file(output, download_name='TonghopKKTB TPM.xlsx', as_attachment=True,
                      mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
 @app.route('/admin_dashboard')
 def admin_dashboard():
     if 'user_id' not in session or session.get('role') != 'admin':
         flash('Bạn không có quyền truy cập trang này.')
         return redirect(url_for('dashboard'))
-
     with get_db() as conn:
-        # Lấy danh sách các sheet có dữ liệu đánh giá
-        sheets = conn.execute('SELECT DISTINCT sheet_name FROM evaluations WHERE col_letter = "G" AND value != ""').fetchall()
+        sheets = conn.execute(
+            'SELECT DISTINCT sheet_name FROM evaluations WHERE col_letter = "G" AND value != ""'
+        ).fetchall()
         system_data = []
         for sheet in sheets:
-            sheet_name = sheet['sheet_name']
-            # Đếm số dòng có kết quả K
+            sn = sheet['sheet_name']
             k_count = conn.execute(
                 'SELECT COUNT(*) as cnt FROM evaluations WHERE sheet_name = ? AND col_letter = "G" AND value = "K"',
-                (sheet_name,)
+                (sn,)
             ).fetchone()['cnt']
-            total_count = conn.execute(
+            total = conn.execute(
                 'SELECT COUNT(*) as cnt FROM evaluations WHERE sheet_name = ? AND col_letter = "G" AND value != ""',
-                (sheet_name,)
+                (sn,)
             ).fetchone()['cnt']
             system_data.append({
-                'name': sheet_name,
-                'total': total_count,
-                'k_count': k_count,
-                'percentage': round((k_count / total_count * 100) if total_count > 0 else 0, 1)
+                'name': sn, 'total': total, 'k_count': k_count,
+                'percentage': round((k_count / total * 100) if total > 0 else 0, 1)
             })
-        # Sắp xếp giảm dần theo tỷ lệ khiếm khuyết
         system_data.sort(key=lambda x: x['percentage'], reverse=True)
-
     return render_template('admin_dashboard.html', system_data=system_data)
+
+@app.route('/sync_assignments', methods=['POST'])
+def sync_assignments():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        flash('Bạn không có quyền truy cập chức năng này.')
+        return redirect(url_for('dashboard'))
+    if not os.path.exists(PHAN_GIAO_FILE):
+        flash('Không tìm thấy file phan_giao.xlsx')
+        return redirect(url_for('dashboard'))
+
+    mapping = build_sheet_mapping()
+    new_assignments = []
+    wb = load_workbook(PHAN_GIAO_FILE, data_only=True)
+    ws = wb.active
+    for row in range(8, ws.max_row + 1):
+        ma_bieu_mau = str(ws[f'C{row}'].value or '').strip()
+        name_eval   = str(ws[f'E{row}'].value or '').strip()
+        name_check  = str(ws[f'F{row}'].value or '').strip()
+        if not ma_bieu_mau or (not name_eval and not name_check):
+            continue
+        if ma_bieu_mau in ['BM.P4.15.18', 'BM.P4.15.19']:
+            base_num = ma_bieu_mau.split('.')[-1]
+            snames = [f'BM{base_num}_a', f'BM{base_num}_b', f'BM{base_num}_c']
+        else:
+            sname = mapping.get(ma_bieu_mau)
+            if not sname:
+                continue
+            snames = [sname]
+        for sn in snames:
+            if name_eval:  new_assignments.append((name_eval,  sn, 'danh_gia'))
+            if name_check: new_assignments.append((name_check, sn, 'tham_tra'))
+    wb.close()
+
+    with get_db() as conn:
+        current = conn.execute('''
+            SELECT a.id, a.sheet_name, a.role, u.fullname
+            FROM assignments a JOIN users u ON a.user_id = u.id
+        ''').fetchall()
+        current_set = {(r['fullname'], r['sheet_name'], r['role']) for r in current}
+        new_set = set(new_assignments)
+
+        added, removed = [], []
+        for (fullname, sn, role) in new_set - current_set:
+            uid = create_or_get_user(conn, fullname, role)
+            conn.execute('INSERT INTO assignments (user_id, sheet_name, role) VALUES (?,?,?)', (uid, sn, role))
+            added.append(f"{fullname} - {sn} ({'đánh giá' if role=='danh_gia' else 'thẩm tra'})")
+        for r in current:
+            if (r['fullname'], r['sheet_name'], r['role']) not in new_set:
+                conn.execute('DELETE FROM assignments WHERE id = ?', (r['id'],))
+                removed.append(f"{r['fullname']} - {r['sheet_name']} ({'đánh giá' if r['role']=='danh_gia' else 'thẩm tra'})")
+        conn.commit()
+
+    flash('Đã đồng bộ phân công từ file phan_giao.xlsx.')
+    if added:
+        flash(f'✅ Thêm mới {len(added)} bản ghi:')
+        for item in added[:20]: flash(f'  + {item}')
+        if len(added) > 20: flash(f'  ... và {len(added)-20} bản ghi khác')
+    if removed:
+        flash(f'❌ Xóa bỏ {len(removed)} bản ghi:')
+        for item in removed[:20]: flash(f'  - {item}')
+        if len(removed) > 20: flash(f'  ... và {len(removed)-20} bản ghi khác')
+    if not added and not removed:
+        flash('Không có thay đổi nào so với phân công hiện tại.')
+    return redirect(url_for('dashboard'))
+
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    # Bỏ comment dưới đây nếu muốn reset database khi khởi động (mất dữ liệu cũ)
-    # if os.path.exists(DATABASE):
-    #     os.remove(DATABASE)
-    # init_db()
+    init_db()  # Chỉ mở lại nếu muốn reset database
     app.run(debug=True, host='0.0.0.0')

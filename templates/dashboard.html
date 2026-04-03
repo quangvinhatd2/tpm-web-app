@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* (giữ nguyên toàn bộ CSS như cũ) */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
@@ -485,8 +486,13 @@
             <i class="fa-solid fa-arrows-rotate"></i> Bắt đầu tháng mới
         </a>
         <a href="{{ url_for('admin_dashboard') }}" class="nav-item admin">
-    <i class="fa-solid fa-chart-pie"></i> Dashboard thống kê
-</a>
+            <i class="fa-solid fa-chart-pie"></i> Dashboard thống kê
+        </a>
+        <!-- Nút đồng bộ phân công với confirm -->
+        <a href="#" onclick="if(confirm('Bạn có chắc chắn muốn đồng bộ phân công từ file Excel? Các phân công mới sẽ được thêm, dữ liệu cũ không bị ảnh hưởng.')) { document.getElementById('syncForm').submit(); } return false;" class="nav-item admin">
+            <i class="fa-solid fa-arrows-spin"></i> Đồng bộ phân công
+        </a>
+        <form id="syncForm" method="post" action="{{ url_for('sync_assignments') }}" style="display:none;"></form>
         {% endif %}
     </nav>
 
