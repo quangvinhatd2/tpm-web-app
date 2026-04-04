@@ -10,14 +10,10 @@ from openpyxl.styles import Font, Alignment, Border, Side
 from unicodedata import normalize
 from dotenv import load_dotenv
 
+
 load_dotenv()
 
 app = Flask(__name__)
-
-# Thêm route ping ngay sau khi tạo app
-@app.route('/ping')
-def ping():
-    return "pong"
 app.secret_key = os.getenv("SECRET_KEY", "dev")
 
 # ================= FIX NEON URL =================
@@ -27,6 +23,10 @@ if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 # ================= ROUTES KHÔNG ĐỔI =================
+@app.route('/')
+def index():
+    return redirect(url_for('login'))
+
 @app.route('/export-summary')
 def export_summary():
     return "Export summary"
