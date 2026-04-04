@@ -51,9 +51,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,.25);
             position: sticky; top: 0; z-index: 100;
         }
-        .topnav-brand {
-            display: flex; align-items: center; gap: 12px;
-        }
+        .topnav-brand { display: flex; align-items: center; gap: 12px; }
         .topnav-logo {
             background: var(--evn-accent);
             color: var(--evn-blue);
@@ -82,10 +80,7 @@
             border: 1px solid rgba(255,255,255,.2);
             transition: all .2s;
         }
-        .topnav-links a:hover {
-            background: rgba(255,255,255,.15);
-            color: #fff;
-        }
+        .topnav-links a:hover { background: rgba(255,255,255,.15); color: #fff; }
 
         /* ── PAGE WRAPPER ── */
         .page { max-width: 98%; margin: 0 auto; padding: 24px 28px 60px; }
@@ -188,7 +183,7 @@
         tbody tr:hover { background: var(--evn-blue-soft); }
 
         /* ── HEADER TABLE ── */
-        .header-table { table-layout: fixed; }
+        .header-table { table-layout: fixed; width: 100%; }
         .header-table td {
             background: #f5f8ff;
             font-size: 13px;
@@ -214,32 +209,30 @@
             box-shadow: 0 0 0 3px rgba(245,166,35,.15);
         }
 
-        /* Column widths – header */
-        .header-table th:nth-child(1), .header-table td:nth-child(1) { width: 22%; }
-        .header-table th:nth-child(2), .header-table td:nth-child(2) { width: 14%; }
-        .header-table th:nth-child(3), .header-table td:nth-child(3) { width: 5%; }
-        .header-table th:nth-child(4), .header-table td:nth-child(4) { width: 15%; }
-        .header-table th:nth-child(5), .header-table td:nth-child(5) { width: 11%; }
-        .header-table th:nth-child(6), .header-table td:nth-child(6) { width: 8%; }
-        .header-table th:nth-child(7), .header-table td:nth-child(7) { width: 23%; }
+        /* ── Column widths – header (6 cột A-F, tổng 100%) ── */
+        .header-table td:nth-child(1) { width: 22%; }
+        .header-table td:nth-child(2) { width: 14%; }
+        .header-table td:nth-child(3) { width: 5%;  }
+        .header-table td:nth-child(4) { width: 20%; }
+        .header-table td:nth-child(5) { width: 16%; }
+        .header-table td:nth-child(6) { width: 23%; }
 
         /* ── CONTENT TABLE ── */
         .content-table {
             table-layout: fixed;
-            /* Để cuộn được bảng, cần overflow: auto và chiều cao xác định */
             display: block;
             overflow-x: auto;
             overflow-y: auto;
-            max-height: 70vh; /* Điều chỉnh theo nhu cầu, có thể để auto nhưng phải có max-height để kích hoạt thanh cuộn */
+            max-height: 70vh;
         }
         .content-table thead {
             position: sticky;
             top: 0;
             z-index: 10;
-            background: var(--evn-blue); /* Đảm bảo màu nền cho thead */
+            background: var(--evn-blue);
         }
         .content-table th {
-            background: var(--evn-blue); /* Giữ nguyên màu nền cho th */
+            background: var(--evn-blue);
             position: sticky;
             top: 0;
             z-index: 11;
@@ -251,17 +244,17 @@
         .content-table td:nth-child(9) { text-align: center; }
 
         /* Column widths – content */
-        .content-table th:nth-child(1),  .content-table td:nth-child(1)  { width: 3%; }
-        .content-table th:nth-child(2),  .content-table td:nth-child(2)  { width: 3%; }
-        .content-table th:nth-child(3),  .content-table td:nth-child(3)  { width: 6%; }
-        .content-table th:nth-child(4),  .content-table td:nth-child(4)  { width: 8%; }
-        .content-table th:nth-child(5),  .content-table td:nth-child(5)  { width: 6%; }
-        .content-table th:nth-child(6),  .content-table td:nth-child(6)  { width: 3%; }
-        .content-table th:nth-child(7),  .content-table td:nth-child(7)  { width: 4%; }
+        .content-table th:nth-child(1),  .content-table td:nth-child(1)  { width: 3%;  }
+        .content-table th:nth-child(2),  .content-table td:nth-child(2)  { width: 3%;  }
+        .content-table th:nth-child(3),  .content-table td:nth-child(3)  { width: 6%;  }
+        .content-table th:nth-child(4),  .content-table td:nth-child(4)  { width: 8%;  }
+        .content-table th:nth-child(5),  .content-table td:nth-child(5)  { width: 6%;  }
+        .content-table th:nth-child(6),  .content-table td:nth-child(6)  { width: 3%;  }
+        .content-table th:nth-child(7),  .content-table td:nth-child(7)  { width: 4%;  }
         .content-table th:nth-child(8),  .content-table td:nth-child(8)  { width: 13%; }
-        .content-table th:nth-child(9),  .content-table td:nth-child(9)  { width: 5%; }
-        .content-table th:nth-child(10), .content-table td:nth-child(10) { width: 3%; }
-        .content-table th:nth-child(11), .content-table td:nth-child(11) { width: 8%; }
+        .content-table th:nth-child(9),  .content-table td:nth-child(9)  { width: 5%;  }
+        .content-table th:nth-child(10), .content-table td:nth-child(10) { width: 3%;  }
+        .content-table th:nth-child(11), .content-table td:nth-child(11) { width: 8%;  }
         .content-table th:nth-child(12), .content-table td:nth-child(12) { width: 10%; }
 
         /* ── FORM CONTROLS ── */
@@ -305,49 +298,34 @@
             min-width: 80px;
         }
         select:focus { border-color: var(--evn-blue-mid); box-shadow: 0 0 0 3px rgba(0,85,179,.12); }
-
         select.da {
-            background-color: var(--evn-green);
-            color: #fff;
-            border-color: var(--evn-green);
+            background-color: var(--evn-green); color: #fff; border-color: var(--evn-green);
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23fff'/%3E%3C/svg%3E");
         }
         select.khong {
-            background-color: var(--evn-red);
-            color: #fff;
-            border-color: var(--evn-red);
+            background-color: var(--evn-red); color: #fff; border-color: var(--evn-red);
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23fff'/%3E%3C/svg%3E");
         }
         select.default { background-color: #f4f6fb; color: var(--text-sub); }
         select.pxvh {
-            background-color: var(--evn-blue-mid);
-            color: #fff;
-            border-color: var(--evn-blue-mid);
+            background-color: var(--evn-blue-mid); color: #fff; border-color: var(--evn-blue-mid);
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23fff'/%3E%3C/svg%3E");
         }
         select.pxsc {
-            background-color: var(--evn-green);
-            color: #fff;
-            border-color: var(--evn-green);
+            background-color: var(--evn-green); color: #fff; border-color: var(--evn-green);
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23fff'/%3E%3C/svg%3E");
         }
         select.pktat {
-            background-color: var(--evn-cyan);
-            color: #fff;
-            border-color: var(--evn-cyan);
+            background-color: var(--evn-cyan); color: #fff; border-color: var(--evn-cyan);
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23fff'/%3E%3C/svg%3E");
         }
         select.unit-default { background-color: #f4f6fb; color: var(--text-sub); }
 
-        /* ── RESULT BADGE (tham_tra read-only) ── */
+        /* ── RESULT BADGE ── */
         .result-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 30px; height: 30px;
-            border-radius: 50%;
-            font-weight: 700;
-            font-size: 13px;
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 30px; height: 30px; border-radius: 50%;
+            font-weight: 700; font-size: 13px;
         }
         .result-badge.dat  { background: var(--evn-green-bg); color: var(--evn-green); border: 2px solid var(--evn-green); }
         .result-badge.kdat { background: var(--evn-red-bg);   color: var(--evn-red);   border: 2px solid var(--evn-red); }
@@ -356,49 +334,26 @@
         .extra-table { width: 100%; border-collapse: collapse; }
         .extra-table td { border: 1px solid var(--border); padding: 10px 14px; vertical-align: top; }
         .extra-table .label-cell {
-            width: 180px;
-            background: #f5f8ff;
-            font-weight: 600;
-            color: var(--evn-blue);
-            font-size: 13px;
-            vertical-align: middle;
-            white-space: nowrap;
+            width: 180px; background: #f5f8ff; font-weight: 600;
+            color: var(--evn-blue); font-size: 13px; vertical-align: middle; white-space: nowrap;
         }
         .extra-table .label-cell .cell-icon { margin-right: 6px; }
 
         /* ── SUBMIT BUTTON ── */
-        .submit-bar {
-            text-align: center;
-            padding: 28px 0 4px;
-        }
+        .submit-bar { text-align: center; padding: 28px 0 4px; }
         .btn-submit {
             background: linear-gradient(135deg, var(--evn-blue) 0%, var(--evn-blue-mid) 100%);
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            padding: 13px 48px;
-            font-family: 'Be Vietnam Pro', sans-serif;
-            font-size: 15px;
-            font-weight: 700;
-            letter-spacing: .5px;
-            cursor: pointer;
+            color: #fff; border: none; border-radius: 6px; padding: 13px 48px;
+            font-family: 'Be Vietnam Pro', sans-serif; font-size: 15px; font-weight: 700;
+            letter-spacing: .5px; cursor: pointer;
             box-shadow: 0 4px 14px rgba(0,48,135,.35);
             transition: transform .15s, box-shadow .15s;
         }
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,48,135,.45);
-        }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,48,135,.45); }
         .btn-submit:active { transform: translateY(0); }
 
         /* ── UNIT CHIP ── */
-        .unit-chip {
-            display: inline-block;
-            font-size: 11.5px;
-            font-weight: 700;
-            padding: 3px 10px;
-            border-radius: 12px;
-        }
+        .unit-chip { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 12px; }
         .unit-chip.pxvh-chip  { background: var(--evn-cyan-bg);  color: var(--evn-cyan); }
         .unit-chip.pxsc-chip  { background: var(--evn-green-bg); color: var(--evn-green); }
         .unit-chip.pktat-chip { background: #e3f4fb; color: #0277bd; }
@@ -406,20 +361,13 @@
         .table-scroll { overflow-x: auto; }
 
         .section-label {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-size: 13px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            margin: 6px 0 10px;
-            display: flex; align-items: center; gap: 8px;
+            font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700;
+            letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted);
+            margin: 6px 0 10px; display: flex; align-items: center; gap: 8px;
         }
         .section-label::after { content:''; flex: 1; height: 1px; background: var(--border-light); }
 
-        /* ════════════════════════════════════════
-           MOBILE RESPONSIVE  (max-width: 768px)
-        ════════════════════════════════════════ */
+        /* ════════ MOBILE RESPONSIVE ════════ */
         @media (max-width: 768px) {
             body { font-size: 14px; }
             .page { padding: 12px 10px 100px; max-width: 100%; }
@@ -431,72 +379,44 @@
             .page-header h1 { font-size: 15px; }
             .card { border-radius: 8px; margin-bottom: 14px; }
             .card-header { font-size: 13px; padding: 10px 14px; }
-            .header-table,
-            .header-table tbody,
-            .header-table tr,
-            .header-table td { display: block; width: 100% !important; }
+            .header-table, .header-table tbody, .header-table tr, .header-table td { display: block; width: 100% !important; }
             .header-table tr { border-bottom: 2px solid var(--border-light); padding: 2px 0; }
             .header-table td { border: none; padding: 6px 14px; font-size: 13.5px; }
             .header-table td:empty { display: none; }
             .content-table thead { display: none; }
-            .content-table,
-            .content-table tbody { display: block; width: 100%; }
+            .content-table, .content-table tbody { display: block; width: 100%; }
             .content-table tr {
-                display: block;
-                background: #fff;
-                border: 1.5px solid var(--border);
-                border-radius: 8px;
-                margin-bottom: 12px;
-                padding: 12px;
+                display: block; background: #fff; border: 1.5px solid var(--border);
+                border-radius: 8px; margin-bottom: 12px; padding: 12px;
                 box-shadow: 0 1px 6px rgba(0,48,135,.07);
             }
             .content-table tr:nth-child(even) { background: #fff; }
             .content-table tr:hover { background: #fff; }
             .content-table td {
-                display: flex;
-                align-items: flex-start;
-                gap: 8px;
-                padding: 6px 0;
-                border: none;
-                border-bottom: 1px solid var(--border-light);
-                font-size: 13.5px;
-                text-align: left !important;
-                width: 100% !important;
+                display: flex; align-items: flex-start; gap: 8px; padding: 6px 0;
+                border: none; border-bottom: 1px solid var(--border-light);
+                font-size: 13.5px; text-align: left !important; width: 100% !important;
             }
             .content-table td:last-child { border-bottom: none; }
-            .content-table td[data-label=""]:empty,
-            .content-table td:empty { display: none; }
+            .content-table td[data-label=""]:empty, .content-table td:empty { display: none; }
             .content-table td::before {
-                content: attr(data-label);
-                min-width: 115px;
-                font-weight: 600;
-                color: var(--evn-blue);
-                font-size: 12px;
-                flex-shrink: 0;
-                padding-top: 3px;
+                content: attr(data-label); min-width: 115px; font-weight: 600;
+                color: var(--evn-blue); font-size: 12px; flex-shrink: 0; padding-top: 3px;
             }
             select { width: 100%; min-height: 44px; border-radius: 8px; font-size: 14px; padding: 8px 32px 8px 12px; }
             textarea { min-height: 68px; font-size: 14px; padding: 8px 10px; }
             .header-table input[type="text"] { min-height: 44px; font-size: 14px; padding: 8px 12px; }
-            .extra-table,
-            .extra-table tbody,
-            .extra-table tr,
-            .extra-table td { display: block; width: 100% !important; }
+            .extra-table, .extra-table tbody, .extra-table tr, .extra-table td { display: block; width: 100% !important; }
             .extra-table .label-cell { width: 100% !important; border-bottom: none; padding: 10px 14px 4px; white-space: normal; font-size: 13px; }
             .extra-table td:not(.label-cell) { padding: 6px 14px 14px; }
             .submit-bar {
-                position: fixed;
-                bottom: 0; left: 0; right: 0;
-                background: rgba(255,255,255,.97);
-                backdrop-filter: blur(8px);
-                border-top: 1px solid var(--border);
-                padding: 12px 16px;
-                z-index: 200;
-                box-shadow: 0 -4px 16px rgba(0,48,135,.12);
+                position: fixed; bottom: 0; left: 0; right: 0;
+                background: rgba(255,255,255,.97); backdrop-filter: blur(8px);
+                border-top: 1px solid var(--border); padding: 12px 16px;
+                z-index: 200; box-shadow: 0 -4px 16px rgba(0,48,135,.12);
             }
             .btn-submit { width: 100%; padding: 14px; font-size: 15px; border-radius: 8px; }
         }
-
         @media (max-width: 400px) {
             .content-table td::before { min-width: 90px; font-size: 11.5px; }
             .topnav-links a { padding: 5px 8px; font-size: 11px; }
@@ -555,7 +475,7 @@
                 <div class="table-scroll">
                 <table class="header-table">
                     {% for row_idx, row in enumerate(headers, start=1) %}
-                      <tr>
+                    <tr>
                         {% for col in ['A','B','C','D','E','F'] %}
                             {% set cell_value = row[col] or '' %}
                             {% set cell_key = (row_idx, col) %}
@@ -565,7 +485,7 @@
                             {% elif role == 'tham_tra' and row_idx == 6 and col == 'F' %}
                                 {% set editable = True %}
                             {% endif %}
-                              <td>
+                            <td>
                                 {% if editable %}
                                     {% set current_value = saved_header.get(cell_key, cell_value) if saved_header is defined else cell_value %}
                                     <input type="text" name="header_{{ row_idx }}_{{ col }}"
@@ -575,10 +495,10 @@
                                     {% set other_val = saved_header.get(cell_key) if saved_header is defined else None %}
                                     {{ other_val if (other_val != None and other_val != '') else cell_value }}
                                 {% endif %}
-                              </td>
+                            </td>
                         {% endfor %}
-                        <td colspan="5"></td>
-                      </tr>
+                        {# KHÔNG có <td colspan="5"> ở đây — đây là nguyên nhân gây lỗi dòng nhảy #}
+                    </tr>
                     {% endfor %}
                 </table>
                 </div>
@@ -591,10 +511,9 @@
                 <span class="icon">📊</span> Nội dung đánh giá
             </div>
             <div class="card-body">
-                <div class="table-scroll">
                 <table class="content-table">
                     <thead>
-                          <tr>
+                        <tr>
                             <th>Hạng mục</th>
                             <th>STT</th>
                             <th>Nội dung đánh giá</th>
@@ -607,11 +526,11 @@
                             <th>Thời gian</th>
                             <th>Giải pháp</th>
                             {% if role == 'tham_tra' %}<th>Ý kiến thẩm tra</th>{% endif %}
-                          </tr>
+                        </tr>
                     </thead>
                     <tbody>
                         {% for idx, row in enumerate(rows, start=10) %}
-                          <tr>
+                        <tr>
                             <td data-label="Hạng mục">{{ row['A'] }}</td>
                             <td data-label="STT">{{ row['B'] }}</td>
                             <td data-label="Nội dung">{{ row['C'] }}</td>
@@ -644,10 +563,8 @@
                             {% else %}
                                 {% set g_val = saved.get((idx, 'G'), '') if saved.get((idx, 'G')) != None else '' %}
                                 <td data-label="Kết quả (Đ/K)">
-                                    {% if g_val == 'Đ' %}
-                                        <span class="result-badge dat">Đ</span>
-                                    {% elif g_val == 'K' %}
-                                        <span class="result-badge kdat">K</span>
+                                    {% if g_val == 'Đ' %}<span class="result-badge dat">Đ</span>
+                                    {% elif g_val == 'K' %}<span class="result-badge kdat">K</span>
                                     {% else %}—{% endif %}
                                 </td>
                                 <td data-label="Mô tả">{{ saved.get((idx, 'H'), '') if saved.get((idx, 'H')) != None else '' }}</td>
@@ -662,11 +579,10 @@
                                 <td data-label="Giải pháp">{{ saved.get((idx, 'K'), '') if saved.get((idx, 'K')) != None else '' }}</td>
                                 <td data-label="Ý kiến thẩm tra"><textarea name="comment_{{ idx }}" data-stt="{{ row['B'] }}" rows="2" placeholder="Nhập ý kiến thẩm tra…">{{ saved_comments.get(idx, '') if saved_comments.get(idx) != None else '' }}</textarea></td>
                             {% endif %}
-                          </tr>
+                        </tr>
                         {% endfor %}
                     </tbody>
                 </table>
-                </div>
             </div>
         </div>
 
@@ -677,7 +593,7 @@
             </div>
             <div class="card-body" style="padding: 0;">
                 <table class="extra-table">
-                      <tr>
+                    <tr>
                         <td class="label-cell"><span class="cell-icon">📌</span>Kiến nghị (nếu có)</td>
                         <td>
                             {% for row in extra %}
@@ -686,8 +602,8 @@
                                 {% endif %}
                             {% endfor %}
                         </td>
-                      </tr>
-                      <tr>
+                    </tr>
+                    <tr>
                         <td class="label-cell"><span class="cell-icon">👤</span>Người đánh giá</td>
                         <td>
                             {% if role == 'danh_gia' %}
@@ -696,8 +612,8 @@
                                 <span style="white-space:pre-line;">{{ reviewer_signature if (reviewer_signature != None and reviewer_signature != 'None') else '—' }}</span>
                             {% endif %}
                         </td>
-                      </tr>
-                      <tr>
+                    </tr>
+                    <tr>
                         <td class="label-cell"><span class="cell-icon">🔍</span>Người thẩm tra</td>
                         <td>
                             {% if role == 'tham_tra' %}
@@ -706,7 +622,7 @@
                                 <span style="white-space:pre-line;">{{ checker_signature if (checker_signature != None and checker_signature != 'None') else '—' }}</span>
                             {% endif %}
                         </td>
-                      </tr>
+                    </tr>
                 </table>
             </div>
         </div>
@@ -719,40 +635,32 @@
 </div><!-- /page -->
 
 <script>
-    /* ── Lấy trạng thái khoá từ server ── */
+    /* ── Trạng thái khoá từ server ── */
     var locked_danh_gia = {{ locked_danh_gia }};
     var locked_tham_tra = {{ locked_tham_tra }};
     var role = '{{ role }}';
 
-    /* ── Nếu phiếu đã bị khoá thì vô hiệu hoá các trường tương ứng ── */
+    /* ── Khoá giao diện nếu đã lưu ── */
     if (role === 'danh_gia' && locked_danh_gia) {
-        // Vô hiệu hoá tất cả các ô nhập của đánh giá
         document.querySelectorAll('.content-table select[name^="eval_"], .content-table textarea, textarea[name="reviewer_signature"], textarea[name="suggestion"]')
             .forEach(el => el.disabled = true);
-        // Ẩn nút lưu
         let btn = document.querySelector('button[type="submit"]');
         if (btn) btn.style.display = 'none';
-        // Thêm thông báo
         const msg = document.createElement('div');
         msg.className = 'flash';
         msg.innerHTML = '<span>🔒 Phiếu đánh giá đã được lưu, không thể chỉnh sửa.</span>';
-        msg.style.background = '#fdecea';
-        msg.style.color = '#c0392b';
+        msg.style.cssText = 'background:#fdecea;color:#c0392b;border-color:#f5c6cb;';
         document.querySelector('.page').insertBefore(msg, document.querySelector('form'));
     }
     if (role === 'tham_tra' && locked_tham_tra) {
-        // Vô hiệu hoá các ô nhập của thẩm tra (comment và checker_signature)
         document.querySelectorAll('textarea[name^="comment_"], textarea[name="checker_signature"]')
             .forEach(el => el.disabled = true);
-        // Ẩn nút lưu
         let btn = document.querySelector('button[type="submit"]');
         if (btn) btn.style.display = 'none';
-        // Thêm thông báo
         const msg = document.createElement('div');
         msg.className = 'flash';
         msg.innerHTML = '<span>🔒 Phiếu thẩm tra đã được lưu, không thể chỉnh sửa.</span>';
-        msg.style.background = '#fdecea';
-        msg.style.color = '#c0392b';
+        msg.style.cssText = 'background:#fdecea;color:#c0392b;border-color:#f5c6cb;';
         document.querySelector('.page').insertBefore(msg, document.querySelector('form'));
     }
 
@@ -781,13 +689,12 @@
         s.addEventListener('change', () => updateUnitSelectColor(s));
     });
 
-    /* ── Validation + Confirm (chỉ thực hiện nếu chưa bị khoá) ── */
+    /* ── Validation + Confirm ── */
     const colNames = { G:'Kết quả (Đ/K)', H:'Mô tả', I:'Đơn vị thực hiện', J:'Thời gian', K:'Giải pháp' };
 
     if ((role === 'danh_gia' && !locked_danh_gia) || (role === 'tham_tra' && !locked_tham_tra)) {
         document.querySelector('form').addEventListener('submit', function(e) {
             e.preventDefault();
-
             const errors = [];
 
             if (role === 'danh_gia') {
@@ -833,8 +740,7 @@
                 return;
             }
 
-            const confirmed = confirm('Bạn có chắc chắn muốn lưu dữ liệu đã nhập không?');
-            if (confirmed) {
+            if (confirm('Bạn có chắc chắn muốn lưu dữ liệu đã nhập không?')) {
                 this.submit();
             }
         });
