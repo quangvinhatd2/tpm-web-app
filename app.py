@@ -13,6 +13,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
+
+# Thêm route ping ngay sau khi tạo app
+@app.route('/ping')
+def ping():
+    return "pong"
 app.secret_key = os.getenv("SECRET_KEY", "dev")
 
 # ================= FIX NEON URL =================
@@ -336,6 +341,7 @@ def evaluation_form(sheet_name):
 
 # ================= RUN =================
 if __name__ == '__main__':
+    
     init_db()
     print(app.url_map)  # DEBUG ROUTES
     app.run(debug=True, host='0.0.0.0', port=5000)
