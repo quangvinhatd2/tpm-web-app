@@ -9,9 +9,9 @@ from openpyxl.styles import Font, Alignment, Border, Side
 from unicodedata import normalize
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from psycopg2.pool import SimpleConnectionPool
 from contextlib import contextmanager
 from dotenv import load_dotenv
+import time
 
 load_dotenv()
 
@@ -25,26 +25,30 @@ if not DATABASE_URL:
 FORMS_FILE = 'forms.xlsx'
 PHAN_GIAO_FILE = 'phan_giao.xlsx'
 
-# Tạo connection pool
-db_pool = SimpleConnectionPool(1, 10, DATABASE_URL, sslmode='require')
+# ================= KẾT NỐI MỚI (không pool, có retry) =================
+def create_db_connection():
+    """Tạo kết nối mới đến Neon, tự động retry tối đa 3 lần nếu thất bại"""
+    max_retries = 3
+    for i in range(max_retries):
+        try:
+            conn = psycopg2.connect(DATABASE_URL, sslmode='require', cursor_factory=RealDictCursor)
+            return conn
+        except Exception as e:
+            if i == max_retries - 1:
+                raise
+            time.sleep(1 * (2 ** i))  # 1s, 2s, 4s
 
 @contextmanager
 def get_db_connection():
-    conn = db_pool.getconn()
+    conn = create_db_connection()
     try:
-        # Kiểm tra kết nối còn sống, nếu không thì thay thế
-        if conn.closed:
-            db_pool.putconn(conn)
-            conn = db_pool.getconn()
-        # Đặt cursor_factory
-        conn.cursor_factory = RealDictCursor
         yield conn
         conn.commit()
     except Exception:
         conn.rollback()
         raise
     finally:
-        db_pool.putconn(conn)
+        conn.close()
 
 # -------------------- Hàm xử lý Excel an toàn --------------------
 def safe_load_workbook(filepath, read_only=False):
