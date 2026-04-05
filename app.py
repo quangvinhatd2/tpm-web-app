@@ -32,6 +32,11 @@ db_pool = SimpleConnectionPool(1, 10, DATABASE_URL, sslmode='require')
 def get_db_connection():
     conn = db_pool.getconn()
     try:
+        # Kiểm tra kết nối còn sống, nếu không thì thay thế
+        if conn.closed:
+            db_pool.putconn(conn)
+            conn = db_pool.getconn()
+        # Đặt cursor_factory
         conn.cursor_factory = RealDictCursor
         yield conn
         conn.commit()
