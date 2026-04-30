@@ -684,8 +684,9 @@ def export_summary():
         ws.append([stt, rev_map.get(row['sheet_name'], row['sheet_name']), row['description'] or '', row['reviewer_comment'] or ''])
     for col in ws.columns:
         max_len = max((len(str(c.value)) for c in col if c.value), default=0)
-        if col[0].column_letter:
-            ws.column_dimensions[col[0].column_letter].width = min(max_len + 2, 50)
+    first_cell = col[0]
+    if hasattr(first_cell, 'column_letter'):
+        ws.column_dimensions[first_cell.column_letter].width = min(max_len + 2, 50)
     if sug_dict:
         ws.append([])
         ws.append(["KIẾN NGHỊ VÀ Ý KIẾN THẨM TRA"])
