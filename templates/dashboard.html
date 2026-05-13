@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* (giữ nguyên toàn bộ CSS như cũ) */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
@@ -37,7 +36,7 @@
             display: flex;
         }
 
-        /* ── SIDEBAR ─────────────────────────────── */
+        /* ── SIDEBAR ── */
         .sidebar {
             width: var(--sidebar-w);
             background: linear-gradient(145deg, #00246b 0%, #003087 100%);
@@ -67,7 +66,6 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
         }
         .brand-name { color: #fff; font-size: 14px; font-weight: 700; line-height: 1.2; }
         .brand-sub  { color: rgba(255,255,255,.45); font-size: 9px; }
@@ -76,14 +74,11 @@
             margin: 12px 10px 0;
             padding: 8px 10px;
             background: rgba(255,255,255,.07);
-            backdrop-filter: blur(4px);
             border-radius: 10px;
             display: flex;
             align-items: center;
             gap: 8px;
-            transition: background 0.2s;
         }
-        .sidebar-user:hover { background: rgba(255,255,255,.12); }
         .user-av {
             width: 28px; height: 28px;
             background: linear-gradient(135deg, var(--gold), #ffbe5e);
@@ -96,10 +91,7 @@
             color: var(--blue);
             flex-shrink: 0;
         }
-        .user-name {
-            font-size: 12px; font-weight: 600; color: #fff;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
+        .user-name { font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .user-role { font-size: 8px; color: rgba(255,255,255,.5); text-transform: uppercase; letter-spacing: .8px; }
 
         .sidebar-nav { flex: 1; padding: 12px 6px; overflow-y: auto; }
@@ -120,7 +112,6 @@
         .nav-item.active {
             background: rgba(255,255,255,.2); color: #fff; font-weight: 600;
             border-left: 3px solid var(--gold); padding-left: 5px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
         .nav-item.admin { color: var(--gold); background: rgba(245,166,35,.1); }
         .nav-item.admin:hover { background: rgba(245,166,35,.2); }
@@ -135,10 +126,10 @@
             font-family: inherit; cursor: pointer; text-decoration: none;
             transition: all 0.2s;
         }
-        .btn-logout:hover { background: rgba(200,30,30,.2); border-color: rgba(200,30,30,.3); color: #f87171; transform: translateY(-1px); }
+        .btn-logout:hover { background: rgba(200,30,30,.2); border-color: rgba(200,30,30,.3); color: #f87171; }
 
-        /* ── MAIN ────────────────────────────────── */
-        .main { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--surface); }
+        /* ── MAIN ── */
+        .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 
         .topbar {
             height: 48px;
@@ -149,26 +140,111 @@
             justify-content: space-between;
             padding: 0 16px;
             position: sticky; top: 0; z-index: 30;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.02);
         }
         .topbar-title { font-size: 14px; font-weight: 700; background: linear-gradient(135deg, var(--blue), var(--blue-mid)); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .topbar-right { display: flex; align-items: center; gap: 8px; }
-
         .search-wrap { position: relative; }
-        .search-wrap i {
-            position: absolute; left: 8px; top: 50%;
-            transform: translateY(-50%); color: var(--text-3); font-size: 11px; pointer-events: none;
-        }
+        .search-wrap i { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: var(--text-3); font-size: 11px; pointer-events: none; }
         .search-input {
             padding: 5px 8px 5px 26px; width: 180px;
             border: 1.5px solid var(--border); border-radius: 30px;
             font-family: inherit; font-size: 11px; color: var(--text-1);
-            outline: none; background: var(--surface);
-            transition: all 0.2s;
+            outline: none; background: var(--surface); transition: all 0.2s;
         }
-        .search-input:focus { border-color: var(--blue-mid); background: #fff; width: 210px; box-shadow: 0 0 0 2px rgba(0,48,135,0.1); }
+        .search-input:focus { border-color: var(--blue-mid); background: #fff; width: 210px; }
 
-        /* ── PAGE BODY ── 2 CỘT ──────────────────── */
+        /* ── MONTH SELECTOR ── */
+        .month-selector-wrap {
+            padding: 16px 20px 0;
+        }
+        .month-selector-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .month-selector-label i { font-size: 11px; }
+        .month-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .month-tab {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 16px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            border: 1.5px solid var(--border);
+            background: var(--white);
+            color: var(--text-2);
+            transition: all 0.2s;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .month-tab:hover {
+            border-color: var(--blue-mid);
+            color: var(--blue-mid);
+            background: var(--blue-bg);
+        }
+        .month-tab.active {
+            background: var(--blue);
+            border-color: var(--blue);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(0,48,135,0.25);
+        }
+        .month-tab.current-active {
+            background: var(--blue);
+            border-color: var(--blue);
+            color: #fff;
+        }
+        .month-tab.history-active {
+            background: var(--text-2);
+            border-color: var(--text-2);
+            color: #fff;
+        }
+        .month-tab .month-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: 0.6;
+        }
+        .current-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            background: rgba(26,122,74,0.12);
+            color: var(--green);
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        /* ── READONLY BANNER ── */
+        .readonly-banner {
+            margin: 12px 20px 0;
+            padding: 10px 16px;
+            background: linear-gradient(90deg, #fff8e1, #fffde7);
+            border: 1px solid #ffe082;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: #7a5800;
+        }
+        .readonly-banner i { color: #f5a623; font-size: 14px; flex-shrink: 0; }
+
+        /* ── PAGE BODY ── */
         .page-body {
             padding: 16px 20px 32px;
             display: grid;
@@ -176,73 +252,38 @@
             gap: 20px;
         }
 
-        .section-block {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+        .section-block { display: flex; flex-direction: column; gap: 12px; }
 
         .section-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            display: flex; align-items: center; gap: 10px;
             padding: 10px 14px;
             border-radius: 12px;
             background: var(--white);
             border-left: 4px solid;
-            transition: all 0.2s;
             box-shadow: 0 1px 4px rgba(0,0,0,0.02);
         }
-        .section-header.danh-gia {
-            border-left-color: var(--blue);
-            background: linear-gradient(120deg, var(--white), var(--blue-bg));
-        }
-        .section-header.tham-tra {
-            border-left-color: var(--green);
-            background: linear-gradient(120deg, var(--white), var(--green-bg));
-        }
-        .section-header:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
-        }
-
+        .section-header.danh-gia { border-left-color: var(--blue); background: linear-gradient(120deg, var(--white), var(--blue-bg)); }
+        .section-header.tham-tra { border-left-color: var(--green); background: linear-gradient(120deg, var(--white), var(--green-bg)); }
         .section-header-icon {
-            width: 32px; height: 32px;
-            border-radius: 8px;
+            width: 32px; height: 32px; border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 14px;
-            flex-shrink: 0;
+            font-size: 14px; flex-shrink: 0;
         }
-        .section-header.danh-gia .section-header-icon { background: var(--blue); color: #fff; box-shadow: 0 2px 6px rgba(0,48,135,0.2); }
-        .section-header.tham-tra .section-header-icon { background: var(--green); color: #fff; box-shadow: 0 2px 6px rgba(26,122,74,0.2); }
-
-        .section-header-text { flex: 1; }
-        .section-header-title {
-            font-size: 13px;
-            font-weight: 700;
-            line-height: 1.3;
-        }
+        .section-header.danh-gia .section-header-icon { background: var(--blue); color: #fff; }
+        .section-header.tham-tra .section-header-icon { background: var(--green); color: #fff; }
+        .section-header-title { font-size: 13px; font-weight: 700; line-height: 1.3; }
         .section-header.danh-gia .section-header-title { color: var(--blue); }
         .section-header.tham-tra .section-header-title { color: var(--green); }
-
         .section-header-desc { font-size: 10px; color: var(--text-3); margin-top: 1px; }
-
         .section-count-badge {
-            font-size: 11px;
-            font-weight: 700;
-            padding: 2px 10px;
-            border-radius: 30px;
-            flex-shrink: 0;
+            font-size: 11px; font-weight: 700;
+            padding: 2px 10px; border-radius: 30px; flex-shrink: 0;
         }
-        .section-header.danh-gia .section-count-badge { background: var(--blue); color: #fff; box-shadow: 0 2px 4px rgba(0,48,135,0.2); }
-        .section-header.tham-tra .section-count-badge { background: var(--green); color: #fff; box-shadow: 0 2px 4px rgba(26,122,74,0.2); }
+        .section-header.danh-gia .section-count-badge { background: var(--blue); color: #fff; }
+        .section-header.tham-tra .section-count-badge { background: var(--green); color: #fff; }
 
-        /* ── FORM CARDS ─────────────────────────── */
-        .forms-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
+        /* ── FORM CARDS ── */
+        .forms-grid { display: flex; flex-direction: column; gap: 8px; }
 
         .form-card {
             background: var(--white);
@@ -252,162 +293,85 @@
             display: flex;
             flex-direction: column;
             gap: 6px;
-            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-            position: relative;
+            transition: all 0.3s;
             border: 1px solid rgba(0,0,0,0.04);
             box-shadow: 0 1px 4px rgba(0,0,0,0.02);
         }
-        .form-card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 12px;
-            padding: 1px;
-            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .form-card.danh-gia:hover::before { opacity: 1; }
-        .form-card.tham-tra:not(.locked):hover::before { opacity: 1; }
-
         .form-card.danh-gia { border-left: 3px solid var(--blue); }
         .form-card.tham-tra { border-left: 3px solid var(--green); }
-
-        .form-card.danh-gia:hover {
+        .form-card.danh-gia:not(.readonly-card):hover {
             transform: translateY(-2px) translateX(2px);
             box-shadow: 0 10px 20px -10px rgba(0,48,135,0.2);
             border-color: var(--blue-line);
         }
-        .form-card.tham-tra:not(.locked):hover {
+        .form-card.tham-tra:not(.locked):not(.readonly-card):hover {
             transform: translateY(-2px) translateX(2px);
             box-shadow: 0 10px 20px -10px rgba(26,122,74,0.2);
             border-color: var(--green-line);
         }
-
         .form-card.locked {
-            opacity: .7;
-            cursor: not-allowed;
+            opacity: .7; cursor: not-allowed; pointer-events: none;
+            background: #f7f8fc; border-left-color: #b0bec5;
+        }
+        .form-card.readonly-card {
+            opacity: .75;
+            cursor: default;
             pointer-events: none;
-            background: #f7f8fc;
+            background: #fafbff;
             border-left-color: #b0bec5;
         }
-        .form-card.locked .form-card-number {
-            background: #eceff1;
-            color: #90a4ae;
-        }
-        .form-card.locked .form-card-title { color: var(--text-3); }
+        .form-card.completed { background: linear-gradient(120deg, #e8f5e9, #ffffff); border-left-color: #2e7d32; }
+        .form-card.pending   { background: linear-gradient(120deg, #fff9c4, #ffffff); border-left-color: #fbc02d; }
+        .form-card.history-done { background: linear-gradient(120deg, #e8f5e9, #ffffff); border-left-color: #2e7d32; }
 
-        .form-card.completed {
-            background: linear-gradient(120deg, #e8f5e9, #ffffff);
-            border-left-color: #2e7d32;
+        .lock-notice, .readonly-notice {
+            display: flex; align-items: flex-start; gap: 5px;
+            border-radius: 8px; padding: 5px 7px;
+            font-size: 10px; line-height: 1.35;
         }
-        .form-card.pending {
-            background: linear-gradient(120deg, #fff9c4, #ffffff);
-            border-left-color: #fbc02d;
-        }
-
-        .lock-notice {
-            display: flex;
-            align-items: flex-start;
-            gap: 5px;
-            background: #fff8e1;
-            border: 1px solid #ffe082;
-            border-radius: 8px;
-            padding: 5px 7px;
-            font-size: 10px;
-            color: #7a5800;
-            line-height: 1.35;
-        }
-        .lock-notice i {
-            color: #f5a623;
-            font-size: 11px;
-            flex-shrink: 0;
-            margin-top: 1px;
-        }
+        .lock-notice { background: #fff8e1; border: 1px solid #ffe082; color: #7a5800; }
+        .lock-notice i { color: #f5a623; font-size: 11px; flex-shrink: 0; margin-top: 1px; }
+        .readonly-notice { background: #f5f5f5; border: 1px solid #e0e0e0; color: #666; }
+        .readonly-notice i { color: #9e9e9e; font-size: 11px; flex-shrink: 0; margin-top: 1px; }
 
         .form-card-number {
-            font-size: 11px;
-            font-weight: 700;
+            font-size: 11px; font-weight: 700;
             background: var(--surface);
             width: 22px; height: 22px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 30px;
-            color: var(--text-3);
-            margin-right: 8px;
-            transition: all 0.2s;
-            flex-shrink: 0;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02), 0 1px 1px rgba(0,0,0,0.02);
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 30px; color: var(--text-3);
+            margin-right: 8px; flex-shrink: 0;
         }
-        .form-card.danh-gia:hover .form-card-number {
-            background: var(--blue); color: white;
-            transform: scale(1.05);
-            box-shadow: 0 2px 6px rgba(0,48,135,0.3);
-        }
-        .form-card.tham-tra:not(.locked):hover .form-card-number {
-            background: var(--green); color: white;
-            transform: scale(1.05);
-            box-shadow: 0 2px 6px rgba(26,122,74,0.3);
-        }
-
-        .form-card-header {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .form-card-title {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-1);
-            line-height: 1.35;
-            flex: 1;
-            letter-spacing: -0.2px;
-        }
-        .form-card.danh-gia:hover .form-card-title { color: var(--blue-mid); }
-        .form-card.tham-tra:not(.locked):hover .form-card-title { color: var(--green); }
+        .form-card.danh-gia:not(.readonly-card):hover .form-card-number { background: var(--blue); color: white; }
+        .form-card.tham-tra:not(.locked):not(.readonly-card):hover .form-card-number { background: var(--green); color: white; }
+        .form-card-header { display: flex; align-items: center; gap: 5px; }
+        .form-card-title { font-size: 12px; font-weight: 600; color: var(--text-1); line-height: 1.35; flex: 1; }
+        .form-card.danh-gia:not(.readonly-card):hover .form-card-title { color: var(--blue-mid); }
+        .form-card.tham-tra:not(.locked):not(.readonly-card):hover .form-card-title { color: var(--green); }
 
         .form-card-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            display: flex; align-items: center; justify-content: space-between;
             padding-top: 6px;
             border-top: 1px solid var(--border);
-            font-size: 10px;
-            color: var(--text-3);
+            font-size: 10px; color: var(--text-3);
             padding-left: 30px;
         }
-
-        .form-cta {
-            font-size: 10px; font-weight: 600;
-            display: flex; align-items: center; gap: 4px;
-            padding: 2px 6px;
-            border-radius: 30px;
-            transition: all 0.2s;
-        }
-        .form-card.danh-gia .form-cta { color: var(--blue); background: rgba(0,48,135,0.04); }
-        .form-card.tham-tra:not(.locked) .form-cta { color: var(--green); background: rgba(26,122,74,0.04); }
-        .form-card.locked .form-cta { color: #b0bec5; background: transparent; }
-        .form-cta i { font-size: 8px; transition: transform 0.2s; }
-        .form-card:not(.locked):hover .form-cta i { transform: translateX(2px); }
-        .form-card:not(.locked):hover .form-cta { background: rgba(0,0,0,0.02); }
-
         .badge-icon {
             width: 24px; height: 24px;
             background: linear-gradient(135deg, var(--blue-bg), var(--white));
             border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            color: var(--blue-mid);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; color: var(--blue-mid);
         }
+        .form-cta {
+            font-size: 10px; font-weight: 600;
+            display: flex; align-items: center; gap: 4px;
+            padding: 2px 6px; border-radius: 30px; transition: all 0.2s;
+        }
+        .form-card.danh-gia:not(.readonly-card) .form-cta { color: var(--blue); background: rgba(0,48,135,0.04); }
+        .form-card.tham-tra:not(.locked):not(.readonly-card) .form-cta { color: var(--green); background: rgba(26,122,74,0.04); }
+        .form-card.locked .form-cta, .form-card.readonly-card .form-cta { color: #b0bec5; background: transparent; }
+        .form-cta i { font-size: 8px; }
 
         .empty-section {
             padding: 20px 16px;
@@ -417,34 +381,15 @@
             text-align: center;
             color: var(--text-3);
             font-size: 11px;
-            transition: all 0.2s;
         }
-        .empty-section i { margin-right: 4px; font-size: 12px; color: var(--text-2); }
-        .empty-section:hover { border-color: var(--blue-line); background: var(--blue-bg); }
+        .empty-section i { margin-right: 4px; }
 
-        /* ── MOBILE ──────────────────────────────── */
+        /* ── MOBILE ── */
         @media (max-width: 860px) {
-            .sidebar   { display: none; }
-            .topbar    { padding: 0 12px; height: 44px; }
-            .page-body {
-                padding: 12px 12px 24px;
-                grid-template-columns: 1fr;
-                gap: 16px;
-            }
-            .search-input { width: 130px; padding: 4px 6px 4px 24px; font-size: 10px; }
-            .search-input:focus { width: 160px; }
-            .section-header { padding: 8px 10px; gap: 8px; }
-            .section-header-icon { width: 28px; height: 28px; font-size: 12px; }
-            .form-card { padding: 10px 12px; }
-            .form-card-number { width: 20px; height: 20px; font-size: 10px; margin-right: 6px; }
-            .form-card-footer { padding-left: 26px; }
-            .form-card-title { font-size: 11px; }
-        }
-        @media (max-width: 500px) {
-            .section-header { padding: 6px 8px; gap: 6px; }
-            .section-header-icon { width: 24px; height: 24px; font-size: 10px; }
-            .section-header-title { font-size: 12px; }
-            .section-header-desc { font-size: 9px; }
+            .sidebar { display: none; }
+            .page-body { padding: 12px 12px 24px; grid-template-columns: 1fr; gap: 16px; }
+            .month-selector-wrap { padding: 12px 12px 0; }
+            .readonly-banner { margin: 8px 12px 0; }
         }
     </style>
 </head>
@@ -464,37 +409,38 @@
         <div class="user-av">{{ session.fullname[0] }}</div>
         <div>
             <div class="user-name">{{ session.fullname }}</div>
+            <div class="user-role">{{ session.role }}</div>
         </div>
     </div>
 
     <nav class="sidebar-nav">
-        <div class="nav-label">Điều hướng</div>
-        <a href="#" class="nav-item active"><i class="fa-solid fa-house"></i> Tổng quan</a>
-        <a href="#" class="nav-item"><i class="fa-solid fa-file-lines"></i> Danh sách biểu mẫu</a>
-        <a href="{{ url_for('history') }}" class="nav-item"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử đánh giá & thẩm tra</a>
-        <a href="#" class="nav-item"><i class="fa-solid fa-chart-bar"></i> Báo cáo</a>
+    <div class="nav-label">Điều hướng</div>
+    <a href="{{ url_for('dashboard') }}" class="nav-item active">
+        <i class="fa-solid fa-house"></i> Tổng quan
+    </a>
+    
+    <!-- Thêm link Thống kê cho TẤT CẢ USER -->
+    <a href="{{ url_for('admin_dashboard') }}" class="nav-item">
+        <i class="fa-solid fa-chart-pie"></i> Thống kê & Phân tích
+    </a>
+    
+    <a href="{{ url_for('history') }}" class="nav-item">
+        <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử đánh giá & thẩm tra
+    </a>
 
-        {% if session.role == 'admin' %}
-        <div class="nav-label">Quản trị</div>
-        <a href="{{ url_for('export_summary') }}" class="nav-item admin">
-            <i class="fa-solid fa-file-export"></i> Xuất file báo cáo tổng
-        </a>
-        <a href="{{ url_for('export_all_forms') }}" class="nav-item admin">
-            <i class="fa-solid fa-download"></i> Xuất tất cả biểu mẫu
-        </a>
-        <a href="{{ url_for('reset_cycle') }}" class="nav-item admin">
-            <i class="fa-solid fa-arrows-rotate"></i> Bắt đầu tháng mới
-        </a>
-        <a href="{{ url_for('admin_dashboard') }}" class="nav-item admin">
-            <i class="fa-solid fa-chart-pie"></i> Dashboard thống kê
-        </a>
-        <!-- Nút đồng bộ phân công với confirm -->
-        <a href="#" onclick="if(confirm('Bạn có chắc chắn muốn đồng bộ phân công từ file Excel? Các phân công mới sẽ được thêm, dữ liệu cũ không bị ảnh hưởng.')) { document.getElementById('syncForm').submit(); } return false;" class="nav-item admin">
-            <i class="fa-solid fa-arrows-spin"></i> Đồng bộ phân công
-        </a>
-        <form id="syncForm" method="post" action="{{ url_for('sync_assignments') }}" style="display:none;"></form>
-        {% endif %}
-    </nav>
+    {% if session.role == 'admin' %}
+    <div class="nav-label">Quản trị</div>
+    <a href="{{ url_for('export_summary') }}" class="nav-item admin">
+        <i class="fa-solid fa-file-export"></i> Xuất file báo cáo tổng
+    </a>
+    <a href="{{ url_for('export_all_forms') }}" class="nav-item admin">
+        <i class="fa-solid fa-download"></i> Xuất tất cả biểu mẫu
+    </a>
+    <a href="{{ url_for('sync_assignments') }}" onclick="if(confirm('Đồng bộ phân công từ file Excel?')) return true; else return false;" class="nav-item admin">
+        <i class="fa-solid fa-arrows-spin"></i> Đồng bộ phân công
+    </a>
+    {% endif %}
+</nav>
 
     <div class="sidebar-footer">
         <a href="{{ url_for('logout') }}" class="btn-logout">
@@ -515,145 +461,219 @@
         </div>
     </header>
 
+    <!-- MONTH SELECTOR -->
+    <div class="month-selector-wrap">
+        <div class="month-selector-label">
+            <i class="fa-solid fa-calendar-days"></i>
+            Chọn tháng làm việc
+        </div>
+        <div class="month-tabs">
+            {% for m in available_months %}
+            <a href="{{ url_for('dashboard', month=m) }}"
+               class="month-tab {% if m == selected_month %}active{% endif %}">
+                {% if m == current_month %}
+                    <i class="fa-solid fa-circle-dot" style="color: #1a7a4a; font-size: 9px;"></i>
+                {% else %}
+                    <i class="fa-regular fa-clock" style="font-size: 10px; opacity: 0.6;"></i>
+                {% endif %}
+                {{ month_labels[m] }}
+                {% if m == current_month %}
+                    <span style="font-size: 9px; background: rgba(26,122,74,0.15); color: #1a7a4a; padding: 1px 6px; border-radius: 20px; font-weight: 700;">Hiện tại</span>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- READONLY BANNER nếu xem tháng cũ -->
+    {% if not is_current_month %}
+    <div class="readonly-banner">
+        <i class="fa-solid fa-eye"></i>
+        <div>
+            Bạn đang xem dữ liệu của <strong>{{ month_labels[selected_month] }}</strong>.
+            Không thể thực hiện đánh giá hoặc thẩm tra cho tháng đã qua — chỉ xem lịch sử.
+            <a href="{{ url_for('dashboard') }}" style="color: #e67e22; font-weight: 700; margin-left: 6px;">→ Về tháng hiện tại</a>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="page-body">
-        <!-- CỘT TRÁI: BIỂU MẪU ĐÁNH GIÁ -->
+        <!-- CỘT TRÁI: ĐÁNH GIÁ -->
         <div class="section-block" id="block-danh-gia">
             <div class="section-header danh-gia">
-                <div class="section-header-icon">
-                    <i class="fa-solid fa-pen-nib"></i>
-                </div>
+                <div class="section-header-icon"><i class="fa-solid fa-pen-nib"></i></div>
                 <div class="section-header-text">
                     <div class="section-header-title">Biểu mẫu Đánh giá</div>
-                    <div class="section-header-desc">Các biểu mẫu bạn phụ trách thực hiện đánh giá</div>
+                    <div class="section-header-desc">
+                        {% if is_current_month %}Các biểu mẫu bạn phụ trách thực hiện đánh giá{% else %}Lịch sử đánh giá tháng này{% endif %}
+                    </div>
                 </div>
                 <span class="section-count-badge" id="count-danh-gia">0</span>
             </div>
 
             <div class="forms-grid" id="grid-danh-gia">
-                {% set ns_dg = namespace(cnt=1) %}
-                {% for ass in assignments %}
-                    {% if ass.role == 'danh_gia' %}
+                {% if is_current_month %}
+                    {# ── THÁNG HIỆN TẠI: hiển thị tất cả assignments ── #}
+                    {% set ns_dg = namespace(cnt=1) %}
+                    {% for ass in assignments %}
+                        {% if ass.role == 'danh_gia' %}
                         <a href="{{ url_for('evaluation_form', sheet_name=ass.sheet_name) }}"
                            class="form-card danh-gia {{ 'completed' if ass.locked_danh_gia else 'pending' }}" data-section="danh-gia">
                             <div class="form-card-header">
                                 <span class="form-card-number">{{ ns_dg.cnt }}</span>
                                 <div class="form-card-title">{{ ass.sheet_name }}</div>
+                                {% if ass.locked_danh_gia %}
+                                <span style="font-size:10px; background:#e6f4ec; color:#1a7a4a; padding:2px 7px; border-radius:20px; font-weight:700; flex-shrink:0;">✓ Đã lưu</span>
+                                {% endif %}
                             </div>
                             <div class="form-card-footer">
-                                <div class="flex items-center gap-2">
-                                    <div class="badge-icon">
-                                        <i class="fa-solid fa-tower-observation"></i>
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-[10px] font-black text-gray-800 uppercase tracking-tight leading-none">
-                                            {{ ass.unit if ass.unit else 'Banvehpc' }}
-                                        </span>
-                                    </div>
+                                <div style="display:flex;align-items:center;gap:6px;">
+                                    <div class="badge-icon"><i class="fa-solid fa-tower-observation"></i></div>
+                                    <span style="font-size:10px;font-weight:700;color:#1a2340;text-transform:uppercase;">Banvehpc</span>
                                 </div>
-                                <span class="form-cta">
-                                    Vào biểu mẫu <i class="fa-solid fa-arrow-right"></i>
-                                </span>
+                                <span class="form-cta">Vào biểu mẫu <i class="fa-solid fa-arrow-right"></i></span>
                             </div>
                         </a>
                         {% set ns_dg.cnt = ns_dg.cnt + 1 %}
+                        {% endif %}
+                    {% endfor %}
+                    {% if ns_dg.cnt == 1 %}
+                    <div class="empty-section"><i class="fa-solid fa-inbox"></i> Không có biểu mẫu đánh giá nào được phân công.</div>
                     {% endif %}
-                {% endfor %}
-                {% if ns_dg.cnt == 1 %}
-                    <div class="empty-section">
-                        <i class="fa-solid fa-inbox"></i> Không có biểu mẫu đánh giá nào được phân công.
-                    </div>
+
+                {% else %}
+                    {# ── THÁNG LỊCH SỬ: chỉ hiển thị các sheet đã có history, read-only ── #}
+                    {% set ns_dg = namespace(cnt=1) %}
+                    {% for ass in assignments %}
+                        {% if ass.role == 'danh_gia' %}
+                            {% if (ass.sheet_name, 'danh_gia') in history_sheets %}
+                            <div class="form-card danh-gia readonly-card history-done" data-section="danh-gia">
+                                <div class="form-card-header">
+                                    <span class="form-card-number">{{ ns_dg.cnt }}</span>
+                                    <div class="form-card-title">{{ ass.sheet_name }}</div>
+                                    <span style="font-size:10px; background:#e6f4ec; color:#1a7a4a; padding:2px 7px; border-radius:20px; font-weight:700; flex-shrink:0;">✓ Đã lưu</span>
+                                </div>
+                                <div class="readonly-notice">
+                                    <i class="fa-solid fa-lock"></i>
+                                    Dữ liệu đã lưu trong <strong>{{ month_labels[selected_month] }}</strong>. Chỉ xem, không thể chỉnh sửa.
+                                </div>
+                                <div class="form-card-footer">
+                                    <span></span>
+                                    <span class="form-cta"><i class="fa-solid fa-eye"></i> Chỉ xem</span>
+                                </div>
+                            </div>
+                            {% set ns_dg.cnt = ns_dg.cnt + 1 %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    {% if ns_dg.cnt == 1 %}
+                    <div class="empty-section"><i class="fa-solid fa-inbox"></i> Không có dữ liệu đánh giá trong tháng này.</div>
+                    {% endif %}
                 {% endif %}
             </div>
         </div>
 
-        <!-- CỘT PHẢI: BIỂU MẪU THẨM TRA -->
+        <!-- CỘT PHẢI: THẨM TRA -->
         <div class="section-block" id="block-tham-tra">
             <div class="section-header tham-tra">
-                <div class="section-header-icon">
-                    <i class="fa-solid fa-magnifying-glass-chart"></i>
-                </div>
+                <div class="section-header-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
                 <div class="section-header-text">
                     <div class="section-header-title">Biểu mẫu Thẩm tra</div>
-                    <div class="section-header-desc">Các biểu mẫu bạn phụ trách kiểm tra, thẩm định</div>
+                    <div class="section-header-desc">
+                        {% if is_current_month %}Các biểu mẫu bạn phụ trách kiểm tra, thẩm định{% else %}Lịch sử thẩm tra tháng này{% endif %}
+                    </div>
                 </div>
                 <span class="section-count-badge" id="count-tham-tra">0</span>
             </div>
 
             <div class="forms-grid" id="grid-tham-tra">
-                {% set ns_tt = namespace(cnt=1) %}
-                {% for ass in assignments %}
-                    {% if ass.role == 'tham_tra' %}
-                        {% set ready = eval_status.get(ass.sheet_name, false) %}
-                        {% if ready %}
-                        <a href="{{ url_for('evaluation_form', sheet_name=ass.sheet_name) }}"
-                           class="form-card tham-tra" data-section="tham-tra">
-                            <div class="form-card-header">
-                                <span class="form-card-number">{{ ns_tt.cnt }}</span>
-                                <div class="form-card-title">{{ ass.sheet_name }}</div>
-                            </div>
-                            <div class="form-card-footer">
-                                <div class="flex items-center gap-2">
-                                    <div class="badge-icon">
-                                        <i class="fa-solid fa-chart-line"></i>
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-[10px] font-black text-gray-800 uppercase tracking-tight leading-none">
-                                            {{ ass.unit if ass.unit else 'Banvehpc' }}
-                                        </span>
-                                    </div>
+                {% if is_current_month %}
+                    {# ── THÁNG HIỆN TẠI ── #}
+                    {% set ns_tt = namespace(cnt=1) %}
+                    {% for ass in assignments %}
+                        {% if ass.role == 'tham_tra' %}
+                            {% set ready = eval_status.get(ass.sheet_name, false) %}
+                            {% if ready %}
+                            <a href="{{ url_for('evaluation_form', sheet_name=ass.sheet_name) }}"
+                               class="form-card tham-tra {{ 'completed' if ass.locked_tham_tra else '' }}" data-section="tham-tra">
+                                <div class="form-card-header">
+                                    <span class="form-card-number">{{ ns_tt.cnt }}</span>
+                                    <div class="form-card-title">{{ ass.sheet_name }}</div>
+                                    {% if ass.locked_tham_tra %}
+                                    <span style="font-size:10px; background:#e6f4ec; color:#1a7a4a; padding:2px 7px; border-radius:20px; font-weight:700; flex-shrink:0;">✓ Đã lưu</span>
+                                    {% endif %}
                                 </div>
-                                <span class="form-cta">
-                                    Vào biểu mẫu <i class="fa-solid fa-arrow-right"></i>
-                                </span>
-                            </div>
-                        </a>
-                        {% else %}
-                        <div class="form-card tham-tra locked" data-section="tham-tra">
-                            <div class="form-card-header">
-                                <span class="form-card-number">{{ ns_tt.cnt }}</span>
-                                <div class="form-card-title">{{ ass.sheet_name }}</div>
-                            </div>
-                            <div class="lock-notice">
-                                <i class="fa-solid fa-triangle-exclamation"></i>
-                                Phiếu <strong>{{ ass.sheet_name }}</strong> chưa được người đánh giá hoàn thành.
-                                Vui lòng chờ người đánh giá lưu dữ liệu trước khi thẩm tra.
-                            </div>
-                            <div class="form-card-footer">
-                                <div class="flex items-center gap-2">
-                                    <div class="badge-icon">
-                                        <i class="fa-solid fa-chart-line"></i>
+                                <div class="form-card-footer">
+                                    <div style="display:flex;align-items:center;gap:6px;">
+                                        <div class="badge-icon"><i class="fa-solid fa-chart-line"></i></div>
+                                        <span style="font-size:10px;font-weight:700;color:#1a2340;text-transform:uppercase;">Banvehpc</span>
                                     </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-[10px] font-black text-gray-800 uppercase tracking-tight leading-none">
-                                            {{ ass.unit if ass.unit else 'Banvehpc' }}
-                                        </span>
-                                    </div>
+                                    <span class="form-cta">Vào biểu mẫu <i class="fa-solid fa-arrow-right"></i></span>
                                 </div>
-                                <span class="form-cta">
-                                    <i class="fa-solid fa-lock"></i> Chờ đánh giá
-                                </span>
+                            </a>
+                            {% else %}
+                            <div class="form-card tham-tra locked" data-section="tham-tra">
+                                <div class="form-card-header">
+                                    <span class="form-card-number">{{ ns_tt.cnt }}</span>
+                                    <div class="form-card-title">{{ ass.sheet_name }}</div>
+                                </div>
+                                <div class="lock-notice">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                    Phiếu <strong>{{ ass.sheet_name }}</strong> chưa được người đánh giá hoàn thành. Vui lòng chờ.
+                                </div>
+                                <div class="form-card-footer">
+                                    <span></span>
+                                    <span class="form-cta"><i class="fa-solid fa-lock"></i> Chờ đánh giá</span>
+                                </div>
                             </div>
-                        </div>
+                            {% endif %}
+                            {% set ns_tt.cnt = ns_tt.cnt + 1 %}
                         {% endif %}
-                        {% set ns_tt.cnt = ns_tt.cnt + 1 %}
+                    {% endfor %}
+                    {% if ns_tt.cnt == 1 %}
+                    <div class="empty-section"><i class="fa-solid fa-inbox"></i> Không có biểu mẫu thẩm tra nào được phân công.</div>
                     {% endif %}
-                {% endfor %}
-                {% if ns_tt.cnt == 1 %}
-                    <div class="empty-section">
-                        <i class="fa-solid fa-inbox"></i> Không có biểu mẫu thẩm tra nào được phân công.
-                    </div>
+
+                {% else %}
+                    {# ── THÁNG LỊCH SỬ ── #}
+                    {% set ns_tt = namespace(cnt=1) %}
+                    {% for ass in assignments %}
+                        {% if ass.role == 'tham_tra' %}
+                            {% if (ass.sheet_name, 'tham_tra') in history_sheets %}
+                            <div class="form-card tham-tra readonly-card history-done" data-section="tham-tra">
+                                <div class="form-card-header">
+                                    <span class="form-card-number">{{ ns_tt.cnt }}</span>
+                                    <div class="form-card-title">{{ ass.sheet_name }}</div>
+                                    <span style="font-size:10px; background:#e6f4ec; color:#1a7a4a; padding:2px 7px; border-radius:20px; font-weight:700; flex-shrink:0;">✓ Đã lưu</span>
+                                </div>
+                                <div class="readonly-notice">
+                                    <i class="fa-solid fa-lock"></i>
+                                    Dữ liệu đã lưu trong <strong>{{ month_labels[selected_month] }}</strong>. Chỉ xem, không thể chỉnh sửa.
+                                </div>
+                                <div class="form-card-footer">
+                                    <span></span>
+                                    <span class="form-cta"><i class="fa-solid fa-eye"></i> Chỉ xem</span>
+                                </div>
+                            </div>
+                            {% set ns_tt.cnt = ns_tt.cnt + 1 %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    {% if ns_tt.cnt == 1 %}
+                    <div class="empty-section"><i class="fa-solid fa-inbox"></i> Không có dữ liệu thẩm tra trong tháng này.</div>
+                    {% endif %}
                 {% endif %}
             </div>
         </div>
     </div>
-</div>
+</div><!-- /main -->
 
 <script>
     function updateCounts() {
-        const danhGiaCards = document.querySelectorAll('#grid-danh-gia .form-card');
-        const thamTraCards = document.querySelectorAll('#grid-tham-tra .form-card');
-        document.getElementById('count-danh-gia').textContent = danhGiaCards.length;
-        document.getElementById('count-tham-tra').textContent = thamTraCards.length;
+        ['danh-gia','tham-tra'].forEach(function(section) {
+            const cards = document.querySelectorAll('#grid-' + section + ' .form-card');
+            document.getElementById('count-' + section).textContent = cards.length;
+        });
     }
     updateCounts();
 

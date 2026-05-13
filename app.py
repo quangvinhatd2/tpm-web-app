@@ -337,6 +337,64 @@ def reset_current_data():
         cur.execute("DELETE FROM suggestions")
         conn.commit()
 
+# -------------------- TU DONG RESET DAU THANG --------------------
+def ensure_app_config_table():
+    with get_db_connection() as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS app_config (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            )
+        """)
+        conn.commit()
+
+def get_last_reset_month():
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT value FROM app_config WHERE key = 'last_reset_month'")
+            row = cur.fetchone()
+            return row['value'] if row else None
+    except Exception:
+        return None
+
+def set_last_reset_month(month_str):
+    with get_db_connection() as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO app_config (key, value) VALUES ('last_reset_month', %s)
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+        """, (month_str,))
+        conn.commit()
+
+def auto_reset_if_new_month():
+    try:
+        ensure_app_config_table()
+        current_month = datetime.now().strftime('%Y-%m')
+        last_reset = get_last_reset_month()
+        if last_reset is None:
+            set_last_reset_month(current_month)
+            print(f"[Auto-reset] Khoi tao thang {current_month}")
+            return
+        if last_reset != current_month:
+            print(f"[Auto-reset] Sang thang moi {last_reset} -> {current_month}. Dang reset...")
+            archive_current_data()
+            reset_current_data()
+            set_last_reset_month(current_month)
+            print(f"[Auto-reset] Da reset thanh cong thang {current_month}.")
+    except Exception as e:
+        print(f"[Auto-reset] Loi: {e}")
+
+_auto_reset_done = False
+
+@app.before_request
+def before_request_hook():
+    global _auto_reset_done
+    if not _auto_reset_done:
+        auto_reset_if_new_month()
+        _auto_reset_done = True
+
 # -------------------- ROUTES --------------------
 @app.route('/')
 def index():
@@ -363,8 +421,23 @@ def login():
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
+
+    current_month = datetime.now().strftime('%Y-%m')
+    selected_month = request.args.get('month', current_month)
+    is_current_month = (selected_month == current_month)
+
     with get_db_connection() as conn:
         cur = conn.cursor()
+        cur.execute("""
+            SELECT DISTINCT TO_CHAR(saved_at, 'YYYY-MM') as month
+            FROM history
+            WHERE user_id = %s
+            ORDER BY month DESC
+        """, (session['user_id'],))
+        history_months = [r['month'] for r in cur.fetchall()]
+
+        available_months = sorted(set([current_month] + history_months), reverse=True)
+
         cur.execute("""
             SELECT a.sheet_name, a.role,
                    COALESCE(s.locked_danh_gia, 0) as locked_danh_gia,
@@ -374,11 +447,38 @@ def dashboard():
             WHERE a.user_id = %s
         """, (session['user_id'],))
         assigns = cur.fetchall()
+
+        if not is_current_month:
+            cur.execute("""
+                SELECT DISTINCT sheet_name, role
+                FROM history
+                WHERE user_id = %s AND TO_CHAR(saved_at, 'YYYY-MM') = %s
+            """, (session['user_id'], selected_month))
+            history_sheets = {(r['sheet_name'], r['role']) for r in cur.fetchall()}
+        else:
+            history_sheets = set()
+
     eval_status = {}
-    for ass in assigns:
-        if ass['role'] == 'tham_tra':
-            eval_status[ass['sheet_name']] = is_evaluation_complete(ass['sheet_name'])
-    return render_template('dashboard.html', assignments=assigns, eval_status=eval_status)
+    if is_current_month:
+        for ass in assigns:
+            if ass['role'] == 'tham_tra':
+                eval_status[ass['sheet_name']] = is_evaluation_complete(ass['sheet_name'])
+
+    month_labels = {}
+    for m in available_months:
+        y, mo = m.split('-')
+        month_labels[m] = f'Tháng {int(mo)}/{y}'
+
+    return render_template('dashboard.html',
+        assignments=assigns,
+        eval_status=eval_status,
+        current_month=current_month,
+        selected_month=selected_month,
+        is_current_month=is_current_month,
+        available_months=available_months,
+        history_sheets=history_sheets,
+        month_labels=month_labels
+    )
 
 @app.route('/form/<sheet_name>')
 def evaluation_form(sheet_name):
@@ -706,23 +806,67 @@ def export_summary():
 
 @app.route('/admin_dashboard')
 def admin_dashboard():
-    if 'user_id' not in session or session.get('role') != 'admin':
-        flash('Bạn không có quyền truy cập trang này.')
-        return redirect(url_for('dashboard'))
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    # TẤT CẢ USER ĐỀU VÀO ĐƯỢC
+    user_id = session['user_id']
+    is_admin = session.get('role') == 'admin'
+    
     with get_db_connection() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT DISTINCT sheet_name FROM evaluations WHERE col_letter = 'G' AND value != ''")
+        
+        # Admin xem toàn bộ hệ thống
+        # User thường cũng xem được toàn bộ (theo yêu cầu mới)
+        cur.execute("""
+            SELECT DISTINCT sheet_name 
+            FROM evaluations 
+            WHERE col_letter = 'G' AND value IS NOT NULL AND value != ''
+        """)
+        
         sheets = cur.fetchall()
+        
         system_data = []
+        total_k = 0
+        total_evals = 0
+        
         for sheet in sheets:
             sn = sheet['sheet_name']
-            cur.execute("SELECT COUNT(*) as cnt FROM evaluations WHERE sheet_name = %s AND col_letter = 'G' AND value = 'K'", (sn,))
-            k_count = cur.fetchone()['cnt']
-            cur.execute("SELECT COUNT(*) as cnt FROM evaluations WHERE sheet_name = %s AND col_letter = 'G' AND value != ''", (sn,))
-            total = cur.fetchone()['cnt']
-            system_data.append({'name': sn, 'total': total, 'k_count': k_count, 'percentage': round((k_count / total * 100) if total > 0 else 0, 1)})
-        system_data.sort(key=lambda x: x['percentage'], reverse=True)
-    return render_template('admin_dashboard.html', system_data=system_data)
+            
+            cur.execute("""
+                SELECT 
+                    COUNT(CASE WHEN col_letter = 'G' THEN 1 END) as total,
+                    COUNT(CASE WHEN col_letter = 'G' AND value = 'K' THEN 1 END) as k_count
+                FROM evaluations 
+                WHERE sheet_name = %s
+            """, (sn,))
+            row = cur.fetchone()
+            
+            total = row['total'] or 0
+            k_count = row['k_count'] or 0
+            percentage = round((k_count / total * 100) if total > 0 else 0, 1)
+            
+            system_data.append({
+                'name': sn,
+                'total': total,
+                'k_count': k_count,
+                'percentage': percentage
+            })
+            total_k += k_count
+            total_evals += total
+        
+        avg_pct = round((total_k / total_evals * 100) if total_evals > 0 else 0, 1)
+        total_ok = total_evals - total_k
+
+    system_data.sort(key=lambda x: x['percentage'], reverse=True)
+    
+    return render_template('admin_dashboard.html', 
+                         system_data=system_data,
+                         total_systems=len(system_data),
+                         total_k=total_k,
+                         avg_pct=avg_pct,
+                         total_ok=total_ok,
+                         is_admin=is_admin)
 
 @app.route('/sync_assignments', methods=['POST'])
 def sync_assignments():
