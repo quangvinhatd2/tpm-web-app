@@ -329,15 +329,104 @@ def archive_current_data():
         conn.commit()
     print(f"Đã sao lưu dữ liệu vào archive ngày {archive_date}")
 
+def snapshot_all_before_reset():
+    """
+    Trước khi reset tháng mới: tạo history snapshot cho TẤT CẢ sheet đã có dữ liệu
+    trong tháng hiện tại mà chưa có history entry (ví dụ danh_gia đã lưu nhưng chưa
+    qua tham_tra). Đảm bảo dữ liệu tháng cũ không bị mất khi reset.
+    """
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+
+            # Lấy tất cả sheet đã có đánh giá (col G có giá trị)
+            cur.execute("""
+                SELECT DISTINCT sheet_name FROM evaluations
+                WHERE col_letter = 'G' AND value IS NOT NULL AND value != ''
+            """)
+            sheets_with_evals = {r['sheet_name'] for r in cur.fetchall()}
+
+            # Lấy các (sheet_name, role) đã có history rồi → không tạo lại
+            cur.execute("SELECT DISTINCT sheet_name, role FROM history")
+            already_saved = {(r['sheet_name'], r['role']) for r in cur.fetchall()}
+
+            count = 0
+            for sn in sheets_with_evals:
+                # Lấy dữ liệu evaluations của sheet này
+                cur.execute("""
+                    SELECT row_index, col_letter, value FROM evaluations
+                    WHERE sheet_name = %s
+                """, (sn,))
+                evals_rows = cur.fetchall()
+
+                # Lấy comments
+                cur.execute("""
+                    SELECT row_index, comment FROM review_comments
+                    WHERE sheet_name = %s
+                """, (sn,))
+                comms_rows = cur.fetchall()
+
+                # Lấy suggestions
+                cur.execute("SELECT * FROM suggestions WHERE sheet_name = %s", (sn,))
+                sugg = cur.fetchone()
+
+                snapshot_data = {
+                    'evals': [{'row': r['row_index'], 'col': r['col_letter'], 'value': r['value']} for r in evals_rows],
+                    'comments': [{'row': r['row_index'], 'comment': r['comment']} for r in comms_rows],
+                    'suggestions': dict(sugg) if sugg else {}
+                }
+                snapshot_json = json.dumps(snapshot_data, ensure_ascii=False, default=str)
+
+                # Tìm user_id của người danh_gia cho sheet này
+                cur.execute("""
+                    SELECT a.user_id FROM assignments a
+                    WHERE a.sheet_name = %s AND a.role = 'danh_gia'
+                    LIMIT 1
+                """, (sn,))
+                dg_row = cur.fetchone()
+
+                # Tìm user_id của người tham_tra cho sheet này
+                cur.execute("""
+                    SELECT a.user_id FROM assignments a
+                    WHERE a.sheet_name = %s AND a.role = 'tham_tra'
+                    LIMIT 1
+                """, (sn,))
+                tt_row = cur.fetchone()
+
+                # Tạo history entry cho danh_gia nếu chưa có
+                if (sn, 'danh_gia') not in already_saved and dg_row:
+                    cur.execute("""
+                        INSERT INTO history (sheet_name, role, user_id, snapshot)
+                        VALUES (%s, %s, %s, %s)
+                    """, (sn, 'danh_gia', dg_row['user_id'], snapshot_json))
+                    count += 1
+
+                # Tạo history entry cho tham_tra nếu chưa có (sheet đã được thẩm tra nhưng
+                # vì lý do nào đó chưa có entry)
+                if (sn, 'tham_tra') not in already_saved and tt_row and comms_rows:
+                    cur.execute("""
+                        INSERT INTO history (sheet_name, role, user_id, snapshot)
+                        VALUES (%s, %s, %s, %s)
+                    """, (sn, 'tham_tra', tt_row['user_id'], snapshot_json))
+                    count += 1
+
+            conn.commit()
+            print(f"📸 [SNAPSHOT] Đã tạo {count} history entry trước khi reset.")
+    except Exception as e:
+        print(f"❌ [SNAPSHOT] Lỗi khi tạo snapshot: {e}")
+
+
 def reset_current_data():
     with get_db_connection() as conn:
         cur = conn.cursor()
         cur.execute("DELETE FROM evaluations")
         cur.execute("DELETE FROM review_comments")
         cur.execute("DELETE FROM suggestions")
+        # KHÔNG xóa history — đây là lịch sử vĩnh viễn theo tháng
         conn.commit()
+    print("🗑️ Đã xóa evaluations, comments, suggestions. History giữ nguyên.")
 
-# -------------------- TU DONG RESET DAU THANG --------------------
+# ================== AUTO RESET KHI SANG THÁNG MỚI ==================
 def ensure_app_config_table():
     with get_db_connection() as conn:
         cur = conn.cursor()
@@ -349,51 +438,54 @@ def ensure_app_config_table():
         """)
         conn.commit()
 
-def get_last_reset_month():
+def auto_reset_if_new_month(force=False):
     try:
+        ensure_app_config_table()
+        current_month = datetime.now().strftime('%Y-%m')
+
         with get_db_connection() as conn:
             cur = conn.cursor()
             cur.execute("SELECT value FROM app_config WHERE key = 'last_reset_month'")
             row = cur.fetchone()
-            return row['value'] if row else None
-    except Exception:
-        return None
+            last_reset = row['value'] if row else None
 
-def set_last_reset_month(month_str):
-    with get_db_connection() as conn:
-        cur = conn.cursor()
-        cur.execute("""
-            INSERT INTO app_config (key, value) VALUES ('last_reset_month', %s)
-            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
-        """, (month_str,))
-        conn.commit()
+        if force or last_reset is None or last_reset != current_month:
+            print(f"🔄 [AUTO RESET] Phát hiện tháng mới: {current_month}. Đang tiến hành reset...")
 
-def auto_reset_if_new_month():
-    try:
-        ensure_app_config_table()
-        current_month = datetime.now().strftime('%Y-%m')
-        last_reset = get_last_reset_month()
-        if last_reset is None:
-            set_last_reset_month(current_month)
-            print(f"[Auto-reset] Khoi tao thang {current_month}")
-            return
-        if last_reset != current_month:
-            print(f"[Auto-reset] Sang thang moi {last_reset} -> {current_month}. Dang reset...")
+            # Bước 1: Snapshot tất cả dữ liệu tháng cũ vào history (quan trọng nhất)
+            snapshot_all_before_reset()
+
+            # Bước 2: Sao lưu raw vào archives (dự phòng thêm)
             archive_current_data()
+
+            # Bước 3: Xóa dữ liệu tháng cũ để bắt đầu tháng mới
             reset_current_data()
-            set_last_reset_month(current_month)
-            print(f"[Auto-reset] Da reset thanh cong thang {current_month}.")
+
+            # Bước 4: Cập nhật flag tháng đã reset
+            with get_db_connection() as conn:
+                cur = conn.cursor()
+                cur.execute("""
+                    INSERT INTO app_config (key, value)
+                    VALUES ('last_reset_month', %s)
+                    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+                """, (current_month,))
+
+            print(f"✅ [AUTO RESET] Hoàn tất reset tháng {current_month}.")
+            return True
+        return False
     except Exception as e:
-        print(f"[Auto-reset] Loi: {e}")
+        print(f"❌ [AUTO RESET] Lỗi hệ thống: {e}")
+        return False
 
-_auto_reset_done = False
-
+# Buộc reset mỗi lần server khởi động
 @app.before_request
 def before_request_hook():
-    global _auto_reset_done
-    if not _auto_reset_done:
+    # Sử dụng thời gian để giới hạn tần suất kiểm tra (ví dụ: 1 tiếng/lần)
+    # tránh truy vấn database quá nhiều gây chậm hệ thống
+    current_time = time.time()
+    if not hasattr(app, '_last_reset_check') or (current_time - app._last_reset_check > 3600):
         auto_reset_if_new_month()
-        _auto_reset_done = True
+        app._last_reset_check = current_time
 
 # -------------------- ROUTES --------------------
 @app.route('/')
@@ -428,6 +520,8 @@ def dashboard():
 
     with get_db_connection() as conn:
         cur = conn.cursor()
+
+        # Lấy tất cả các tháng có lịch sử
         cur.execute("""
             SELECT DISTINCT TO_CHAR(saved_at, 'YYYY-MM') as month
             FROM history
@@ -436,8 +530,21 @@ def dashboard():
         """, (session['user_id'],))
         history_months = [r['month'] for r in cur.fetchall()]
 
-        available_months = sorted(set([current_month] + history_months), reverse=True)
+        # Tạo danh sách tháng hiển thị (6 tháng gần nhất + các tháng có lịch sử)
+        from datetime import timedelta
+        available_months = []
+        for i in range(6):
+            dt = datetime.now() - timedelta(days=30 * i)
+            available_months.append(dt.strftime('%Y-%m'))
+        
+        available_months = sorted(set(available_months + history_months), reverse=True)
 
+        month_labels = {}
+        for m in available_months:
+            y, mo = m.split('-')
+            month_labels[m] = f'Tháng {int(mo)}/{y}'
+
+        # Lấy phân công
         cur.execute("""
             SELECT a.sheet_name, a.role,
                    COALESCE(s.locked_danh_gia, 0) as locked_danh_gia,
@@ -448,26 +555,26 @@ def dashboard():
         """, (session['user_id'],))
         assigns = cur.fetchall()
 
+        # Nếu xem tháng cũ → lấy từ history
         if not is_current_month:
             cur.execute("""
-                SELECT DISTINCT sheet_name, role
+                SELECT DISTINCT ON (sheet_name, role) id, sheet_name, role
                 FROM history
                 WHERE user_id = %s AND TO_CHAR(saved_at, 'YYYY-MM') = %s
+                ORDER BY sheet_name, role, saved_at DESC
             """, (session['user_id'], selected_month))
-            history_sheets = {(r['sheet_name'], r['role']) for r in cur.fetchall()}
+            hist_rows = cur.fetchall()
+            history_sheets = {(r['sheet_name'], r['role']) for r in hist_rows}
+            history_ids = {(r['sheet_name'], r['role']): r['id'] for r in hist_rows}
         else:
             history_sheets = set()
+            history_ids = {}
 
     eval_status = {}
     if is_current_month:
         for ass in assigns:
             if ass['role'] == 'tham_tra':
                 eval_status[ass['sheet_name']] = is_evaluation_complete(ass['sheet_name'])
-
-    month_labels = {}
-    for m in available_months:
-        y, mo = m.split('-')
-        month_labels[m] = f'Tháng {int(mo)}/{y}'
 
     return render_template('dashboard.html',
         assignments=assigns,
@@ -477,6 +584,7 @@ def dashboard():
         is_current_month=is_current_month,
         available_months=available_months,
         history_sheets=history_sheets,
+        history_ids=history_ids,
         month_labels=month_labels
     )
 
@@ -580,6 +688,23 @@ def save():
             now = datetime.now().strftime('%Hh%M ngày %d/%m/%y')
             cur.execute("""INSERT INTO evaluations (user_id, sheet_name, row_index, col_letter, value) VALUES (%s, %s, %s, %s, %s) ON CONFLICT (user_id, sheet_name, row_index, col_letter) DO UPDATE SET value = EXCLUDED.value""", (uid, sn, 4, 'F', now))
             cur.execute("""INSERT INTO suggestions (sheet_name, suggestion, reviewer_signature, locked_danh_gia) VALUES (%s, %s, %s, 1) ON CONFLICT (sheet_name) DO UPDATE SET suggestion = EXCLUDED.suggestion, reviewer_signature = EXCLUDED.reviewer_signature, locked_danh_gia = 1""", (sn, request.form.get('suggestion', ''), reviewer_sig))
+            # Tạo/cập nhật history entry cho danh_gia ngay khi lưu
+            # Đảm bảo dữ liệu không bị mất nếu reset tháng trước khi tham_tra hoàn thành
+            cur.execute("SELECT row_index, col_letter, value FROM evaluations WHERE sheet_name = %s", (sn,))
+            evals_snap = cur.fetchall()
+            cur.execute("SELECT row_index, comment FROM review_comments WHERE sheet_name = %s", (sn,))
+            comms_snap = cur.fetchall()
+            cur.execute("SELECT * FROM suggestions WHERE sheet_name = %s", (sn,))
+            sugg_snap = cur.fetchone()
+            dg_snapshot = json.dumps({
+                'evals': [{'row': r['row_index'], 'col': r['col_letter'], 'value': r['value']} for r in evals_snap],
+                'comments': [{'row': r['row_index'], 'comment': r['comment']} for r in comms_snap],
+                'suggestions': dict(sugg_snap) if sugg_snap else {}
+            }, ensure_ascii=False, default=str)
+            # Xóa entry cũ (nếu có) rồi insert mới để luôn cập nhật snapshot
+            cur.execute("DELETE FROM history WHERE sheet_name = %s AND role = 'danh_gia' AND user_id = %s", (sn, uid))
+            cur.execute("INSERT INTO history (sheet_name, role, user_id, snapshot) VALUES (%s, %s, %s, %s)",
+                        (sn, 'danh_gia', uid, dg_snapshot))
         flash('Đã lưu đánh giá thành công.')
     elif role == 'tham_tra':
         comment_items = {}
@@ -740,6 +865,7 @@ def confirm_reset():
     if 'user_id' not in session or session.get('role') != 'admin':
         flash('Bạn không có quyền truy cập chức năng này.')
         return redirect(url_for('dashboard'))
+    snapshot_all_before_reset()
     archive_current_data()
     reset_current_data()
     flash('Đã sao lưu và reset dữ liệu cho chu kỳ mới.')
@@ -940,7 +1066,35 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
+@app.route('/force_reset')
+def force_reset():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        flash('Bạn không có quyền thực hiện thao tác này')
+        return redirect(url_for('dashboard'))
+    
+    current_month = datetime.now().strftime('%Y-%m')
+    print(f"🔴 FORCE RESET kích hoạt cho tháng: {current_month}")
+    
+    try:
+        snapshot_all_before_reset()  # Snapshot vào history trước
+        archive_current_data()       # Sao lưu raw vào archives
+        reset_current_data()         # Xóa evaluations, comments, suggestions
+        
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO app_config (key, value) 
+                VALUES ('last_reset_month', %s)
+                ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+            """, (current_month,))
+        
+        flash(f'✅ ĐÃ RESET TOÀN BỘ DỮ LIỆU để bắt đầu tháng {current_month}', 'success')
+    except Exception as e:
+        flash(f'❌ Lỗi reset: {str(e)}', 'danger')
+        
+    return redirect(url_for('dashboard'))
+
 if __name__ == '__main__':
-    # Chạy lần đầu để tạo bảng: bỏ comment dòng dưới, chạy xong comment lại
-    # init_db()
+    # Buộc kiểm tra reset mỗi khi khởi động
+    auto_reset_if_new_month()
     app.run(debug=True, host='0.0.0.0')

@@ -153,80 +153,71 @@
         }
         .search-input:focus { border-color: var(--blue-mid); background: #fff; width: 210px; }
 
-        /* ── MONTH SELECTOR ── */
-        .month-selector-wrap {
-            padding: 16px 20px 0;
+        /* ── MONTH DROPDOWN (THAY THẾ TIMELINE CŨ) ── */
+        .timeline-wrap {
+            padding: 20px 20px 0;
         }
-        .month-selector-label {
-            font-size: 11px;
+        .timeline-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        .timeline-label {
+            font-size: 10px;
             font-weight: 700;
             color: var(--text-3);
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
+            letter-spacing: 1.2px;
             display: flex;
             align-items: center;
             gap: 6px;
         }
-        .month-selector-label i { font-size: 11px; }
-        .month-tabs {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .month-tab {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 7px 16px;
-            border-radius: 30px;
-            font-size: 12px;
-            font-weight: 600;
-            text-decoration: none;
-            border: 1.5px solid var(--border);
+        .month-selector {
             background: var(--white);
-            color: var(--text-2);
-            transition: all 0.2s;
+            border: 1.5px solid var(--border);
+            border-radius: 30px;
+            padding: 6px 32px 6px 16px;
+            font-family: 'Be Vietnam Pro', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-1);
             cursor: pointer;
-            white-space: nowrap;
+            outline: none;
+            transition: all 0.2s;
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%234e5f80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 12px;
         }
-        .month-tab:hover {
+        .month-selector:hover, .month-selector:focus {
             border-color: var(--blue-mid);
-            color: var(--blue-mid);
-            background: var(--blue-bg);
+            box-shadow: 0 2px 8px rgba(0,48,135,0.1);
         }
-        .month-tab.active {
-            background: var(--blue);
-            border-color: var(--blue);
-            color: #fff;
-            box-shadow: 0 4px 12px rgba(0,48,135,0.25);
-        }
-        .month-tab.current-active {
-            background: var(--blue);
-            border-color: var(--blue);
-            color: #fff;
-        }
-        .month-tab.history-active {
-            background: var(--text-2);
-            border-color: var(--text-2);
-            color: #fff;
-        }
-        .month-tab .month-dot {
-            width: 6px; height: 6px;
-            border-radius: 50%;
-            background: currentColor;
-            opacity: 0.6;
-        }
-        .current-badge {
+        .current-month-hint {
+            font-size: 11px;
+            background: var(--green-bg);
+            color: var(--green);
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-weight: 600;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            padding: 2px 8px;
-            background: rgba(26,122,74,0.12);
-            color: var(--green);
-            border-radius: 20px;
+            gap: 6px;
+        }
+        .current-month-hint i {
             font-size: 10px;
-            font-weight: 700;
+        }
+        @media (max-width: 860px) {
+            .timeline-header {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .month-selector {
+                flex: 1;
+                min-width: 160px;
+            }
         }
 
         /* ── READONLY BANNER ── */
@@ -388,7 +379,7 @@
         @media (max-width: 860px) {
             .sidebar { display: none; }
             .page-body { padding: 12px 12px 24px; grid-template-columns: 1fr; gap: 16px; }
-            .month-selector-wrap { padding: 12px 12px 0; }
+            .timeline-wrap { padding: 12px 12px 0; }
             .readonly-banner { margin: 8px 12px 0; }
         }
     </style>
@@ -461,27 +452,31 @@
         </div>
     </header>
 
-    <!-- MONTH SELECTOR -->
-    <div class="month-selector-wrap">
-        <div class="month-selector-label">
-            <i class="fa-solid fa-calendar-days"></i>
-            Chọn tháng làm việc
-        </div>
-        <div class="month-tabs">
-            {% for m in available_months %}
-            <a href="{{ url_for('dashboard', month=m) }}"
-               class="month-tab {% if m == selected_month %}active{% endif %}">
-                {% if m == current_month %}
-                    <i class="fa-solid fa-circle-dot" style="color: #1a7a4a; font-size: 9px;"></i>
-                {% else %}
-                    <i class="fa-regular fa-clock" style="font-size: 10px; opacity: 0.6;"></i>
+    <!-- MONTH SELECTOR (DROPDOWN) - THAY THẾ THANH TIMELINE CŨ -->
+    <div class="timeline-wrap">
+        <div class="timeline-header">
+            <div class="timeline-label">
+                <i class="fa-solid fa-calendar-alt"></i>
+                Chu kỳ làm việc
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <select id="monthSelect" class="month-selector">
+                    {% for m in available_months | reverse %}
+                    {% set mo = m.split('-')[1] | int %}
+                    {% set yr = m.split('-')[0] %}
+                    {% set display_text = 'Tháng %02d / %s' % (mo, yr) %}
+                    {% if m == current_month %}
+                        {% set display_text = display_text + ' (Hiện tại)' %}
+                    {% endif %}
+                    <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>{{ display_text }}</option>
+                    {% endfor %}
+                </select>
+                {% if current_month and current_month != selected_month %}
+                <div class="current-month-hint">
+                    <i class="fa-regular fa-calendar-check"></i> Tháng hiện tại: {{ month_labels.get(current_month, current_month) }}
+                </div>
                 {% endif %}
-                {{ month_labels[m] }}
-                {% if m == current_month %}
-                    <span style="font-size: 9px; background: rgba(26,122,74,0.15); color: #1a7a4a; padding: 1px 6px; border-radius: 20px; font-weight: 700;">Hiện tại</span>
-                {% endif %}
-            </a>
-            {% endfor %}
+            </div>
         </div>
     </div>
 
@@ -691,6 +686,17 @@
             document.getElementById('count-' + section).textContent = shown;
         });
     });
+
+    // Xử lý chuyển tháng từ dropdown
+    const monthSelect = document.getElementById('monthSelect');
+    if (monthSelect) {
+        monthSelect.addEventListener('change', function() {
+            const selectedMonth = this.value;
+            const url = new URL(window.location.href);
+            url.searchParams.set('month', selectedMonth);
+            window.location.href = url.toString();
+        });
+    }
 </script>
 </body>
 </html>
