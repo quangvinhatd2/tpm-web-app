@@ -25,6 +25,7 @@ if not DATABASE_URL:
 
 FORMS_FILE = 'forms.xlsx'
 PHAN_GIAO_FILE = 'phan_giao.xlsx'
+_sheet_cache = {}
 
 # ================= KẾT NỐI MỚI (không pool, có retry) =================
 def create_db_connection():
@@ -100,6 +101,9 @@ def build_reverse_mapping():
     return rev_map
 
 def get_sheet_data(sheet_name):
+    # Trả về từ cache nếu đã đọc rồi
+    if sheet_name in _sheet_cache:
+        return _sheet_cache[sheet_name]
     try:
         wb = safe_load_workbook(FORMS_FILE, read_only=True)
         if not wb or sheet_name not in wb.sheetnames:
@@ -108,7 +112,6 @@ def get_sheet_data(sheet_name):
         headers = [{col: ws[f'{col}{r}'].value for col in 'ABCDEF'} for r in range(1, 8)]
         rows = []
         extra = []
-        # Giới hạn số dòng đọc để tránh treo (tối đa 500 dòng)
         max_row = min(ws.max_row, 500)
         for r_idx in range(10, max_row + 1):
             row_data = {col: ws[f'{col}{r_idx}'].value or '' for col in 'ABCDEF'}
@@ -116,6 +119,8 @@ def get_sheet_data(sheet_name):
                 break
             rows.append(row_data)
         wb.close()
+        # Lưu vào cache
+        _sheet_cache[sheet_name] = (headers, rows, extra)
         return headers, rows, extra
     except Exception as e:
         print(f"Lỗi đọc sheet {sheet_name}: {e}")
@@ -326,6 +331,10 @@ def archive_current_data():
         cur.execute("SELECT * FROM suggestions")
         for row in cur.fetchall():
             cur.execute("INSERT INTO archives (archive_date, table_name, row_data) VALUES (%s, %s, %s)", (archive_date, 'suggestions', json.dumps(dict(row), ensure_ascii=False)))
+            cur.execute("""
+            DELETE FROM archives
+            WHERE archive_date::timestamp < NOW() - INTERVAL '12 months'
+        """)
         conn.commit()
     print(f"Đã sao lưu dữ liệu vào archive ngày {archive_date}")
 
@@ -337,14 +346,17 @@ def snapshot_all_before_reset():
     try:
         with get_db_connection() as conn:
             cur = conn.cursor()
-
+            current_month = datetime.now().strftime('%Y-%m')
             cur.execute("""
                 SELECT DISTINCT sheet_name FROM evaluations
                 WHERE col_letter = 'G' AND value IS NOT NULL AND value != ''
             """)
             sheets_with_evals = {r['sheet_name'] for r in cur.fetchall()}
 
-            cur.execute("SELECT DISTINCT sheet_name, role FROM history")
+            cur.execute("""
+    SELECT DISTINCT sheet_name, role FROM history
+    WHERE TO_CHAR(saved_at, 'YYYY-MM') = %s
+""", (current_month,))
             already_saved = {(r['sheet_name'], r['role']) for r in cur.fetchall()}
 
             count = 0
@@ -910,11 +922,12 @@ def export_summary():
         cell.alignment = Alignment(horizontal='center')
     for stt, row in enumerate(rows, start=1):
         ws.append([stt, rev_map.get(row['sheet_name'], row['sheet_name']), row['description'] or '', row['reviewer_comment'] or ''])
+    # DÒNG MỚI - 2 dòng cuối thụt vào trong vòng lặp
     for col in ws.columns:
         max_len = max((len(str(c.value)) for c in col if c.value), default=0)
-    first_cell = col[0]
-    if hasattr(first_cell, 'column_letter'):
-        ws.column_dimensions[first_cell.column_letter].width = min(max_len + 2, 50)
+        first_cell = col[0]
+        if hasattr(first_cell, 'column_letter'):
+            ws.column_dimensions[first_cell.column_letter].width = min(max_len + 2, 50)
     if sug_dict:
         ws.append([])
         ws.append(["KIẾN NGHỊ VÀ Ý KIẾN THẨM TRA"])
@@ -943,40 +956,37 @@ def admin_dashboard():
     with get_db_connection() as conn:
         cur = conn.cursor()
         cur.execute("""
-            SELECT DISTINCT sheet_name
+            SELECT
+                sheet_name,
+                COUNT(*) as total,
+                COUNT(CASE WHEN value = 'K' THEN 1 END) as k_count
             FROM evaluations
-            WHERE col_letter = 'G' AND value IS NOT NULL AND value != ''
+            WHERE col_letter = 'G'
+              AND value IS NOT NULL
+              AND value != ''
+            GROUP BY sheet_name
         """)
-        sheets = cur.fetchall()
+        rows = cur.fetchall()
 
-        system_data = []
-        total_k = 0
-        total_evals = 0
+    system_data = []
+    total_k = 0
+    total_evals = 0
 
-        for sheet in sheets:
-            sn = sheet['sheet_name']
-            cur.execute("""
-                SELECT
-                    COUNT(CASE WHEN col_letter = 'G' THEN 1 END) as total,
-                    COUNT(CASE WHEN col_letter = 'G' AND value = 'K' THEN 1 END) as k_count
-                FROM evaluations
-                WHERE sheet_name = %s
-            """, (sn,))
-            row = cur.fetchone()
-            total = row['total'] or 0
-            k_count = row['k_count'] or 0
-            percentage = round((k_count / total * 100) if total > 0 else 0, 1)
-            system_data.append({
-                'name': sn,
-                'total': total,
-                'k_count': k_count,
-                'percentage': percentage
-            })
-            total_k += k_count
-            total_evals += total
+    for row in rows:
+        total = row['total'] or 0
+        k_count = row['k_count'] or 0
+        percentage = round((k_count / total * 100) if total > 0 else 0, 1)
+        system_data.append({
+            'name': row['sheet_name'],
+            'total': total,
+            'k_count': k_count,
+            'percentage': percentage
+        })
+        total_k += k_count
+        total_evals += total
 
-        avg_pct = round((total_k / total_evals * 100) if total_evals > 0 else 0, 1)
-        total_ok = total_evals - total_k
+    avg_pct = round((total_k / total_evals * 100) if total_evals > 0 else 0, 1)
+    total_ok = total_evals - total_k
 
     system_data.sort(key=lambda x: x['percentage'], reverse=True)
 
