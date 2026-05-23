@@ -25,8 +25,48 @@ if not DATABASE_URL:
     raise Exception("DATABASE_URL environment variable not set")
 
 FORMS_FILE = 'forms.xlsx'
+
+MASTER_WB = None
+MASTER_WB_MTIME = None
+
 PHAN_GIAO_FILE = 'phan_giao.xlsx'
+
 _sheet_cache = {}
+
+
+def get_master_workbook():
+
+    global MASTER_WB
+    global MASTER_WB_MTIME
+    global _sheet_cache
+
+    current_mtime = os.path.getmtime(FORMS_FILE)
+
+    # File chưa đổi → dùng cache
+    if (
+        MASTER_WB is not None
+        and MASTER_WB_MTIME == current_mtime
+    ):
+        return MASTER_WB
+
+    # File đổi → reload
+    if MASTER_WB:
+        MASTER_WB.close()
+
+    MASTER_WB = load_workbook(
+        FORMS_FILE,
+        read_only=True,
+        data_only=True
+    )
+
+    MASTER_WB_MTIME = current_mtime
+
+    # XÓA CACHE CŨ
+    _sheet_cache.clear()
+
+    print("✅ Workbook cache reloaded")
+
+    return MASTER_WB
 
 # ================= KẾT NỐI MỚI (không pool, có retry) =================
 # ================= DATABASE CONNECTION POOL =================
@@ -100,7 +140,7 @@ def safe_load_workbook(filepath, read_only=False):
         return None
 
 def build_sheet_mapping():
-    wb = safe_load_workbook(FORMS_FILE, read_only=True)
+    wb = get_master_workbook()
     if not wb:
         return {}
     mapping = {}
@@ -114,11 +154,10 @@ def build_sheet_mapping():
                 base, pha = code_part.split('_')
                 num = int(base)
                 mapping[f'BM.P4.15.{num:02d}_{pha}'] = sheet_name
-    wb.close()
     return mapping
 
 def build_reverse_mapping():
-    wb = safe_load_workbook(FORMS_FILE, read_only=True)
+    wb = get_master_workbook()
     if not wb:
         return {}
     rev_map = {}
@@ -132,7 +171,6 @@ def build_reverse_mapping():
                 base, pha = code_part.split('_')
                 num = int(base)
                 rev_map[sheet_name] = f'BM.P4.15.{num:02d}_{pha}'
-    wb.close()
     return rev_map
 
 def get_sheet_data(sheet_name):
@@ -140,7 +178,7 @@ def get_sheet_data(sheet_name):
     if sheet_name in _sheet_cache:
         return _sheet_cache[sheet_name]
     try:
-        wb = safe_load_workbook(FORMS_FILE, read_only=True)
+        wb = get_master_workbook()
         if not wb or sheet_name not in wb.sheetnames:
             return None, None, None
         ws = wb[sheet_name]
@@ -153,7 +191,6 @@ def get_sheet_data(sheet_name):
             if not any(str(v).strip() for v in row_data.values()):
                 break
             rows.append(row_data)
-        wb.close()
         # Lưu vào cache
         _sheet_cache[sheet_name] = (headers, rows, extra)
         return headers, rows, extra
