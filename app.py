@@ -324,14 +324,21 @@ def archive_current_data():
         cur = conn.cursor()
         cur.execute("SELECT * FROM evaluations")
         for row in cur.fetchall():
-            cur.execute("INSERT INTO archives (archive_date, table_name, row_data) VALUES (%s, %s, %s)", (archive_date, 'evaluations', json.dumps(dict(row), ensure_ascii=False)))
+            cur.execute("INSERT INTO archives (archive_date, table_name, row_data) VALUES (%s, %s, %s)",
+                        (archive_date, 'evaluations', json.dumps(dict(row), ensure_ascii=False)))
+
         cur.execute("SELECT * FROM review_comments")
         for row in cur.fetchall():
-            cur.execute("INSERT INTO archives (archive_date, table_name, row_data) VALUES (%s, %s, %s)", (archive_date, 'review_comments', json.dumps(dict(row), ensure_ascii=False)))
+            cur.execute("INSERT INTO archives (archive_date, table_name, row_data) VALUES (%s, %s, %s)",
+                        (archive_date, 'review_comments', json.dumps(dict(row), ensure_ascii=False)))
+
         cur.execute("SELECT * FROM suggestions")
         for row in cur.fetchall():
-            cur.execute("INSERT INTO archives (archive_date, table_name, row_data) VALUES (%s, %s, %s)", (archive_date, 'suggestions', json.dumps(dict(row), ensure_ascii=False)))
-            cur.execute("""
+            cur.execute("INSERT INTO archives (archive_date, table_name, row_data) VALUES (%s, %s, %s)",
+                        (archive_date, 'suggestions', json.dumps(dict(row), ensure_ascii=False)))
+
+        # Đặt ra ngoài toàn bộ vòng lặp — chạy đúng 1 lần sau khi insert xong hết
+        cur.execute("""
             DELETE FROM archives
             WHERE archive_date::timestamp < NOW() - INTERVAL '12 months'
         """)
@@ -807,55 +814,111 @@ def export_all_forms():
     if 'user_id' not in session or session.get('role') != 'admin':
         flash('Bạn không có quyền truy cập chức năng này.')
         return redirect(url_for('dashboard'))
+
+    # Kết nối 1: lấy danh sách sheet + toàn bộ dữ liệu DB trong 1 lần duy nhất
     with get_db_connection() as conn:
         cur = conn.cursor()
         cur.execute("SELECT DISTINCT sheet_name FROM suggestions WHERE locked_tham_tra = 1")
         sheets = cur.fetchall()
-    if not sheets:
-        flash('Chưa có biểu mẫu nào được thẩm tra hoàn thành.')
-        return redirect(url_for('dashboard'))
+
+        if not sheets:
+            flash('Chưa có biểu mẫu nào được thẩm tra hoàn thành.')
+            return redirect(url_for('dashboard'))
+
+        sheet_names = [s['sheet_name'] for s in sheets]
+
+        cur.execute("""
+            SELECT sheet_name, row_index, col_letter, value
+            FROM evaluations
+            WHERE sheet_name = ANY(%s)
+        """, (sheet_names,))
+        all_evals = {}
+        for r in cur.fetchall():
+            sn = r['sheet_name']
+            if sn not in all_evals:
+                all_evals[sn] = {}
+            all_evals[sn][(r['row_index'], r['col_letter'])] = r['value']
+
+        cur.execute("""
+            SELECT sheet_name, row_index, comment
+            FROM review_comments
+            WHERE sheet_name = ANY(%s)
+        """, (sheet_names,))
+        all_comments = {}
+        for r in cur.fetchall():
+            sn = r['sheet_name']
+            if sn not in all_comments:
+                all_comments[sn] = {}
+            all_comments[sn][r['row_index']] = r['comment']
+
+        cur.execute("""
+            SELECT * FROM suggestions
+            WHERE sheet_name = ANY(%s)
+        """, (sheet_names,))
+        all_suggestions = {r['sheet_name']: r for r in cur.fetchall()}
+
+    # Kết nối 2 (build_reverse_mapping đọc Excel, không cần DB thêm)
+    rev_map = build_reverse_mapping()
+    thin = Border(
+        left=Side(style='thin'), right=Side(style='thin'),
+        top=Side(style='thin'),  bottom=Side(style='thin')
+    )
+
     wb = Workbook()
     wb.remove(wb.active)
-    rev_map = build_reverse_mapping()
+
     for sheet in sheets:
         sheet_name = sheet['sheet_name']
         headers, rows, extra = get_sheet_data(sheet_name)
         if not headers:
             continue
+
+        evals    = all_evals.get(sheet_name, {})
+        comments = all_comments.get(sheet_name, {})
+        sugg     = all_suggestions.get(sheet_name)
+
         display_name = rev_map.get(sheet_name, sheet_name)
         ws = wb.create_sheet(title=display_name[:31])
-        for i, row in enumerate(headers, start=1):
+
+        for row in headers:
             ws.append([row.get(col, '') for col in 'ABCDEF'])
         ws.append([])
-        ws.append(["Hạng mục", "STT", "Nội dung đánh giá", "Tiêu chuẩn", "Phương pháp", "Trạng thái TB", "Kết quả", "Mô tả", "Đơn vị thực hiện", "Thời gian", "Giải pháp"])
-        with get_db_connection() as conn:
-            cur = conn.cursor()
-            cur.execute("SELECT row_index, col_letter, value FROM evaluations WHERE sheet_name = %s", (sheet_name,))
-            evals = {(r['row_index'], r['col_letter']): r['value'] for r in cur.fetchall()}
-            cur.execute("SELECT row_index, comment FROM review_comments WHERE sheet_name = %s", (sheet_name,))
-            comments = {r['row_index']: r['comment'] for r in cur.fetchall()}
-            cur.execute("SELECT * FROM suggestions WHERE sheet_name = %s", (sheet_name,))
-            sugg = cur.fetchone()
+        ws.append(["Hạng mục", "STT", "Nội dung đánh giá", "Tiêu chuẩn",
+                   "Phương pháp", "Trạng thái TB", "Kết quả", "Mô tả",
+                   "Đơn vị thực hiện", "Thời gian", "Giải pháp"])
+
         for idx, row in enumerate(rows, start=10):
-            ws.append([row['A'], row['B'], row['C'], row['D'], row['E'], row['F'], evals.get((idx, 'G'), ''), evals.get((idx, 'H'), ''), evals.get((idx, 'I'), ''), evals.get((idx, 'J'), ''), evals.get((idx, 'K'), '')])
+            ws.append([
+                row['A'], row['B'], row['C'], row['D'], row['E'], row['F'],
+                evals.get((idx, 'G'), ''), evals.get((idx, 'H'), ''),
+                evals.get((idx, 'I'), ''), evals.get((idx, 'J'), ''),
+                evals.get((idx, 'K'), '')
+            ])
             if comments.get(idx):
                 ws.cell(row=ws.max_row, column=12, value=comments[idx])
+
         ws.append([])
         ws.append(["Kiến nghị và ký xác nhận"])
         ws.append(["Kiến nghị (nếu có):", extra[0].get('B', '') if extra else ''])
         ws.append(["Người đánh giá:", sugg['reviewer_signature'] if sugg else ''])
         ws.append(["Người thẩm tra:", sugg['checker_signature'] if sugg else ''])
-        thin = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
+
         for row in ws.iter_rows():
             for cell in row:
                 cell.border = thin
         for col in ws.columns:
             max_len = max((len(str(cell.value)) for cell in col if cell.value), default=0)
             ws.column_dimensions[col[0].column_letter].width = min(max_len + 2, 50)
+
     output = BytesIO()
     wb.save(output)
     output.seek(0)
-    return send_file(output, download_name=f'All_Forms_{datetime.now().strftime("%Y%m")}.xlsx', as_attachment=True, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    return send_file(
+        output,
+        download_name=f'All_Forms_{datetime.now().strftime("%Y%m")}.xlsx',
+        as_attachment=True,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
 
 @app.route('/reset_cycle')
 def reset_cycle():
