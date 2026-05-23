@@ -9,6 +9,7 @@ from openpyxl import load_workbook, Workbook
 from openpyxl.styles import Font, Alignment, Border, Side
 from unicodedata import normalize
 import psycopg2
+from psycopg2.pool import SimpleConnectionPool
 from psycopg2.extras import RealDictCursor
 from contextlib import contextmanager
 from dotenv import load_dotenv
@@ -28,29 +29,63 @@ PHAN_GIAO_FILE = 'phan_giao.xlsx'
 _sheet_cache = {}
 
 # ================= KẾT NỐI MỚI (không pool, có retry) =================
-def create_db_connection():
-    """Tạo kết nối mới đến Neon, tự động retry tối đa 3 lần nếu thất bại"""
-    max_retries = 3
-    for i in range(max_retries):
-        try:
-            conn = psycopg2.connect(DATABASE_URL, sslmode='require', cursor_factory=RealDictCursor)
-            return conn
-        except Exception as e:
-            if i == max_retries - 1:
-                raise
-            time.sleep(1 * (2 ** i))  # 1s, 2s, 4s
+# ================= DATABASE CONNECTION POOL =================
+
+DB_POOL_MIN = 1
+DB_POOL_MAX = 20
+
+max_retries = 3
+
+for i in range(max_retries):
+
+    try:
+
+        db_pool = SimpleConnectionPool(
+            minconn=DB_POOL_MIN,
+            maxconn=DB_POOL_MAX,
+            dsn=DATABASE_URL,
+            sslmode='require',
+            cursor_factory=RealDictCursor
+        )
+
+        print(f"✅ Database pool initialized ({DB_POOL_MIN}-{DB_POOL_MAX})")
+
+        break
+
+    except Exception as e:
+
+        if i == max_retries - 1:
+            raise
+
+        print(f"❌ Lỗi tạo connection pool: {e}")
+
+        time.sleep(1 * (2 ** i))
+
 
 @contextmanager
 def get_db_connection():
-    conn = create_db_connection()
+
+    conn = None
+
     try:
+
+        conn = db_pool.getconn()
+
         yield conn
+
         conn.commit()
+
     except Exception:
-        conn.rollback()
+
+        if conn:
+            conn.rollback()
+
         raise
+
     finally:
-        conn.close()
+
+        if conn:
+            db_pool.putconn(conn)
 
 # -------------------- Hàm xử lý Excel an toàn --------------------
 def safe_load_workbook(filepath, read_only=False):
@@ -1193,6 +1228,23 @@ def force_reset():
         flash(f'❌ Lỗi reset: {str(e)}', 'danger')
 
     return redirect(url_for('dashboard'))
+
+import atexit
+
+
+@atexit.register
+def close_db_pool():
+
+    try:
+
+        if db_pool:
+            db_pool.closeall()
+            print("🔌 Database pool closed")
+
+    except Exception as e:
+
+        print(f"❌ Lỗi đóng database pool: {e}")
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
