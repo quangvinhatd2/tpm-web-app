@@ -1057,61 +1057,79 @@ def confirm_reset():
 @app.route('/export_summary')
 def export_summary():
     if 'user_id' not in session or session.get('role') != 'admin':
-        flash('Bạn không có quyền truy cập chức năng này.')
+        flash('Bạn không có quyền truy cập.')
         return redirect(url_for('dashboard'))
-    with get_db_connection() as conn:
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT e.sheet_name, e.row_index, e.value as result,
-                   (SELECT value FROM evaluations e2 WHERE e2.sheet_name = e.sheet_name AND e2.row_index = e.row_index AND e2.col_letter = 'H') as description,
-                   (SELECT comment FROM review_comments rc WHERE rc.sheet_name = e.sheet_name AND rc.row_index = e.row_index) as reviewer_comment
-            FROM evaluations e WHERE e.col_letter = 'G' AND e.value = 'K' ORDER BY e.sheet_name, e.row_index
-        """)
-        rows = cur.fetchall()
-        cur.execute("""
-            SELECT sheet_name, reviewer_signature, checker_signature FROM suggestions
-            WHERE sheet_name IN (SELECT DISTINCT sheet_name FROM evaluations WHERE col_letter = 'G' AND value = 'K')
-        """)
-        suggestions = cur.fetchall()
-        sug_dict = {s['sheet_name']: (s['reviewer_signature'], s['checker_signature']) for s in suggestions}
-    if not rows:
-        flash('Không có khiếm khuyết nào để xuất báo cáo.')
-        return redirect(url_for('dashboard'))
-    rev_map = build_reverse_mapping()
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Tổng hợp KKTB"
-    ws.merge_cells('A1:D1')
-    ws['A1'] = "TỔNG HỢP KHIẾM KHUYẾT THIẾT BỊ TPM"
-    ws['A1'].font = Font(bold=True, size=14)
-    ws['A1'].alignment = Alignment(horizontal='center')
-    ws.append(["STT", "Biểu mẫu", "Nội dung khiếm khuyết (Mô tả của ĐG)", "Mô tả của Thẩm tra"])
-    for cell in ws[2]:
-        cell.font = Font(bold=True)
-        cell.alignment = Alignment(horizontal='center')
-    for stt, row in enumerate(rows, start=1):
-        ws.append([stt, rev_map.get(row['sheet_name'], row['sheet_name']), row['description'] or '', row['reviewer_comment'] or ''])
-    for col in ws.columns:
-        max_len = max((len(str(c.value)) for c in col if c.value), default=0)
-        first_cell = col[0]
-        if hasattr(first_cell, 'column_letter'):
-            ws.column_dimensions[first_cell.column_letter].width = min(max_len + 2, 50)
-    if sug_dict:
-        ws.append([])
-        ws.append(["KIẾN NGHỊ VÀ Ý KIẾN THẨM TRA"])
-        ws.merge_cells(f'A{ws.max_row}:D{ws.max_row}')
-        ws.cell(row=ws.max_row, column=1).font = Font(bold=True)
-        ws.cell(row=ws.max_row, column=1).alignment = Alignment(horizontal='center')
+
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            # Dùng IN ('K', 'Đ') để lấy cả 2 trạng thái
+            cur.execute("""
+                SELECT e.sheet_name, e.row_index, e.value as result,
+                       e2.value as description, rc.comment as reviewer_comment
+                FROM evaluations e
+                LEFT JOIN evaluations e2 ON e.sheet_name = e2.sheet_name AND e.row_index = e2.row_index AND e2.col_letter = 'H'
+                LEFT JOIN review_comments rc ON e.sheet_name = rc.sheet_name AND e.row_index = rc.row_index
+                WHERE e.col_letter = 'G' AND e.value IN ('K', 'Đ')
+                ORDER BY e.sheet_name, e.row_index
+            """)
+            rows = cur.fetchall()
+            
+            # Lấy suggestions
+            cur.execute("""
+                SELECT sheet_name, reviewer_signature, checker_signature FROM suggestions
+                WHERE sheet_name IN (SELECT DISTINCT sheet_name FROM evaluations WHERE col_letter = 'G' AND value IN ('K', 'Đ'))
+            """)
+            suggestions = cur.fetchall()
+            sug_dict = {s['sheet_name']: (s['reviewer_signature'], s['checker_signature']) for s in suggestions}
+
+        if not rows:
+            flash('Không có dữ liệu (K hoặc Đ) để xuất báo cáo.')
+            return redirect(url_for('dashboard'))
+
+        rev_map = build_reverse_mapping()
+        wb = load_workbook('template.xlsx') # Đảm bảo file template nằm cùng thư mục
+        ws = wb.active
+        
+        # Chèn dòng để giữ định dạng
+        num_rows = len(rows)
+        if num_rows > 1:
+            ws.insert_rows(3, amount=num_rows - 1)
+
+        thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), 
+                             top=Side(style='thin'), bottom=Side(style='thin'))
+        
+        # Đổ dữ liệu
+        for stt, row in enumerate(rows, start=1):
+            curr_row = 2 + stt 
+            ws.cell(row=curr_row, column=1, value=stt).border = thin_border
+            ws.cell(row=curr_row, column=2, value=rev_map.get(row['sheet_name'], row['sheet_name'])).border = thin_border
+            ws.cell(row=curr_row, column=3, value=row['description'] or '').border = thin_border
+            ws.cell(row=curr_row, column=4, value=row['reviewer_comment'] or '').border = thin_border
+
+        # Đổ Kiến nghị
+        base_ki_nghi_row = 6 + (num_rows - 1)
+        ki_nghi_row = base_ki_nghi_row + 1
+        
         for sc, (rs, cc) in sug_dict.items():
-            ws.append([sc, "Kiến nghị của người đánh giá:", rs or '', ""])
-            ws.append([sc, "Ý kiến của người thẩm tra:", cc or '', ""])
-            for r in range(ws.max_row - 1, ws.max_row + 1):
-                for cell in ws[r]:
-                    cell.alignment = Alignment(horizontal='left', wrap_text=True)
-    output = BytesIO()
-    wb.save(output)
-    output.seek(0)
-    return send_file(output, download_name='TonghopKKTB TPM.xlsx', as_attachment=True, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            ws.cell(row=ki_nghi_row, column=1, value=sc)
+            ws.cell(row=ki_nghi_row, column=2, value="Kiến nghị:")
+            ws.cell(row=ki_nghi_row, column=3, value=rs or '')
+            ki_nghi_row += 1
+            ws.cell(row=ki_nghi_row, column=2, value="Ý kiến thẩm tra:")
+            ws.cell(row=ki_nghi_row, column=3, value=cc or '')
+            ki_nghi_row += 2
+
+        output = BytesIO()
+        wb.save(output)
+        output.seek(0)
+        
+        return send_file(output, download_name='TonghopKKTB_TPM.xlsx', as_attachment=True, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+    except Exception as e:
+        print(f"❌ Lỗi xuất file: {str(e)}")
+        flash(f"Lỗi hệ thống: {str(e)}")
+        return redirect(url_for('dashboard'))
 
 @app.route('/admin_dashboard')
 def admin_dashboard():
