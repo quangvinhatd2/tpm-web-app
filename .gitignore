@@ -13,3 +13,4 @@ instance/
 # Excel Temporary files
 ~$*.xlsx
 *.xlsx#
+.env.env
