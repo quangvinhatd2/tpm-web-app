@@ -427,9 +427,14 @@
     <a href="{{ url_for('export_all_forms') }}" class="nav-item admin">
         <i class="fa-solid fa-download"></i> Xuất tất cả biểu mẫu
     </a>
-    <a href="{{ url_for('sync_assignments') }}" onclick="if(confirm('Đồng bộ phân công từ file Excel?')) return true; else return false;" class="nav-item admin">
+    <form method="post" action="{{ url_for('sync_assignments') }}" style="margin:0;">
+    <button type="submit"
+        onclick="return confirm('Đồng bộ phân công từ file Excel?')"
+        class="nav-item admin"
+        style="width:100%; background:none; border:none; cursor:pointer; text-align:left;">
         <i class="fa-solid fa-arrows-spin"></i> Đồng bộ phân công
-    </a>
+    </button>
+</form>
     {% endif %}
 </nav>
 
