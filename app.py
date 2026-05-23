@@ -596,9 +596,43 @@ def dashboard():
 
     eval_status = {}
     if is_current_month:
-        for ass in assigns:
-            if ass['role'] == 'tham_tra':
-                eval_status[ass['sheet_name']] = is_evaluation_complete(ass['sheet_name'])
+        tham_tra_sheets = [
+        ass['sheet_name']
+        for ass in assigns
+        if ass['role'] == 'tham_tra'
+    ]
+    if tham_tra_sheets:
+        # Default tất cả = False trước
+        eval_status = {sheet: False for sheet in tham_tra_sheets}
+        
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT
+                    e.sheet_name,
+                    COUNT(*) AS total,
+                    MAX(
+                        CASE
+                            WHEN s.reviewer_signature IS NOT NULL
+                                 AND TRIM(s.reviewer_signature) != ''
+                            THEN 1 ELSE 0
+                        END
+                    ) AS has_signature
+                FROM evaluations e
+                LEFT JOIN suggestions s ON e.sheet_name = s.sheet_name
+                WHERE e.sheet_name = ANY(%s)
+                  AND e.col_letter = 'G'
+                  AND e.value IS NOT NULL
+                  AND e.value != ''
+                GROUP BY e.sheet_name
+            """, (tham_tra_sheets,))
+            rows = cur.fetchall()
+
+        # Chỉ cập nhật những sheet có data thực tế
+        eval_status.update({
+            r['sheet_name']: (r['total'] > 0 and r['has_signature'] == 1)
+            for r in rows
+        })
 
     return render_template('dashboard.html',
         assignments=assigns,
@@ -985,7 +1019,6 @@ def export_summary():
         cell.alignment = Alignment(horizontal='center')
     for stt, row in enumerate(rows, start=1):
         ws.append([stt, rev_map.get(row['sheet_name'], row['sheet_name']), row['description'] or '', row['reviewer_comment'] or ''])
-    # DÒNG MỚI - 2 dòng cuối thụt vào trong vòng lặp
     for col in ws.columns:
         max_len = max((len(str(c.value)) for c in col if c.value), default=0)
         first_cell = col[0]
