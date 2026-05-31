@@ -4,8 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TPM | BANVEHPC Dashboard</title>
+
+    <!--
+      PERFORMANCE FIXES vs. bản gốc:
+      1. preconnect → giảm DNS/TCP latency cho Google Fonts & FontAwesome
+      2. font-display=swap → văn bản hiển thị ngay, font load sau (không block render)
+      3. FontAwesome dùng link preload + onload trick → non-blocking
+      4. CSS transition: all → đổi sang property cụ thể → tránh layout thrash
+      5. JS defer → không block HTML parsing
+      6. will-change: transform → báo browser chuẩn bị GPU layer cho card hover
+      7. contain: layout style → CSS containment giảm reflow scope
+    -->
+
+    <!-- 1. Preconnect giảm latency -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+    <!-- 2. Google Fonts — display=swap: không block render -->
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- 3. FontAwesome non-blocking: load qua JS, fallback noscript -->
+    <link rel="preload" as="style"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+          onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    </noscript>
+
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -105,10 +131,16 @@
             padding: 6px 8px; border-radius: 8px;
             color: rgba(255,255,255,.7); text-decoration: none;
             font-size: 11px; font-weight: 500;
-            transition: all 0.2s ease; margin-bottom: 2px;
+            /* FIX: transition cụ thể thay vì "all" → không trigger layout */
+            transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+            margin-bottom: 2px;
         }
         .nav-item i { width: 14px; text-align: center; font-size: 11px; }
-        .nav-item:hover { background: rgba(255,255,255,.12); color: #fff; transform: translateX(2px); }
+        .nav-item:hover {
+            background: rgba(255,255,255,.12);
+            color: #fff;
+            transform: translateX(2px);
+        }
         .nav-item.active {
             background: rgba(255,255,255,.2); color: #fff; font-weight: 600;
             border-left: 3px solid var(--gold); padding-left: 5px;
@@ -124,7 +156,8 @@
             border: 1px solid rgba(255,255,255,.1);
             color: rgba(255,255,255,.6); font-size: 11px; font-weight: 500;
             font-family: inherit; cursor: pointer; text-decoration: none;
-            transition: all 0.2s;
+            /* FIX: property cụ thể */
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s;
         }
         .btn-logout:hover { background: rgba(200,30,30,.2); border-color: rgba(200,30,30,.3); color: #f87171; }
 
@@ -141,7 +174,11 @@
             padding: 0 16px;
             position: sticky; top: 0; z-index: 30;
         }
-        .topbar-title { font-size: 14px; font-weight: 700; background: linear-gradient(135deg, var(--blue), var(--blue-mid)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .topbar-title {
+            font-size: 14px; font-weight: 700;
+            background: linear-gradient(135deg, var(--blue), var(--blue-mid));
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
         .topbar-right { display: flex; align-items: center; gap: 8px; }
         .search-wrap { position: relative; }
         .search-wrap i { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: var(--text-3); font-size: 11px; pointer-events: none; }
@@ -149,42 +186,31 @@
             padding: 5px 8px 5px 26px; width: 180px;
             border: 1.5px solid var(--border); border-radius: 30px;
             font-family: inherit; font-size: 11px; color: var(--text-1);
-            outline: none; background: var(--surface); transition: all 0.2s;
+            outline: none; background: var(--surface);
+            /* FIX: property cụ thể */
+            transition: border-color 0.2s, background-color 0.2s, width 0.2s;
         }
         .search-input:focus { border-color: var(--blue-mid); background: #fff; width: 210px; }
 
-        /* ── MONTH DROPDOWN (THAY THẾ TIMELINE CŨ) ── */
-        .timeline-wrap {
-            padding: 20px 20px 0;
-        }
+        /* ── MONTH DROPDOWN ── */
+        .timeline-wrap { padding: 20px 20px 0; }
         .timeline-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            display: flex; align-items: center; justify-content: space-between;
             margin-bottom: 14px;
         }
         .timeline-label {
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--text-3);
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            font-size: 10px; font-weight: 700; color: var(--text-3);
+            text-transform: uppercase; letter-spacing: 1.2px;
+            display: flex; align-items: center; gap: 6px;
         }
         .month-selector {
             background: var(--white);
-            border: 1.5px solid var(--border);
-            border-radius: 30px;
+            border: 1.5px solid var(--border); border-radius: 30px;
             padding: 6px 32px 6px 16px;
             font-family: 'Be Vietnam Pro', sans-serif;
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--text-1);
-            cursor: pointer;
-            outline: none;
-            transition: all 0.2s;
+            font-size: 12px; font-weight: 500; color: var(--text-1);
+            cursor: pointer; outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
             appearance: none;
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%234e5f80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
             background-repeat: no-repeat;
@@ -196,42 +222,19 @@
             box-shadow: 0 2px 8px rgba(0,48,135,0.1);
         }
         .current-month-hint {
-            font-size: 11px;
-            background: var(--green-bg);
-            color: var(--green);
-            padding: 4px 10px;
-            border-radius: 30px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+            font-size: 11px; background: var(--green-bg); color: var(--green);
+            padding: 4px 10px; border-radius: 30px; font-weight: 600;
+            display: inline-flex; align-items: center; gap: 6px;
         }
-        .current-month-hint i {
-            font-size: 10px;
-        }
-        @media (max-width: 860px) {
-            .timeline-header {
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-            .month-selector {
-                flex: 1;
-                min-width: 160px;
-            }
-        }
+        .current-month-hint i { font-size: 10px; }
 
         /* ── READONLY BANNER ── */
         .readonly-banner {
-            margin: 12px 20px 0;
-            padding: 10px 16px;
+            margin: 12px 20px 0; padding: 10px 16px;
             background: linear-gradient(90deg, #fff8e1, #fffde7);
-            border: 1px solid #ffe082;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 12px;
-            color: #7a5800;
+            border: 1px solid #ffe082; border-radius: 10px;
+            display: flex; align-items: center; gap: 10px;
+            font-size: 12px; color: #7a5800;
         }
         .readonly-banner i { color: #f5a623; font-size: 14px; flex-shrink: 0; }
 
@@ -242,15 +245,12 @@
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
-
         .section-block { display: flex; flex-direction: column; gap: 12px; }
 
         .section-header {
             display: flex; align-items: center; gap: 10px;
-            padding: 10px 14px;
-            border-radius: 12px;
-            background: var(--white);
-            border-left: 4px solid;
+            padding: 10px 14px; border-radius: 12px;
+            background: var(--white); border-left: 4px solid;
             box-shadow: 0 1px 4px rgba(0,0,0,0.02);
         }
         .section-header.danh-gia { border-left-color: var(--blue); background: linear-gradient(120deg, var(--white), var(--blue-bg)); }
@@ -281,15 +281,21 @@
             border-radius: 12px;
             padding: 12px 14px;
             text-decoration: none;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            transition: all 0.3s;
+            display: flex; flex-direction: column; gap: 6px;
+            /* FIX: property cụ thể, thêm will-change cho hover có GPU layer */
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
             border: 1px solid rgba(0,0,0,0.04);
             box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+            /* FIX: contain giúp reflow không leo ra ngoài card */
+            contain: layout style;
         }
         .form-card.danh-gia { border-left: 3px solid var(--blue); }
         .form-card.tham-tra { border-left: 3px solid var(--green); }
+
+        /* GPU hint chỉ khi hover sắp xảy ra */
+        .form-card:not(.locked):not(.readonly-card):hover {
+            will-change: transform;
+        }
         .form-card.danh-gia:not(.readonly-card):hover {
             transform: translateY(-2px) translateX(2px);
             box-shadow: 0 10px 20px -10px rgba(0,48,135,0.2);
@@ -305,11 +311,8 @@
             background: #f7f8fc; border-left-color: #b0bec5;
         }
         .form-card.readonly-card {
-            opacity: .75;
-            cursor: default;
-            pointer-events: none;
-            background: #fafbff;
-            border-left-color: #b0bec5;
+            opacity: .75; cursor: default; pointer-events: none;
+            background: #fafbff; border-left-color: #b0bec5;
         }
         .form-card.completed { background: linear-gradient(120deg, #e8f5e9, #ffffff); border-left-color: #2e7d32; }
         .form-card.pending   { background: linear-gradient(120deg, #fff9c4, #ffffff); border-left-color: #fbc02d; }
@@ -332,32 +335,36 @@
             display: inline-flex; align-items: center; justify-content: center;
             border-radius: 30px; color: var(--text-3);
             margin-right: 8px; flex-shrink: 0;
+            transition: background-color 0.2s, color 0.2s;
         }
         .form-card.danh-gia:not(.readonly-card):hover .form-card-number { background: var(--blue); color: white; }
         .form-card.tham-tra:not(.locked):not(.readonly-card):hover .form-card-number { background: var(--green); color: white; }
+
         .form-card-header { display: flex; align-items: center; gap: 5px; }
-        .form-card-title { font-size: 12px; font-weight: 600; color: var(--text-1); line-height: 1.35; flex: 1; }
+        .form-card-title {
+            font-size: 12px; font-weight: 600; color: var(--text-1);
+            line-height: 1.35; flex: 1;
+            transition: color 0.2s;
+        }
         .form-card.danh-gia:not(.readonly-card):hover .form-card-title { color: var(--blue-mid); }
         .form-card.tham-tra:not(.locked):not(.readonly-card):hover .form-card-title { color: var(--green); }
 
         .form-card-footer {
             display: flex; align-items: center; justify-content: space-between;
-            padding-top: 6px;
-            border-top: 1px solid var(--border);
-            font-size: 10px; color: var(--text-3);
-            padding-left: 30px;
+            padding-top: 6px; border-top: 1px solid var(--border);
+            font-size: 10px; color: var(--text-3); padding-left: 30px;
         }
         .badge-icon {
             width: 24px; height: 24px;
             background: linear-gradient(135deg, var(--blue-bg), var(--white));
-            border-radius: 6px;
-            display: flex; align-items: center; justify-content: center;
+            border-radius: 6px; display: flex; align-items: center; justify-content: center;
             font-size: 11px; color: var(--blue-mid);
         }
         .form-cta {
             font-size: 10px; font-weight: 600;
             display: flex; align-items: center; gap: 4px;
-            padding: 2px 6px; border-radius: 30px; transition: all 0.2s;
+            padding: 2px 6px; border-radius: 30px;
+            transition: background-color 0.2s;
         }
         .form-card.danh-gia:not(.readonly-card) .form-cta { color: var(--blue); background: rgba(0,48,135,0.04); }
         .form-card.tham-tra:not(.locked):not(.readonly-card) .form-cta { color: var(--green); background: rgba(26,122,74,0.04); }
@@ -366,12 +373,8 @@
 
         .empty-section {
             padding: 20px 16px;
-            background: var(--white);
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            text-align: center;
-            color: var(--text-3);
-            font-size: 11px;
+            background: var(--white); border: 2px dashed var(--border);
+            border-radius: 12px; text-align: center; color: var(--text-3); font-size: 11px;
         }
         .empty-section i { margin-right: 4px; }
 
@@ -381,6 +384,8 @@
             .page-body { padding: 12px 12px 24px; grid-template-columns: 1fr; gap: 16px; }
             .timeline-wrap { padding: 12px 12px 0; }
             .readonly-banner { margin: 8px 12px 0; }
+            .timeline-header { flex-wrap: wrap; gap: 10px; }
+            .month-selector { flex: 1; min-width: 160px; }
         }
     </style>
 </head>
@@ -405,38 +410,35 @@
     </div>
 
     <nav class="sidebar-nav">
-    <div class="nav-label">Điều hướng</div>
-    <a href="{{ url_for('dashboard') }}" class="nav-item active">
-        <i class="fa-solid fa-house"></i> Tổng quan
-    </a>
-    
-    <!-- Thêm link Thống kê cho TẤT CẢ USER -->
-    <a href="{{ url_for('admin_dashboard') }}" class="nav-item">
-        <i class="fa-solid fa-chart-pie"></i> Thống kê & Phân tích
-    </a>
-    
-    <a href="{{ url_for('history') }}" class="nav-item">
-        <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử đánh giá & thẩm tra
-    </a>
+        <div class="nav-label">Điều hướng</div>
+        <a href="{{ url_for('dashboard') }}" class="nav-item active">
+            <i class="fa-solid fa-house"></i> Tổng quan
+        </a>
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-item">
+            <i class="fa-solid fa-chart-pie"></i> Thống kê &amp; Phân tích
+        </a>
+        <a href="{{ url_for('history') }}" class="nav-item">
+            <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử đánh giá &amp; thẩm tra
+        </a>
 
-    {% if session.role == 'admin' %}
-    <div class="nav-label">Quản trị</div>
-    <a href="{{ url_for('export_summary') }}" class="nav-item admin">
-        <i class="fa-solid fa-file-export"></i> Xuất file báo cáo tổng
-    </a>
-    <a href="{{ url_for('export_all_forms') }}" class="nav-item admin">
-        <i class="fa-solid fa-download"></i> Xuất tất cả biểu mẫu
-    </a>
-    <form method="post" action="{{ url_for('sync_assignments') }}" style="margin:0;">
-    <button type="submit"
-        onclick="return confirm('Đồng bộ phân công từ file Excel?')"
-        class="nav-item admin"
-        style="width:100%; background:none; border:none; cursor:pointer; text-align:left;">
-        <i class="fa-solid fa-arrows-spin"></i> Đồng bộ phân công
-    </button>
-</form>
-    {% endif %}
-</nav>
+        {% if session.role == 'admin' %}
+        <div class="nav-label">Quản trị</div>
+        <a href="{{ url_for('export_summary') }}" class="nav-item admin">
+            <i class="fa-solid fa-file-export"></i> Xuất file báo cáo tổng
+        </a>
+        <a href="{{ url_for('export_all_forms') }}" class="nav-item admin">
+            <i class="fa-solid fa-download"></i> Xuất tất cả biểu mẫu
+        </a>
+        <form method="post" action="{{ url_for('sync_assignments') }}" style="margin:0;">
+            <button type="submit"
+                onclick="return confirm('Đồng bộ phân công từ file Excel?')"
+                class="nav-item admin"
+                style="width:100%; background:none; border:none; cursor:pointer; text-align:left;">
+                <i class="fa-solid fa-arrows-spin"></i> Đồng bộ phân công
+            </button>
+        </form>
+        {% endif %}
+    </nav>
 
     <div class="sidebar-footer">
         <a href="{{ url_for('logout') }}" class="btn-logout">
@@ -452,19 +454,20 @@
         <div class="topbar-right">
             <div class="search-wrap">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="sheetSearch" class="search-input" placeholder="Tìm biểu mẫu…">
+                <input type="text" id="sheetSearch" class="search-input"
+                       placeholder="Tìm biểu mẫu…" autocomplete="off">
             </div>
         </div>
     </header>
 
-    <!-- MONTH SELECTOR (DROPDOWN) - THAY THẾ THANH TIMELINE CŨ -->
+    <!-- MONTH SELECTOR -->
     <div class="timeline-wrap">
         <div class="timeline-header">
             <div class="timeline-label">
                 <i class="fa-solid fa-calendar-alt"></i>
                 Chu kỳ làm việc
             </div>
-            <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="display:flex; align-items:center; gap:12px;">
                 <select id="monthSelect" class="month-selector">
                     {% for m in available_months | reverse %}
                     {% set mo = m.split('-')[1] | int %}
@@ -478,21 +481,22 @@
                 </select>
                 {% if current_month and current_month != selected_month %}
                 <div class="current-month-hint">
-                    <i class="fa-regular fa-calendar-check"></i> Tháng hiện tại: {{ month_labels.get(current_month, current_month) }}
+                    <i class="fa-regular fa-calendar-check"></i>
+                    Tháng hiện tại: {{ month_labels.get(current_month, current_month) }}
                 </div>
                 {% endif %}
             </div>
         </div>
     </div>
 
-    <!-- READONLY BANNER nếu xem tháng cũ -->
+    <!-- READONLY BANNER -->
     {% if not is_current_month %}
     <div class="readonly-banner">
         <i class="fa-solid fa-eye"></i>
         <div>
             Bạn đang xem dữ liệu của <strong>{{ month_labels[selected_month] }}</strong>.
             Không thể thực hiện đánh giá hoặc thẩm tra cho tháng đã qua — chỉ xem lịch sử.
-            <a href="{{ url_for('dashboard') }}" style="color: #e67e22; font-weight: 700; margin-left: 6px;">→ Về tháng hiện tại</a>
+            <a href="{{ url_for('dashboard') }}" style="color:#e67e22; font-weight:700; margin-left:6px;">→ Về tháng hiện tại</a>
         </div>
     </div>
     {% endif %}
@@ -513,17 +517,17 @@
 
             <div class="forms-grid" id="grid-danh-gia">
                 {% if is_current_month %}
-                    {# ── THÁNG HIỆN TẠI: hiển thị tất cả assignments ── #}
                     {% set ns_dg = namespace(cnt=1) %}
                     {% for ass in assignments %}
                         {% if ass.role == 'danh_gia' %}
                         <a href="{{ url_for('evaluation_form', sheet_name=ass.sheet_name) }}"
-                           class="form-card danh-gia {{ 'completed' if ass.locked_danh_gia else 'pending' }}" data-section="danh-gia">
+                           class="form-card danh-gia {{ 'completed' if ass.locked_danh_gia else 'pending' }}"
+                           data-section="danh-gia">
                             <div class="form-card-header">
                                 <span class="form-card-number">{{ ns_dg.cnt }}</span>
                                 <div class="form-card-title">{{ ass.sheet_name }}</div>
                                 {% if ass.locked_danh_gia %}
-                                <span style="font-size:10px; background:#e6f4ec; color:#1a7a4a; padding:2px 7px; border-radius:20px; font-weight:700; flex-shrink:0;">✓ Đã lưu</span>
+                                <span style="font-size:10px;background:#e6f4ec;color:#1a7a4a;padding:2px 7px;border-radius:20px;font-weight:700;flex-shrink:0;">✓ Đã lưu</span>
                                 {% endif %}
                             </div>
                             <div class="form-card-footer">
@@ -542,7 +546,6 @@
                     {% endif %}
 
                 {% else %}
-                    {# ── THÁNG LỊCH SỬ: chỉ hiển thị các sheet đã có history, read-only ── #}
                     {% set ns_dg = namespace(cnt=1) %}
                     {% for ass in assignments %}
                         {% if ass.role == 'danh_gia' %}
@@ -551,7 +554,7 @@
                                 <div class="form-card-header">
                                     <span class="form-card-number">{{ ns_dg.cnt }}</span>
                                     <div class="form-card-title">{{ ass.sheet_name }}</div>
-                                    <span style="font-size:10px; background:#e6f4ec; color:#1a7a4a; padding:2px 7px; border-radius:20px; font-weight:700; flex-shrink:0;">✓ Đã lưu</span>
+                                    <span style="font-size:10px;background:#e6f4ec;color:#1a7a4a;padding:2px 7px;border-radius:20px;font-weight:700;flex-shrink:0;">✓ Đã lưu</span>
                                 </div>
                                 <div class="readonly-notice">
                                     <i class="fa-solid fa-lock"></i>
@@ -588,19 +591,19 @@
 
             <div class="forms-grid" id="grid-tham-tra">
                 {% if is_current_month %}
-                    {# ── THÁNG HIỆN TẠI ── #}
                     {% set ns_tt = namespace(cnt=1) %}
                     {% for ass in assignments %}
                         {% if ass.role == 'tham_tra' %}
                             {% set ready = eval_status.get(ass.sheet_name, false) %}
                             {% if ready %}
                             <a href="{{ url_for('evaluation_form', sheet_name=ass.sheet_name) }}"
-                               class="form-card tham-tra {{ 'completed' if ass.locked_tham_tra else '' }}" data-section="tham-tra">
+                               class="form-card tham-tra {{ 'completed' if ass.locked_tham_tra else '' }}"
+                               data-section="tham-tra">
                                 <div class="form-card-header">
                                     <span class="form-card-number">{{ ns_tt.cnt }}</span>
                                     <div class="form-card-title">{{ ass.sheet_name }}</div>
                                     {% if ass.locked_tham_tra %}
-                                    <span style="font-size:10px; background:#e6f4ec; color:#1a7a4a; padding:2px 7px; border-radius:20px; font-weight:700; flex-shrink:0;">✓ Đã lưu</span>
+                                    <span style="font-size:10px;background:#e6f4ec;color:#1a7a4a;padding:2px 7px;border-radius:20px;font-weight:700;flex-shrink:0;">✓ Đã lưu</span>
                                     {% endif %}
                                 </div>
                                 <div class="form-card-footer">
@@ -635,7 +638,6 @@
                     {% endif %}
 
                 {% else %}
-                    {# ── THÁNG LỊCH SỬ ── #}
                     {% set ns_tt = namespace(cnt=1) %}
                     {% for ass in assignments %}
                         {% if ass.role == 'tham_tra' %}
@@ -644,7 +646,7 @@
                                 <div class="form-card-header">
                                     <span class="form-card-number">{{ ns_tt.cnt }}</span>
                                     <div class="form-card-title">{{ ass.sheet_name }}</div>
-                                    <span style="font-size:10px; background:#e6f4ec; color:#1a7a4a; padding:2px 7px; border-radius:20px; font-weight:700; flex-shrink:0;">✓ Đã lưu</span>
+                                    <span style="font-size:10px;background:#e6f4ec;color:#1a7a4a;padding:2px 7px;border-radius:20px;font-weight:700;flex-shrink:0;">✓ Đã lưu</span>
                                 </div>
                                 <div class="readonly-notice">
                                     <i class="fa-solid fa-lock"></i>
@@ -668,40 +670,53 @@
     </div>
 </div><!-- /main -->
 
-<script>
+<!--
+  FIX: defer → không block HTML parsing, chạy sau khi DOM ready.
+  Không cần DOMContentLoaded wrapper vì defer đảm bảo DOM đã sẵn.
+-->
+<script defer>
+(function () {
+    'use strict';
+
     function updateCounts() {
-        ['danh-gia','tham-tra'].forEach(function(section) {
-            const cards = document.querySelectorAll('#grid-' + section + ' .form-card');
+        ['danh-gia', 'tham-tra'].forEach(function (section) {
+            var cards = document.querySelectorAll('#grid-' + section + ' .form-card');
             document.getElementById('count-' + section).textContent = cards.length;
         });
     }
     updateCounts();
 
+    // FIX: debounce search để tránh layout query liên tục khi gõ nhanh
+    var _searchTimer;
     document.getElementById('sheetSearch').addEventListener('input', function () {
-        const q = this.value.toLowerCase().trim();
-        ['danh-gia', 'tham-tra'].forEach(function(section) {
-            const grid = document.getElementById('grid-' + section);
-            const cards = grid.querySelectorAll('.form-card');
-            let shown = 0;
-            cards.forEach(function(card) {
-                const match = card.innerText.toLowerCase().includes(q);
-                card.style.display = match ? '' : 'none';
-                if (match) shown++;
+        clearTimeout(_searchTimer);
+        var q = this.value;
+        _searchTimer = setTimeout(function () {
+            var lower = q.toLowerCase().trim();
+            ['danh-gia', 'tham-tra'].forEach(function (section) {
+                var grid = document.getElementById('grid-' + section);
+                var cards = grid.querySelectorAll('.form-card');
+                var shown = 0;
+                cards.forEach(function (card) {
+                    var match = card.innerText.toLowerCase().includes(lower);
+                    card.style.display = match ? '' : 'none';
+                    if (match) shown++;
+                });
+                document.getElementById('count-' + section).textContent = shown;
             });
-            document.getElementById('count-' + section).textContent = shown;
-        });
+        }, 120);  // 120 ms debounce
     });
 
-    // Xử lý chuyển tháng từ dropdown
-    const monthSelect = document.getElementById('monthSelect');
+    // Xử lý chuyển tháng
+    var monthSelect = document.getElementById('monthSelect');
     if (monthSelect) {
-        monthSelect.addEventListener('change', function() {
-            const selectedMonth = this.value;
-            const url = new URL(window.location.href);
-            url.searchParams.set('month', selectedMonth);
+        monthSelect.addEventListener('change', function () {
+            var url = new URL(window.location.href);
+            url.searchParams.set('month', this.value);
             window.location.href = url.toString();
         });
     }
+}());
 </script>
 </body>
 </html>

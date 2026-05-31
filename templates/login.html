@@ -15,23 +15,33 @@
                         url('https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&q=80&w=2070');
             background-size: cover;
             background-position: center;
-            height: 100vh;
+            background-attachment: fixed;
+            /* FIX: bỏ height:100vh cố định, dùng min-height để scroll được trên mobile nhỏ */
+            min-height: 100vh;
             display: flex;
-            align-items: flex-start; 
+            align-items: center;
             justify-content: center;
             margin: 0;
-            padding-top: 5vh; /* giảm khoảng cách từ trên xuống */
+            /* FIX: padding thay vì padding-top cứng để tránh tràn */
+            padding: 24px 16px;
+            box-sizing: border-box;
         }
+
         .glass-card {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border-radius: 1.5rem;
+            padding: 1.75rem 2rem;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
         }
+
         .evn-blue { color: #0054A6; }
         .bg-evn-orange { background-color: #F58220; }
-        .bg-evn-orange:hover { background-color: #E67310; }
-        
+
         .input-group input:focus {
             border-color: #0054A6;
             box-shadow: 0 0 0 3px rgba(0, 84, 166, 0.2);
@@ -44,115 +54,197 @@
         }
         .animate-slide-in { animation: slideIn 0.4s ease-out; }
 
-        /* Thu nhỏ các thành phần */
-        .glass-card {
-            padding: 1.5rem 2rem !important;
-            border-radius: 2rem !important;
+        /* FIX: Nút bấm dùng padding đủ lớn cho ngón tay (min 44px touch target) */
+        .btn-login {
+            width: 100%;
+            background-color: #F58220;
+            color: white;
+            font-weight: 700;
+            padding: 0.875rem 1rem;
+            border-radius: 0.875rem;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.2s, transform 0.15s;
+            box-shadow: 0 4px 15px rgba(245, 130, 32, 0.35);
+            min-height: 48px; /* touch target */
         }
-        .glass-card h2 {
-            font-size: 1.8rem !important;
-            margin-bottom: 1.5rem !important;
+        .btn-login:hover { background-color: #E67310; transform: scale(1.01); }
+        .btn-login:active { transform: scale(0.98); }
+
+        /* Flash messages */
+        .flash-error {
+            background: #fff0f0;
+            border: 1px solid #fca5a5;
+            color: #b91c1c;
+            border-radius: 0.75rem;
+            padding: 10px 14px;
+            font-size: 0.82rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 1rem;
         }
-        .input-group label {
-            font-size: 0.9rem !important;
-            margin-bottom: 0.5rem !important;
+        .flash-error i { flex-shrink: 0; margin-top: 2px; color: #ef4444; }
+
+        /* Input đủ lớn để gõ trên mobile */
+        .login-input {
+            width: 100%;
+            padding: 0.75rem 0.875rem 0.75rem 2.5rem;
+            border: 1.5px solid #d1d5db;
+            border-radius: 0.875rem;
+            background: #f9fafb;
+            font-size: 1rem; /* không nhỏ hơn 16px để iOS không zoom */
+            font-family: 'Inter', sans-serif;
+            color: #111827;
+            box-sizing: border-box;
+            transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+            -webkit-appearance: none; /* tránh iOS style riêng */
         }
-        .input-group input {
-            padding: 0.75rem 1rem 0.75rem 2.5rem !important;
-            font-size: 0.9rem !important;
-            border-radius: 1rem !important;
+        .login-input:focus {
+            border-color: #0054A6;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(0, 84, 166, 0.15);
+            outline: none;
         }
-        .input-group .absolute {
-            left: 0.75rem !important;
+
+        /* Tiêu đề: wrap được, không whitespace-nowrap */
+        .page-title {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            text-align: center;
+            letter-spacing: 0.03em;
+            line-height: 1.4;
+            /* FIX: bỏ whitespace-nowrap */
         }
-        .input-group i {
-            font-size: 1rem !important;
-        }
-        button {
-            padding: 0.75rem !important;
-            font-size: 1rem !important;
-            border-radius: 1rem !important;
-        }
-        .top-icon {
-            width: 4rem !important;
-            height: 4rem !important;
-            margin-bottom: 1rem !important;
-        }
-        .top-icon i {
-            font-size: 2rem !important;
-        }
-        .title {
-            font-size: 1.2rem !important;
-            white-space: nowrap;
-        }
+
         .support-text {
-            font-size: 0.7rem !important;
-            white-space: nowrap;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            text-align: center;
+            opacity: 0.6;
+            margin-top: 1.25rem;
+            /* FIX: bỏ whitespace-nowrap, cho phép wrap */
+            word-break: break-word;
         }
+
         .copyright {
-            font-size: 0.65rem !important;
+            font-size: 0.65rem;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+            text-align: center;
+            /* FIX: bỏ whitespace-nowrap */
+            word-break: break-word;
+        }
+
+        /* Giới hạn chiều rộng card */
+        .card-wrapper {
+            width: 100%;
+            max-width: 420px;
         }
     </style>
 </head>
-<body class="bg-gray-100">
+<body>
 
-    <div class="w-full max-w-md px-6 animate-slide-in">  <!-- thu hẹp max-width -->
+    <div class="card-wrapper animate-slide-in">
         
-        <div class="text-center mb-6">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-50 to-white rounded-2xl shadow-xl mb-4 transition-transform hover:scale-110 top-icon">
-                <i class="fa-solid fa-bolt-lightning text-3xl bg-gradient-to-t from-blue-800 to-blue-500 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(59,130,246,0.5)]"></i>
+        <!-- Header ngoài card -->
+        <div style="text-align:center; margin-bottom: 1.25rem;">
+            <div style="
+                display: inline-flex; align-items: center; justify-content: center;
+                width: 64px; height: 64px;
+                background: linear-gradient(135deg, #dbeafe, #ffffff);
+                border-radius: 1rem;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+                margin-bottom: 0.875rem;
+            ">
+                <i class="fa-solid fa-bolt-lightning" style="font-size: 1.75rem; color: #0054A6;"></i>
             </div>
-            <h1 class="text-white text-xl font-extrabold tracking-tight uppercase whitespace-nowrap title">
+            <h1 class="page-title">
                 Hệ thống Đánh giá bảo trì tự quản TPM
             </h1>
         </div>
 
-        <div class="glass-card rounded-3xl p-6 overflow-hidden relative">
-            <div class="absolute top-0 left-0 w-full h-2 bg-evn-orange"></div>
+        <!-- Card đăng nhập -->
+        <div class="glass-card">
+            <!-- Thanh màu cam trên đầu card -->
+            <div style="position:absolute; top:0; left:0; right:0; height:4px; background:#F58220; border-radius:1.5rem 1.5rem 0 0;"></div>
 
-            <h2 class="text-3xl font-black text-gray-800 mb-6 text-center">Đăng nhập</h2>
+            <h2 style="font-size:1.6rem; font-weight:900; color:#1f2937; text-align:center; margin-bottom:1.25rem; margin-top:0.25rem;">
+                Đăng nhập
+            </h2>
 
-            <form method="post" class="space-y-6">
+            <!-- FIX: Flash messages hiển thị lỗi từ Flask -->
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                <div class="flash-error">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span>{{ message }}</span>
+                </div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form method="post" style="display:flex; flex-direction:column; gap:1.1rem;">
+                <!-- Username -->
                 <div class="input-group">
-                    <label class="block text-sm font-bold text-gray-600 mb-2 ml-1">Tên đăng nhập</label>
-                    <div class="relative group">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 group-focus-within:text-blue-600">
-                            <i class="fa-solid fa-user text-base"></i>
+                    <label style="display:block; font-size:0.82rem; font-weight:700; color:#4b5563; margin-bottom:6px; margin-left:2px;">
+                        Tên đăng nhập
+                    </label>
+                    <div style="position:relative;">
+                        <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#9ca3af; pointer-events:none;">
+                            <i class="fa-solid fa-user" style="font-size:0.9rem;"></i>
                         </span>
-                        <input type="text" name="username" required
-                               class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-xl transition-all duration-200 bg-gray-50 focus:bg-white text-base"
+                        <input type="text" name="username" required autocomplete="username"
+                               class="login-input"
                                placeholder="Nhập tài khoản kỹ sư...">
                     </div>
                 </div>
 
+                <!-- Password -->
                 <div class="input-group">
-                    <label class="block text-sm font-bold text-gray-600 mb-2 ml-1">Mật khẩu</label>
-                    <div class="relative group">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 group-focus-within:text-blue-600">
-                            <i class="fa-solid fa-lock text-base"></i>
+                    <label style="display:block; font-size:0.82rem; font-weight:700; color:#4b5563; margin-bottom:6px; margin-left:2px;">
+                        Mật khẩu
+                    </label>
+                    <div style="position:relative;">
+                        <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#9ca3af; pointer-events:none;">
+                            <i class="fa-solid fa-lock" style="font-size:0.9rem;"></i>
                         </span>
-                        <input type="password" name="password" required
-                               class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-xl transition-all duration-200 bg-gray-50 focus:bg-white text-base"
+                        <input type="password" name="password" required autocomplete="current-password"
+                               class="login-input"
                                placeholder="••••••••">
                     </div>
                 </div>
 
-                <button type="submit" 
-                        class="w-full bg-evn-orange text-white font-bold py-3 px-4 rounded-xl shadow-2xl transform transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] focus:outline-none flex items-center justify-center group text-base shadow-orange-500/20">
+                <button type="submit" class="btn-login">
                     <span>ĐĂNG NHẬP NGAY</span>
-                    <i class="fa-solid fa-arrow-right-long ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    <i class="fa-solid fa-arrow-right-long"></i>
                 </button>
             </form>
 
-            <div class="mt-8 pt-6 border-t border-gray-100 text-center">
-                <p class="text-xs text-gray-400 uppercase tracking-widest font-black whitespace-nowrap copyright">
-                    &copy; 2026 EVNGENCO1 - CÔNG TY THUỶ ĐIỆN BẢN VẼ
+            <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid #f3f4f6;">
+                <p class="copyright">
+                    &copy; 2026 EVNGENCO1 — Công ty Thuỷ điện Bản Vẽ
                 </p>
             </div>
         </div>
         
-        <p class="text-center text-white text-xs mt-6 opacity-60 font-bold uppercase tracking-widest whitespace-nowrap support-text">
-            Hỗ trợ kỹ thuật: <span class="text-white">quangvinhatd2@gmail.com</span> | Version 1.0.0
+        <!-- Hỗ trợ kỹ thuật -->
+        <p class="support-text">
+            Hỗ trợ kỹ thuật: quangvinhatd2@gmail.com | Version 1.0.0
         </p>
     </div>
 
