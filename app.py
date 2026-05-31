@@ -156,9 +156,22 @@ for _attempt in range(3):
 
 @contextmanager
 def get_db_connection():
-    """Context manager lấy/trả connection từ pool."""
+    """Context manager lấy/trả connection từ pool, tự động phục hồi connection chết."""
     conn = None
     try:
+        conn = db_pool.getconn()
+        # Kiểm tra connection còn sống không (ping)
+        with conn.cursor() as cur:
+            cur.execute("SELECT 1")
+        yield conn
+        conn.commit()
+    except (psycopg2.InterfaceError, psycopg2.OperationalError) as e:
+        # Connection đã bị đóng hoặc lỗi kết nối
+        if conn:
+            # Loại bỏ connection hỏng khỏi pool
+            db_pool.putconn(conn, close=True)
+            conn = None
+        # Lấy connection mới
         conn = db_pool.getconn()
         yield conn
         conn.commit()
