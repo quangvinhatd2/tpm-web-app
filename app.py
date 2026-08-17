@@ -1236,6 +1236,11 @@ def sync_assignments():
         flash('Không tìm thấy file phan_giao.xlsx')
         return redirect(url_for('dashboard'))
 
+    # DEBUG TẠM THỜI: xác nhận đang đọc đúng file nào, sửa lần cuối lúc nào
+    _abs_path = os.path.abspath(PHAN_GIAO_FILE)
+    _mtime = datetime.fromtimestamp(os.path.getmtime(PHAN_GIAO_FILE)).strftime('%Y-%m-%d %H:%M:%S')
+    flash(f'🔍 DEBUG: đang đọc "{_abs_path}" | sửa lần cuối: {_mtime}')
+
     mapping = build_sheet_mapping()
     wb = safe_load_workbook(PHAN_GIAO_FILE)
     if not wb:
